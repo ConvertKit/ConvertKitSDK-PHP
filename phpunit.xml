@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="./vendor/autoload.php"
+         color="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         stopOnFailures="false"
+         syntaxCheck="false"
+         beStrictAboutTestsThatDoNotTestAnything="false"
+         >
+    <testsuites>
+        <testsuite name="ConvertKit API Tests">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
