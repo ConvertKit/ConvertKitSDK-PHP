@@ -108,7 +108,9 @@ class ConvertKit_API {
     {
         $request = $this->api_version . '/account';
 
-        $options['api_secret'] = $this->api_secret;
+        $options = array(
+            'api_secret' => $this->api_secret,
+        );
 
         $this->create_log(sprintf("GET account: %s, %s", $request, json_encode($options)));
 
@@ -124,7 +126,9 @@ class ConvertKit_API {
     {
         $request = $this->api_version . '/sequences';
 
-        $options['api_key'] = $this->api_key;
+        $options = array(
+            'api_key' => $this->api_key,
+        );
 
         $this->create_log(sprintf("GET sequences: %s, %s", $request, json_encode($options)));
 
@@ -143,8 +147,10 @@ class ConvertKit_API {
     {
         $request = $this->api_version . sprintf('/sequences/%s/subscriptions', $sequence_id);
 
-        $options['api_secret'] = $this->api_secret;
-        $options['sort_order'] = $sort_order;
+        $options = array(
+            'api_secret' => $this->api_secret,
+            'sort_order' => $sort_order
+        );
 
         $this->create_log(sprintf("GET sequence subscriptions: %s, %s, %s", $request, json_encode($options), $sequence_id));
 
@@ -163,9 +169,10 @@ class ConvertKit_API {
     {
         $request = $this->api_version . sprintf('/courses/%s/subscribe', $sequence_id);
 
-        $options['api_key'] = $this->api_key;
-
-        $options['email'] = $email;
+        $options = array(
+            'api_key' => $this->api_key,
+            'email'   => $email
+        );
 
         $this->create_log(sprintf("POST add subscriber to sequence: %s, %s, %s, %s", $request, json_encode($options), $sequence_id, $email));
 
