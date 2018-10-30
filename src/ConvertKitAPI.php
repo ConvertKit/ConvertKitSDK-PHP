@@ -99,6 +99,86 @@ class ConvertKit_API {
 		}
 	}
 
+    /**
+     * Gets the current account
+     *
+     * @return false|mixed
+     */
+    public function get_account()
+    {
+        $request = $this->api_version . '/account';
+
+        $options = array(
+            'api_secret' => $this->api_secret,
+        );
+
+        $this->create_log(sprintf("GET account: %s, %s", $request, json_encode($options)));
+
+        return $this->make_request( $request, 'GET', $options );
+	}
+
+    /**
+     * Gets all sequences
+     *
+     * @return false|mixed
+     */
+    public function get_sequences()
+    {
+        $request = $this->api_version . '/sequences';
+
+        $options = array(
+            'api_key' => $this->api_key,
+        );
+
+        $this->create_log(sprintf("GET sequences: %s, %s", $request, json_encode($options)));
+
+        return $this->make_request( $request, 'GET', $options );
+	}
+
+    /**
+     * Gets subscribers to a sequence
+     *
+     * @param $sequence_id
+     * @param string $sort_order
+     *
+     * @return false|mixed
+     */
+    public function get_sequence_subscriptions($sequence_id, $sort_order = 'asc')
+    {
+        $request = $this->api_version . sprintf('/sequences/%s/subscriptions', $sequence_id);
+
+        $options = array(
+            'api_secret' => $this->api_secret,
+            'sort_order' => $sort_order
+        );
+
+        $this->create_log(sprintf("GET sequence subscriptions: %s, %s, %s", $request, json_encode($options), $sequence_id));
+
+        return $this->make_request( $request, 'GET', $options );
+	}
+
+    /**
+     * Adds a subscriber to a sequence by email address
+     *
+     * @param $sequence_id
+     * @param $email
+     *
+     * @return false|mixed
+     */
+    public function add_subscriber_to_sequence($sequence_id, $email)
+    {
+        $request = $this->api_version . sprintf('/courses/%s/subscribe', $sequence_id);
+
+        $options = array(
+            'api_key' => $this->api_key,
+            'email'   => $email
+        );
+
+        $this->create_log(sprintf("POST add subscriber to sequence: %s, %s, %s, %s", $request, json_encode($options), $sequence_id, $email));
+
+        return $this->make_request( $request, 'POST', $options );
+	}
+
 	/**
 	 * Adds a tag to a subscriber
 	 *
