@@ -638,17 +638,19 @@ class ConvertKit_API
      * Gets all subscribers from a specific form
      *
      * @param $form_id
-     * @param string $sort_order
+     * @param int $page
      * @param null $subscriber_state
+     * @param string $sort_order
      * @return false|mixed
      */
-    public function get_form_subscriptions($form_id, $sort_order = 'asc', $subscriber_state = null)
+    public function get_form_subscriptions($form_id, $page = 1, $subscriber_state = null, $sort_order = 'asc')
     {
         $request = $this->api_version . sprintf('/forms/%s/subscriptions', (string)$form_id);
 
         $options = array(
             'api_secret' => $this->api_secret,
-            'sort_order' => $sort_order
+            'page' => $page,
+            'sort_order' => $sort_order,
         );
 
         if (!empty($subscriber_state) && in_array($subscriber_state, ['active', 'cancelled'])) {
