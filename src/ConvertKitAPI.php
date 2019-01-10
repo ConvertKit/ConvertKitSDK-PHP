@@ -630,4 +630,22 @@ class ConvertKit_API {
 
 	}
 
+    /**
+     * Gets all subscribers from a specific form
+     *
+     * @param $form_id
+     * @return false|mixed
+     */
+    public function get_form_subscriptions($form_id)
+    {
+        $request = $this->api_version . sprintf('/forms/%s/subscriptions', (string)$form_id);
+
+        $options = array(
+            'api_key' => $this->api_key,
+        );
+
+        $this->create_log(sprintf("GET form subscriptions: %s, %s, %s", $request, json_encode($options), $form_id));
+
+        return $this->make_request( $request, 'GET', $options );
+    }
 }
