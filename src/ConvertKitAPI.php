@@ -7,10 +7,8 @@ use Monolog\Handler\StreamHandler;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 
-
 class ConvertKit_API
 {
-
     /**
      * ConvertKit API Key
      *
@@ -364,7 +362,7 @@ class ConvertKit_API
             return false;
         }
 
-        $subscriber_id = $this::check_if_subscriber_in_array($email_address, $subscribers->subscribers);
+        $subscriber_id = self::check_if_subscriber_in_array($email_address, $subscribers->subscribers);
 
         if ($subscriber_id) {
             return $subscriber_id;
@@ -383,7 +381,7 @@ class ConvertKit_API
                 return false;
             }
 
-            $subscriber_id = $this::check_if_subscriber_in_array($email_address, $subscribers->subscribers);
+            $subscriber_id = self::check_if_subscriber_in_array($email_address, $subscribers->subscribers);
 
             if ($subscriber_id) {
                 return $subscriber_id;
@@ -620,7 +618,7 @@ class ConvertKit_API
      *
      * @return false|int  false if not found, else subscriber object
      */
-    private function check_if_subscriber_in_array($email_address, $subscribers)
+    private static function check_if_subscriber_in_array($email_address, $subscribers)
     {
         foreach ($subscribers as $subscriber) {
             if ($subscriber->email_address === $email_address) {
@@ -631,7 +629,6 @@ class ConvertKit_API
 
         $this->create_log("Subscriber not found on current page.");
         return false;
-
     }
 
     /**
@@ -659,6 +656,34 @@ class ConvertKit_API
 
         $this->create_log(sprintf("GET form subscriptions: %s, %s, %s", $request, json_encode($options), $form_id));
 
-        return $this->make_request($request, 'GET', $options);
+        return $this->make_request($request, 'POST', $options);
     }
-}
+
+    /**
+     * Gets all subscribers from a specific tag
+     *
+     * @param $tag_id
+     * @param int $page
+     * @param null $subscriber_state
+     * @param string $sort_order
+     * @return false|mixed
+     */
+    public function get_tag_subscriptions($tag_id, $page = 1, $subscriber_state = null, $sort_order = 'asc')
+    {
+        $request = $this->api_version . sprintf('/tags/%s/subscriptions', (string)$tag_id);
+
+        $options = array(
+            'api_secret' => $this->api_secret,
+            'page' => $page,
+            'sort_order' => $sort_order,
+        );
+
+        if (!empty($subscriber_state) && in_array($subscriber_state, ['active', 'cancelled'])) {
+            $options['subscriber_state'] = $subscriber_state;
+        }
+
+        $this->create_log(sprintf("GET tag subscriptions: %s, %s, %s", $request, json_encode($options), $tag_id));
+
+        return $this->make_request($request, 'POST', $options);
+    }
+}   
