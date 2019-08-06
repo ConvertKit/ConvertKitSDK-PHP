@@ -339,4 +339,67 @@ class ConvertKitAPITest extends TestCase {
 		return preg_match("/<[^<]+>/",$string,$m) != 0;
 	}
 
+	/**
+	 * List purchases
+	 */
+	public function testFormSubscriptions() {
+
+		$random_email = str_shuffle('1234567890') . 'test@growdevelopment.com';
+
+		/*
+		 * Subscribe
+		 */
+		$options = [
+			'email'      => $random_email,
+			'name'       => 'Full Name',
+			'first_name' => 'First Name',
+			'tags'       => $this->test_tag_id,
+			'fields'     => [
+				'phone' => 134567891243,
+				'shirt_size' => 'M',
+				'website_url' => 'testurl.com'
+			]
+		];
+
+		$subscribed = $this->api->form_subscribe($this->test_form_id, $options);
+
+		$subscriptions = $this->api->get_form_subscriptions($this->test_form_id);
+		$this->assertInstanceOf('stdClass', $subscriptions);
+		$this->assertArrayHasKey('total_subscriptions', get_object_vars($subscriptions));
+		$this->assertArrayHasKey('page', get_object_vars($subscriptions));
+		$this->assertArrayHasKey('total_pages', get_object_vars($subscriptions));
+		$this->assertArrayHasKey('subscriptions', get_object_vars($subscriptions));
+	}
+
+	/**
+	 * List purchases
+	 */
+	public function testTagSubscriptions() {
+
+		$random_email = str_shuffle('1234567890') . 'test@growdevelopment.com';
+
+		/*
+		 * Subscribe
+		 */
+		$options = [
+			'email'      => $random_email,
+			'name'       => 'Full Name',
+			'first_name' => 'First Name',
+			'tags'       => $this->test_tag_id,
+			'fields'     => [
+				'phone' => 134567891243,
+				'shirt_size' => 'M',
+				'website_url' => 'testurl.com'
+			]
+		];
+
+		$subscribed = $this->api->form_subscribe($this->test_form_id, $options);
+
+		$subscriptions = $this->api->get_tag_subscriptions($this->test_tag_id);
+		$this->assertInstanceOf('stdClass', $subscriptions);
+		$this->assertArrayHasKey('total_subscriptions', get_object_vars($subscriptions));
+		$this->assertArrayHasKey('page', get_object_vars($subscriptions));
+		$this->assertArrayHasKey('total_pages', get_object_vars($subscriptions));
+		$this->assertArrayHasKey('subscriptions', get_object_vars($subscriptions));
+	}
 }
