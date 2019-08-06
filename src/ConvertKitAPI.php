@@ -2,10 +2,10 @@
 
 namespace ConvertKit_API;
 
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 class ConvertKit_API
 {
@@ -82,13 +82,13 @@ class ConvertKit_API
      */
     public function __construct($api_key, $api_secret, $debug = false, $logPath = null)
     {
-        $this->api_key = $api_key;
+        $this->api_key    = $api_key;
         $this->api_secret = $api_secret;
-        $this->debug = $debug;
-        $this->client = new Client();
+        $this->debug      = $debug;
+        $this->client     = new Client();
 
         if ($debug) {
-            $logPath = !empty($logPath) ? $logPath : __DIR__ . '/logs/debug.log';
+            $logPath            = !empty($logPath) ? $logPath : __DIR__ . '/logs/debug.log';
             $this->debug_logger = new Logger('ck-debug');
             $this->debug_logger->pushHandler(new StreamHandler($logPath, Logger::DEBUG));
         }
@@ -151,7 +151,7 @@ class ConvertKit_API
 
         $options = array(
             'api_secret' => $this->api_secret,
-            'sort_order' => $sort_order
+            'sort_order' => $sort_order,
         );
 
         $this->create_log(sprintf("GET sequence subscriptions: %s, %s, %s", $request, json_encode($options), $sequence_id));
@@ -173,7 +173,7 @@ class ConvertKit_API
 
         $options = array(
             'api_key' => $this->api_key,
-            'email' => $email
+            'email'   => $email,
         );
 
         $this->create_log(sprintf("POST add subscriber to sequence: %s, %s, %s, %s", $request, json_encode($options), $sequence_id, $email));
@@ -221,8 +221,8 @@ class ConvertKit_API
         if (!array_key_exists($resource, $this->resources)) {
 
             $options = array(
-                'api_key' => $this->api_key,
-                'timeout' => 10,
+                'api_key'         => $this->api_key,
+                'timeout'         => 10,
                 'Accept-Encoding' => 'gzip',
             );
 
@@ -236,7 +236,7 @@ class ConvertKit_API
                 $this->create_log("No resources");
                 $this->resources[$resource] = array(
                     array(
-                        'id' => '-2',
+                        'id'   => '-2',
                         'name' => 'Error contacting API',
                     ),
                 );
@@ -350,7 +350,7 @@ class ConvertKit_API
 
         $options = array(
             'api_secret' => $this->api_secret,
-            'status' => 'all',
+            'status'     => 'all',
         );
 
         $this->create_log(sprintf("GET subscriber id from all subscribers: %s, %s, %s", $request, json_encode($options), $email_address));
@@ -511,11 +511,11 @@ class ConvertKit_API
         } elseif (!empty($url)) {
 
             if (!function_exists('str_get_html')) {
-                require_once(dirname(__FILE__) . '/lib/simple-html-dom.php');
+                require_once dirname(__FILE__) . '/lib/simple-html-dom.php';
             }
 
             if (!function_exists('url_to_absolute')) {
-                require_once(dirname(__FILE__) . '/lib/url-to-absolute.php');
+                require_once dirname(__FILE__) . '/lib/url-to-absolute.php';
             }
 
             $this->create_log("Getting html from url");
@@ -545,7 +545,7 @@ class ConvertKit_API
                 }
             }
 
-            $resource = $html->save();
+            $resource           = $html->save();
             $this->markup[$url] = $resource;
 
         }
@@ -581,13 +581,13 @@ class ConvertKit_API
             $request = new Request($method, $url);
         } else {
             $request = new Request($method, $url, array(
-                'Content-Type' => 'application/json',
-                'Content-Length' => strlen($request_body)
+                'Content-Type'   => 'application/json',
+                'Content-Length' => strlen($request_body),
             ), $request_body);
         }
 
         $response = $this->client->send($request, [
-            'exceptions' => false
+            'exceptions' => false,
         ]);
 
         $status_code = $response->getStatusCode();
@@ -642,11 +642,11 @@ class ConvertKit_API
      */
     public function get_form_subscriptions($form_id, $page = 1, $subscriber_state = null, $sort_order = 'asc')
     {
-        $request = $this->api_version . sprintf('/forms/%s/subscriptions', (string)$form_id);
+        $request = $this->api_version . sprintf('/forms/%s/subscriptions', (string) $form_id);
 
         $options = array(
             'api_secret' => $this->api_secret,
-            'page' => $page,
+            'page'       => $page,
             'sort_order' => $sort_order,
         );
 
@@ -670,11 +670,11 @@ class ConvertKit_API
      */
     public function get_tag_subscriptions($tag_id, $page = 1, $subscriber_state = null, $sort_order = 'asc')
     {
-        $request = $this->api_version . sprintf('/tags/%s/subscriptions', (string)$tag_id);
+        $request = $this->api_version . sprintf('/tags/%s/subscriptions', (string) $tag_id);
 
         $options = array(
             'api_secret' => $this->api_secret,
-            'page' => $page,
+            'page'       => $page,
             'sort_order' => $sort_order,
         );
 
@@ -686,4 +686,4 @@ class ConvertKit_API
 
         return $this->make_request($request, 'POST', $options);
     }
-}   
+}
