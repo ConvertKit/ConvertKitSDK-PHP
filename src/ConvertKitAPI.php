@@ -656,7 +656,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf("GET form subscriptions: %s, %s, %s", $request, json_encode($options), $form_id));
 
-        return $this->make_request($request, 'POST', $options);
+        return $this->make_request($request, 'GET', $options);
     }
 
     /**
@@ -684,6 +684,6 @@ class ConvertKit_API
 
         $this->create_log(sprintf("GET tag subscriptions: %s, %s, %s", $request, json_encode($options), $tag_id));
 
-        return $this->make_request($request, 'POST', $options);
+        return $this->make_request($request, 'GET', $options);
     }
 }
