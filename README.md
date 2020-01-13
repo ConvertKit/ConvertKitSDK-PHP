@@ -5,7 +5,7 @@ ConvertKit's official PHP SDK
 
 1. Download or clone this repository
 2. Run `composer install`
-3. Add `./vendor/auoload.php` to your project
+3. Add `./vendor/autoload.php` to your project
 
 ### Usage
 
