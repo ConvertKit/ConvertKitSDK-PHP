@@ -558,7 +558,7 @@ class ConvertKit_API {
      *
      * @return false|mixed
      */
-    private function make_request($endpoint, $method, $args = array()) {
+    public function make_request($endpoint, $method, $args = array()) {
 
         if( !is_string($endpoint) || !is_string($method) || !is_array($args) ) {
             throw new \InvalidArgumentException;
