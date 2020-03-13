@@ -3,9 +3,21 @@ ConvertKit's official PHP SDK
 
 ### Installation
 
+#### Standard installation
+
 1. Download or clone this repository
 2. Run `composer install`
 3. Add `./vendor/autoload.php` to your project
+
+#### Installation with package manager
+
+If your project uses [Composer](https://getcomposer.org/), you can install the ConvertKitSDK-PHP package as a composer package. This allows you to have this project as a dependency without the ConvertKitSDK-PHP files being checked into your source code.
+
+```shell
+composer require convertkit/convertkitapi:dev-master
+```
+
+Please note that since ConvertKitSDK-PHP is not yet versioned, your project will always download the latest files from master every time you run `composer install` which may subject you to breaking changes in the future.
 
 ### Usage
 
