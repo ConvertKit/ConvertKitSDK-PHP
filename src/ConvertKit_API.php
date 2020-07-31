@@ -288,7 +288,7 @@ class ConvertKit_API {
     /**
      * Adds a subscriber to a form.
      *
-     * @param string $form_id Form ID.
+     * @param int $form_id Form ID.
      * @param array  $options Array of user data (email, name).
      *
      * @return false|object
