@@ -418,6 +418,45 @@ class ConvertKit_API {
     }
 
     /**
+     * Update subscriber
+     *
+     * @param int   $subscriber_id Subscriber ID.
+     * @param array $data          Subscriber data.
+     * @return false|int
+     */
+    public function update_subscriber( $subscriber_id, $data ) {
+
+        if( !is_int($subscriber_id) || $subscriber_id < 1 ) {
+            throw new \InvalidArgumentException;
+        }
+
+        $request = $this->api_version . sprintf( '/subscribers/%s', $subscriber_id );
+
+        $options = array(
+            'api_secret' => $this->api_secret,
+        );
+
+        if ( array_key_exists( 'first_name', $data ) ) {
+          $options['first_name'] = $data['first_name'];
+          unset( $data['first_name'] );
+        }
+
+        if ( array_key_exists( 'email_address', $data ) ) {
+          $options['email_address'] = $data['email_address'];
+          unset( $data['email_address'] );
+        }
+
+        if ( $data ) {
+          $options['fields'] = $data;
+        }
+
+        $this->create_log(sprintf("PUT update subscriber: %s, %s, %s", $request, json_encode($options), $subscriber_id));
+
+        return $this->make_request( $request, 'PUT', $options );
+
+    }
+
+    /**
      * Get a list of the tags for a subscriber.
      *
      * @param $subscriber_id
