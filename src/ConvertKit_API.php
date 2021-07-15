@@ -349,6 +349,7 @@ class ConvertKit_API {
         $options = array(
             'api_secret' => $this->api_secret,
             'status' => 'all',
+            'email_address' => $email_address,
         );
 
         $this->create_log(sprintf("GET subscriber id from all subscribers: %s, %s, %s", $request, json_encode($options), $email_address));
