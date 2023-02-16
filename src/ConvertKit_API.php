@@ -348,7 +348,7 @@ class ConvertKit_API {
 
         $options = array(
             'api_secret' => $this->api_secret,
-            'status' => 'all',
+            'email_address' => $email_address,
         );
 
         $this->create_log(sprintf("GET subscriber id from all subscribers: %s, %s, %s", $request, json_encode($options), $email_address));
@@ -366,27 +366,7 @@ class ConvertKit_API {
             return $subscriber_id;
         }
 
-        $total_pages = $subscribers->total_pages;
-
-        $this->create_log(sprintf("Total number of pages is %s", $total_pages));
-
-        for ( $i = 2; $i <= $total_pages; $i++ ) {
-            $options['page'] = $i;
-            $this->create_log(sprintf("Go to page %s", $i));
-            $subscribers = $this->make_request( $request, 'GET', $options );
-
-            if( !$subscribers ) {
-                return false;
-            }
-
-            $subscriber_id = $this::check_if_subscriber_in_array($email_address, $subscribers->subscribers);
-
-            if($subscriber_id) {
-                return $subscriber_id;
-            }
-        }
-
-        $this->create_log("Subscriber not found anywhere");
+        $this->create_log("Subscriber not found");
 
         return false;
 
