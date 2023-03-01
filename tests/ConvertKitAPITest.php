@@ -46,7 +46,7 @@ class ConvertKitAPITest extends TestCase {
 	 */
 	protected $test_form_id;
 
-	protected function setUp() {
+	protected function setUp(): void {
 
 		include_once( dirname(__FILE__) . "/config.php" );
 
