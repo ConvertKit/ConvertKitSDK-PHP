@@ -1,6 +1,7 @@
 .DS_Store
 .env
 .env.testing
+.phpunit.result.cache
 composer.lock
 phpstan.neon
 src/logs
