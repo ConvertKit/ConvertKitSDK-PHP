@@ -1,5 +1,7 @@
-src/logs
-.idea
 .DS_Store
-.phpunit.result.cache
-
+.env
+.env.testing
+composer.lock
+phpstan.neon
+src/logs
+vendor
