@@ -48,17 +48,17 @@ class ConvertKitAPITest extends TestCase {
 
 	protected function setUp(): void {
 
-		include_once( dirname(__FILE__) . "/config.php" );
+		// Load environment credentials from root folder.
+		$dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__FILE__)));
+		$dotenv->load();
 
-		$api_key             = CONVERTKIT_PUBLIC_KEY;
-		$api_secret          = CONVERTKIT_SECRET_KEY;
-		$this->test_email    = CONVERTKIT_TESTING_EMAIL;
-		$this->test_user_id  = CONVERTKIT_TESTING_USER_ID;
-		$this->test_form_id  = CONVERTKIT_TESTING_FORM_ID;
-		$this->test_tag_id   = CONVERTKIT_TESTING_TAG_ID;
-		$this->test_form_url = CONVERTKIT_TESTING_FORM_URL;
+		$this->test_email    = $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'];
+		$this->test_user_id  = $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'];
+		$this->test_form_id  = $_ENV['CONVERTKIT_API_FORM_ID'];
+		$this->test_tag_id   = $_ENV['CONVERTKIT_API_TAG_ID'];
+		$this->test_form_url = $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'];
 
-		$this->api = new \ConvertKit_API\ConvertKit_API($api_key, $api_secret);
+		$this->api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET']);
 	}
 
 	/**
