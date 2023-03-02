@@ -8,46 +8,16 @@ class ConvertKitAPITest extends TestCase {
 	 * ConvertKit Class Object
 	 *
 	 * @var object
+	 * 
+	 * @since 	1.0.0
 	 */
 	protected $api;
 
 	/**
-	 * Test subscribed user email
-	 *
-	 * @var string
-	 */
-	protected $test_email;
-
-	/**
-	 * Test subscribed user id
-	 *
-	 * @var string
-	 */
-	protected $test_user_id;
-
-	/**
-	 * Test tag id
-	 *
-	 * @var int
-	 */
-	protected $test_tag_id;
-
-	/**
-	 * Form url
-	 *
-	 * @var int
-	 */
-	protected $test_form_url;
-
-	/**
-	 * Form id
-	 *
-	 * @var int
-	 */
-	protected $test_form_id;
-
-	/**
-	 * Set up the tests.
+	 * Load .env configuration into $_ENV superglobal, and initialize the API
+	 * class before each test.
+	 * 
+	 * @since 	1.0.0
 	 */
 	protected function setUp(): void {
 
@@ -55,12 +25,7 @@ class ConvertKitAPITest extends TestCase {
 		$dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__FILE__)));
 		$dotenv->load();
 
-		$this->test_email    = $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'];
-		$this->test_user_id  = $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'];
-		$this->test_form_id  = $_ENV['CONVERTKIT_API_FORM_ID'];
-		$this->test_tag_id   = $_ENV['CONVERTKIT_API_TAG_ID'];
-		$this->test_form_url = $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'];
-
+		// Setup API.
 		$this->api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET']);
 	}
 
@@ -187,67 +152,147 @@ class ConvertKitAPITest extends TestCase {
 		$result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'invalidSortOrder');
 	}
 
+	/**
+	 * Test that add_subscriber_to_sequence() returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
 	public function testAddSubscriberToSequence()
 	{
-
-	}
-
-	public function testAddSubscriberToSequenceWithInvalidSequenceID()
-	{
-
-	}
-
-	public function testAddSubscriberToSequenceWithInvalidEmailAddress()
-	{
-
-	}
-
-	public function testAddTag()
-	{
-
-	}
-
-	public function testGetResourcesForms()
-	{
-
-	}
-
-	public function testGetResourcesLandingPages()
-	{
-		
-	}
-
-	public function testGetResourcesSubscriptionForms()
-	{
-		
-	}
-
-	public function testGetResourcesTags()
-	{
-		
-	}
-
-	public function testGetResourcesInvalidResourceType()
-	{
-		
-	}
-
-	public function testFormSubscribe()
-	{
-
-	}
-
-	public function testFormUnsubscribe()
-	{
-
+		$result = $this->api->add_subscriber_to_sequence($_ENV['CONVERTKIT_API_SEQUENCE_ID'], $this->generateEmailAddress());
+		$this->assertInstanceOf('stdClass', $result);
+		$this->assertArrayHasKey('subscription', get_object_vars($result));
 	}
 
 	/**
-	 * Get subscriber id by email
+	 * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
+	 * sequence is specified.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testAddSubscriberToSequenceWithInvalidSequenceID()
+	{
+		$this->expectException(GuzzleHttp\Exception\ClientException::class);
+		$result = $this->api->add_subscriber_to_sequence(12345, $this->generateEmailAddress());
+	}
+
+	/**
+	 * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
+	 * email address is specified.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testAddSubscriberToSequenceWithInvalidEmailAddress()
+	{
+		$this->expectException(GuzzleHttp\Exception\ClientException::class);
+		$result = $this->api->add_subscriber_to_sequence($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'not-an-email-address');
+	}
+
+	/**
+	 * Test that add_tag() returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testAddTag()
+	{
+		$result = $this->api->add_tag((int) $_ENV['CONVERTKIT_API_TAG_ID'], [
+			'email' => $this->generateEmailAddress(),
+		]);
+	}
+
+	/**
+	 * Test that get_resources() for Forms returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testGetResourcesForms()
+	{
+		$result = $this->api->get_resources('forms');
+		$this->assertIsArray($result);
+	}
+
+	/**
+	 * Test that get_resources() for Landing Pages returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testGetResourcesLandingPages()
+	{
+		$result = $this->api->get_resources('landing_pages');
+		$this->assertIsArray($result);
+	}
+
+	/**
+	 * Test that get_resources() for Subscription Forms returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testGetResourcesSubscriptionForms()
+	{
+		$result = $this->api->get_resources('subscription_forms');
+		$this->assertIsArray($result);
+	}
+
+	/**
+	 * Test that get_resources() for Tags returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testGetResourcesTags()
+	{
+		$result = $this->api->get_resources('tags');
+		$this->assertIsArray($result);
+	}
+
+	/**
+	 * Test that get_resources() throws a ClientException when an invalid
+	 * resource type is specified.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testGetResourcesInvalidResourceType()
+	{
+		$this->expectException(GuzzleHttp\Exception\ClientException::class);
+		$result = $this->api->get_resources('invalid-resource-type');
+		$this->assertIsArray($result);
+	}
+
+	/**
+	 * Test that form_subscribe() returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testFormSubscribe()
+	{
+		$result = $this->api->form_subscribe((int) $_ENV['CONVERTKIT_API_FORM_ID'], [
+			'email' =>  $this->generateEmailAddress(),
+		]);
+		$this->assertInstanceOf('stdClass', $result);
+		$this->assertArrayHasKey('subscription', get_object_vars($result));
+	}
+
+	/**
+	 * Test that form_subscribe() throws a ClientException when an invalid
+	 * form ID is specified.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testFormSubscribeWithInvalidFormID()
+	{
+		$this->expectException(GuzzleHttp\Exception\ClientException::class);
+		$result = $this->api->form_subscribe(12345, [
+			'email' =>  $this->generateEmailAddress(),
+		]);
+	}
+
+	/**
+	 * Test that get_subscriber_id() returns the expected data.
+	 * 
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberID()
 	{
-		$subscriber_id = $this->api->get_subscriber_id($this->test_email);
+		$subscriber_id = $this->api->get_subscriber_id($_ENV['']);
 		$this->assertInternalType("int", $subscriber_id);
 	}
 
@@ -284,5 +329,21 @@ class ConvertKitAPITest extends TestCase {
 	public function testGetResource()
 	{
 
+	}
+
+	/**
+	 * Generates a unique email address for use in a test, comprising of a prefix,
+	 * date + time and PHP version number.
+	 *
+	 * This ensures that if tests are run in parallel, the same email address
+	 * isn't used for two tests across parallel testing runs.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param   string $domain     Domain (default: convertkit.com).
+	 */
+	private function generateEmailAddress($domain = 'convertkit.com')
+	{
+		return 'wordpress-' . date( 'Y-m-d-H-i-s' ) . '-php-' . PHP_VERSION_ID . '@' . $domain;
 	}
 }
