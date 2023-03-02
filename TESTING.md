@@ -3,7 +3,6 @@
 This document describes how to:
 - create and run tests for your development work,
 - ensure code meets coding standards, for best practices and security,
-- ensure code passes static analysis, to catch potential errors that tests might miss
 
 If you're new to creating and running tests, this guide will walk you through how to do this.
 
@@ -17,7 +16,11 @@ If you haven't yet created a branch and made any code changes, refer to the [Dev
 
 ## Write (or modify) a test
 
-@TODO
+If your work creates new functionality, write a test.
+
+If your work fixes existing functionality, check if a test exists. Either update that test, or create a new test if one doesn't exist.
+
+Tests are written in PHP using [PHPUnit](https://phpunit.de/), and the existing `tests/ConvertKitAPITest.php` is a good place to start as a guide.
 
 ## Run PHPUnit
 
