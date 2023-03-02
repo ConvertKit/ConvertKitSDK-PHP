@@ -24,7 +24,6 @@ class ConvertKitAPITest extends TestCase
      */
     protected function setUp(): void
     {
-
         // Load environment credentials from root folder.
         $dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__FILE__)));
         $dotenv->load();
@@ -59,7 +58,7 @@ class ConvertKitAPITest extends TestCase
         $result = $this->api->get_account();
         $this->assertInstanceOf('stdClass', $result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
         $this->assertArrayHasKey('name', $result);
         $this->assertArrayHasKey('plan_type', $result);
