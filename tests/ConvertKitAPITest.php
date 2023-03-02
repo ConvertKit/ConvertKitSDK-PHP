@@ -30,8 +30,7 @@ class ConvertKitAPITest extends TestCase {
 	}
 
 	/**
-	 * Test that a ClientException is thrown when invalid API credentials are supplied,
-	 * and that subsequent calls to API methods return false.
+	 * Test that a ClientException is thrown when invalid API credentials are supplied.
 	 * 
 	 * @since 	1.0.0
 	 */
@@ -39,10 +38,7 @@ class ConvertKitAPITest extends TestCase {
 	{
 		$this->expectException(GuzzleHttp\Exception\ClientException::class);
 		$api = new \ConvertKit_API\ConvertKit_API('fakeApiKey', 'fakeApiSecret');
-
-		$this->assertFalse($api->get_subscriber_id($this->test_email));
-		$this->assertFalse($api->get_subscriber($this->test_user_id));
-		$this->assertFalse($api->get_subscriber_tags($this->test_user_id));
+		$result = $api->get_account();
 	}
 
 	/**
@@ -198,6 +194,8 @@ class ConvertKitAPITest extends TestCase {
 		$result = $this->api->add_tag((int) $_ENV['CONVERTKIT_API_TAG_ID'], [
 			'email' => $this->generateEmailAddress(),
 		]);
+		$this->assertInstanceOf('stdClass', $result);
+		$this->assertArrayHasKey('subscription', get_object_vars($result));
 	}
 
 	/**
@@ -258,17 +256,30 @@ class ConvertKitAPITest extends TestCase {
 	}
 
 	/**
-	 * Test that form_subscribe() returns the expected data.
+	 * Test that form_subscribe() and form_unsubscribe() returns the expected data.
 	 * 
 	 * @since 	1.0.0
 	 */
 	public function testFormSubscribe()
 	{
+		// Subscribe.
+		$email = $this->generateEmailAddress();
 		$result = $this->api->form_subscribe((int) $_ENV['CONVERTKIT_API_FORM_ID'], [
-			'email' =>  $this->generateEmailAddress(),
+			'email' =>  $email,
 		]);
 		$this->assertInstanceOf('stdClass', $result);
 		$this->assertArrayHasKey('subscription', get_object_vars($result));
+		$this->assertArrayHasKey('id', get_object_vars($result->subscription));
+		$this->assertEquals(get_object_vars($result->subscription)['subscribable_id'], $_ENV['CONVERTKIT_API_FORM_ID']);
+
+		// Unsubscribe.
+		$result = $this->api->form_unsubscribe([
+			'email' =>  $email,
+		]);
+		$this->assertInstanceOf('stdClass', $result);
+		$this->assertArrayHasKey('subscriber', get_object_vars($result));
+		$this->assertArrayHasKey('email_address', get_object_vars($result->subscriber));
+		$this->assertEquals(get_object_vars($result->subscriber)['email_address'], $email);
 	}
 
 	/**
@@ -285,50 +296,128 @@ class ConvertKitAPITest extends TestCase {
 		]);
 	}
 
+
+
 	/**
-	 * Test that get_subscriber_id() returns the expected data.
+	 * Test that get_subscriber() returns the expected data.
 	 * 
 	 * @since 	1.0.0
 	 */
-	public function testGetSubscriberID()
+	public function testGetSubscriber()
 	{
-		$subscriber_id = $this->api->get_subscriber_id($_ENV['']);
-		$this->assertInternalType("int", $subscriber_id);
-	}
-
-	/**
-	 * Get subscriber by id
-	 */
-	public function testGetSubscriber() {
-		$subscriber = $this->api->get_subscriber($this->test_user_id);
+		$subscriber = $this->api->get_subscriber((int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
 		$this->assertInstanceOf('stdClass', $subscriber);
 		$this->assertArrayHasKey('subscriber', get_object_vars($subscriber));
 		$this->assertArrayHasKey('id', get_object_vars($subscriber->subscriber));
-		$this->assertEquals(get_object_vars($subscriber->subscriber)['id'], $this->test_user_id);
+		$this->assertEquals(get_object_vars($subscriber->subscriber)['id'], (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
 	}
 
 	/**
-	 * Get subscriber tags
+	 * Test that get_subscriber() throws a ClientException when an invalid
+	 * subscriber ID is specified.
+	 * 
+	 * @since 	1.0.0
 	 */
-	public function testGetSubscriberTags() {
-		$subscriber = $this->api->get_subscriber_tags($this->test_user_id);
+	public function testGetSubscriberWithInvalidSubscriberID()
+	{
+		$this->expectException(GuzzleHttp\Exception\ClientException::class);
+		$subscriber = $this->api->get_subscriber(12345);
+	}
+
+	/**
+	 * Test that get_subscriber_tags() returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testGetSubscriberTags()
+	{
+		$subscriber = $this->api->get_subscriber_tags((int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
 		$this->assertInstanceOf('stdClass', $subscriber);
 		$this->assertArrayHasKey('tags', get_object_vars($subscriber));
 	}
 
+	/**
+	 * Test that get_subscriber_tags() throws a ClientException when an invalid
+	 * subscriber ID is specified.
+	 * 
+	 * @since 	1.0.0
+	 */
+	public function testGetSubscriberTagsWithInvalidSubscriberID()
+	{
+		$this->expectException(GuzzleHttp\Exception\ClientException::class);
+		$subscriber = $this->api->get_subscriber_tags(12345);
+	}
+
+	/**
+	 * Test that list_purchases() returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
 	public function testListPurchases()
 	{
-
+		$purchases = $this->api->list_purchases([
+			'page' => 1,
+		]);
+		$this->assertInstanceOf('stdClass', $purchases);
+		$this->assertArrayHasKey('total_purchases', get_object_vars($purchases));
+		$this->assertArrayHasKey('page', get_object_vars($purchases));
+		$this->assertArrayHasKey('total_pages', get_object_vars($purchases));
+		$this->assertArrayHasKey('purchases', get_object_vars($purchases));
 	}
 
+	/**
+	 * Test that create_purchase() returns the expected data.
+	 * 
+	 * @since 	1.0.0
+	 */
 	public function testCreatePurchase()
 	{
-
+		$purchase = $this->api->create_purchase([
+			'purchase' => [
+				'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
+				'email_address'  => $this->generateEmailAddress(),
+				'first_name'     => 'John',
+				'currency'		 => 'usd',
+				'transaction_time' => date('Y-m-d H:i:s'),
+				'subtotal'       => 20.00,
+				'tax'            => 2.00,
+				'shipping'       => 2.00,
+				'discount'       => 3.00,
+				'total'          => 21.00,
+				'status'         => 'paid',
+				'products'       => [
+					[
+						'pid' => 9999,
+	                    'lid' => 7777,
+	                    'name' => 'Floppy Disk (512k)',
+	                    'sku' => '7890-ijkl',
+	                    'unit_price' => 5.00,
+	                    'quantity' => 2
+					],
+					[
+						'pid' => 5555,
+	                    'lid' => 7778,
+	                    'name' => 'Telephone Cord (data)',
+	                    'sku' => 'mnop-1234',
+	                    'unit_price' => 10.00,
+	                    'quantity' => 1
+					],
+				],
+			],
+		]);
+		$this->assertInstanceOf('stdClass', $purchase);
+		$this->assertArrayHasKey('transaction_id', get_object_vars($purchase));
 	}
 
+	/**
+	 * Test that fetching a URL works.
+	 * 
+	 * @since 	1.0.0
+	 */
 	public function testGetResource()
 	{
-
+		$markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
+		$this->assertTrue($this->isHtml($markup));
 	}
 
 	/**
@@ -345,5 +434,17 @@ class ConvertKitAPITest extends TestCase {
 	private function generateEmailAddress($domain = 'convertkit.com')
 	{
 		return 'wordpress-' . date( 'Y-m-d-H-i-s' ) . '-php-' . PHP_VERSION_ID . '@' . $domain;
+	}
+
+	/**
+	 * Checks if string is html
+	 * 
+	 * @since 	1.0.0
+	 *
+	 * @param 	$string Possible HTML.
+	 * @return 	bool
+	 */
+	private function isHtml($string) {
+		return preg_match("/<[^<]+>/",$string,$m) != 0;
 	}
 }
