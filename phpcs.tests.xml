@@ -14,6 +14,4 @@
         <!-- Exclude "Each class must be in a namespace of at least one level (a top-level vendor name)" -->
         <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace" />
     </rule>
-
-    <rule ref="Squiz"></rule>
 </ruleset>

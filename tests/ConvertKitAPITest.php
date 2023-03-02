@@ -4,8 +4,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * ConvertKit API class tests.
- *
- * @since   1.0.0
  */
 class ConvertKitAPITest extends TestCase
 {
@@ -13,8 +11,6 @@ class ConvertKitAPITest extends TestCase
      * ConvertKit Class Object
      *
      * @var object
-     *
-     * @since   1.0.0
      */
     protected $api;
 
@@ -23,6 +19,8 @@ class ConvertKitAPITest extends TestCase
      * class before each test.
      *
      * @since   1.0.0
+     *
+     * @return  void
      */
     protected function setUp(): void
     {
@@ -39,6 +37,8 @@ class ConvertKitAPITest extends TestCase
      * Test that a ClientException is thrown when invalid API credentials are supplied.
      *
      * @since   1.0.0
+     *
+     * @return void
      */
     public function testInvalidAPICredentials()
     {
@@ -51,13 +51,15 @@ class ConvertKitAPITest extends TestCase
      * Test that get_account() returns the expected data.
      *
      * @since   1.0.0
+     *
+     * @return void
      */
-    public function testGetAccount($foo)
+    public function testGetAccount()
     {
         $result = $this->api->get_account();
         $this->assertInstanceOf('stdClass', $result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10
         $result = get_object_vars($result);
         $this->assertArrayHasKey('name', $result);
         $this->assertArrayHasKey('plan_type', $result);
@@ -67,7 +69,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_sequences() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSequences()
     {
@@ -86,7 +90,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_sequence_subscriptions() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSequenceSubscriptions()
     {
@@ -110,7 +116,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_sequence_subscriptions() returns the expected data in descending order.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSequenceSubscriptionsWithDescSortOrder()
     {
@@ -134,7 +142,9 @@ class ConvertKitAPITest extends TestCase
      * Test that get_sequence_subscriptions() throws a ClientException when an invalid
      * sequence ID is specified.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSequenceSubscriptionsWithInvalidSequenceID()
     {
@@ -146,7 +156,9 @@ class ConvertKitAPITest extends TestCase
      * Test that get_sequence_subscriptions() throws a ClientException when an invalid
      * sort order is specified.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSequenceSubscriptionsWithInvalidSortOrder()
     {
@@ -157,7 +169,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that add_subscriber_to_sequence() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testAddSubscriberToSequence()
     {
@@ -173,7 +187,9 @@ class ConvertKitAPITest extends TestCase
      * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
      * sequence is specified.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testAddSubscriberToSequenceWithInvalidSequenceID()
     {
@@ -185,7 +201,9 @@ class ConvertKitAPITest extends TestCase
      * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
      * email address is specified.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testAddSubscriberToSequenceWithInvalidEmailAddress()
     {
@@ -196,7 +214,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that add_tag() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testAddTag()
     {
@@ -210,7 +230,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_resources() for Forms returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetResourcesForms()
     {
@@ -221,7 +243,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_resources() for Landing Pages returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetResourcesLandingPages()
     {
@@ -232,7 +256,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_resources() for Subscription Forms returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetResourcesSubscriptionForms()
     {
@@ -243,7 +269,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_resources() for Tags returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetResourcesTags()
     {
@@ -255,7 +283,9 @@ class ConvertKitAPITest extends TestCase
      * Test that get_resources() throws a ClientException when an invalid
      * resource type is specified.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetResourcesInvalidResourceType()
     {
@@ -267,7 +297,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that form_subscribe() and form_unsubscribe() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testFormSubscribe()
     {
@@ -295,7 +327,9 @@ class ConvertKitAPITest extends TestCase
      * Test that form_subscribe() throws a ClientException when an invalid
      * form ID is specified.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testFormSubscribeWithInvalidFormID()
     {
@@ -310,7 +344,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_subscriber() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSubscriber()
     {
@@ -328,7 +364,9 @@ class ConvertKitAPITest extends TestCase
      * Test that get_subscriber() throws a ClientException when an invalid
      * subscriber ID is specified.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSubscriberWithInvalidSubscriberID()
     {
@@ -339,7 +377,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_subscriber_tags() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSubscriberTags()
     {
@@ -352,7 +392,9 @@ class ConvertKitAPITest extends TestCase
      * Test that get_subscriber_tags() throws a ClientException when an invalid
      * subscriber ID is specified.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testGetSubscriberTagsWithInvalidSubscriberID()
     {
@@ -363,7 +405,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that list_purchases() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testListPurchases()
     {
@@ -380,7 +424,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that create_purchase() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   1.0.
+     *
+     * @return void
      */
     public function testCreatePurchase()
     {
@@ -425,6 +471,8 @@ class ConvertKitAPITest extends TestCase
      * Test that fetching a URL works.
      *
      * @since   1.0.0
+     *
+     * @return void
      */
     public function testGetResource()
     {
@@ -442,6 +490,8 @@ class ConvertKitAPITest extends TestCase
      * @since   1.0.0
      *
      * @param   string $domain     Domain (default: convertkit.com).
+     *
+     * @return  string
      */
     private function generateEmailAddress($domain = 'convertkit.com')
     {

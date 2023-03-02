@@ -26,80 +26,34 @@ Once you have written your code and tests, run the tests to make sure there are 
 To run the tests, enter the following commands in a separate Terminal window:
 
 ```bash
-vendor/bin/phpunit --verbose tests
+vendor/bin/phpunit --verbose --stop-on-failure
 ```
 
 If a test fails, you can inspect the output.
 
 Any errors should be corrected by making applicable code or test changes.
 
-## Run PHP CodeSniffer
-
-[PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) checks that all code meets Coding Standards.
-
-To run the tests, enter the following command:
-
-```bash
-vendor/bin/phpcs ./ --standard=phpcs.xml -v -s
-```
-
-`--standard=phpcs.xml` tells PHP CodeSniffer to use the Coding Standards rules / configuration defined in `phpcs.xml`.
-`-v` produces verbose output
-`-s` specifies the precise rule that failed
-
-Any errors should be corrected by either:
-- making applicable code changes
-- (Experimental) running `vendor/bin/phpcbf ./ --standard=phpcs.xml -v -s` to automatically fix coding standards
-
-Need to change the coding standard rules applied?  Either:
-- ignore a rule in the affected code, by adding `phpcs:ignore {rule}`, where {rule} is the given rule that failed in the above output.
-- edit the [phpcs.xml](phpcs.xml) file.
-
-**Rules should be ignored with caution**
-
 ## Run PHP CodeSniffer for Tests
 
-[PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) checks that all test code meets Coding Standards.
+[PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) checks that all test code meets the [PSR-12 Coding Standards](https://www.php-fig.org/psr/psr-12/).
 
-To run the tests, enter the following command:
+To run CodeSniffer on tests, enter the following command:
 
 ```bash
-vendor/bin/phpcs ./ --standard=phpcs.tests.xml -v -s
+vendor/bin/phpcs --standard=phpcs.tests.xml
 ```
 
-`--standard=phpcs.tests.xml` tells PHP CodeSniffer to use the Coding Standards rules / configuration defined in `phpcs.tests.xml`.
-`-v` produces verbose output
-`-s` specifies the precise rule that failed
+`--standard=phpcs.tests.xml` tells PHP CodeSniffer to use the use the [phpcs.tests.xml](phpcs.tests.xml) configuration file
 
 Any errors should be corrected by either:
 - making applicable code changes
-- (Experimental) running `vendor/bin/phpcbf ./ --standard=phpcs.xml -v -s` to automatically fix coding standards
+- (Experimental) running `vendor/bin/phpcbf --standard=phpcs.tests.xml` to automatically fix coding standards
 
 Need to change the coding standard rules applied?  Either:
 - ignore a rule in the affected code, by adding `phpcs:ignore {rule}`, where {rule} is the given rule that failed in the above output.
-- edit the [phpcs.xml](phpcs.xml) file.
+- edit the [phpcs.tests.xml](phpcs.tests.xml) file.
 
 **Rules can be ignored with caution**, but it's essential that rules relating to coding style and inline code commenting / docblocks remain.
-
-## Run PHPStan
-
-[PHPStan](https://phpstan.org) performs static analysis on the code.  This ensures:
-
-- DocBlocks declarations are valid and uniform
-- Typehinting variables and return types declared in DocBlocks are correctly cast
-- Any unused functions are detected
-- Unnecessary checks / code is highlighted for possible removal
-- Conditions that do not evaluate can be fixed/removed as necessary
-
-Run the following command to run PHPStan:
-
-```bash
-vendor/bin/phpstan --memory-limit=1G
-```
-
-Any errors should be corrected by making applicable code changes.
-
-False positives [can be excluded by configuring](https://phpstan.org/user-guide/ignoring-errors) the `phpstan.neon` file.
 
 ## Next Steps
 
