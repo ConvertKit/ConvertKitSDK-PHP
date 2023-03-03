@@ -64,6 +64,10 @@ jobs:
       - name: Build PHP Autoloader
         run: composer dump-autoload
 
+      # Run Coding Standards.
+      - name: Run Coding Standards
+        run: php vendor/bin/phpcs --standard=phpcs.xml
+
       # Run Coding Standards on Tests.
       - name: Run Coding Standards on Tests
         run: php vendor/bin/phpcs --standard=phpcs.tests.xml
