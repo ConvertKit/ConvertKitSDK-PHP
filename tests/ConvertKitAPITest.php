@@ -68,7 +68,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_sequences() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -89,7 +89,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_sequence_subscriptions() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -115,7 +115,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_sequence_subscriptions() returns the expected data in descending order.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -141,7 +141,7 @@ class ConvertKitAPITest extends TestCase
      * Test that get_sequence_subscriptions() throws a ClientException when an invalid
      * sequence ID is specified.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -155,7 +155,7 @@ class ConvertKitAPITest extends TestCase
      * Test that get_sequence_subscriptions() throws a ClientException when an invalid
      * sort order is specified.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -168,7 +168,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that add_subscriber_to_sequence() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -186,7 +186,7 @@ class ConvertKitAPITest extends TestCase
      * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
      * sequence is specified.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -200,7 +200,7 @@ class ConvertKitAPITest extends TestCase
      * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
      * email address is specified.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -213,7 +213,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that add_tag() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -229,7 +229,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_resources() for Forms returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -242,7 +242,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_resources() for Landing Pages returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -255,7 +255,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_resources() for Subscription Forms returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -268,7 +268,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_resources() for Tags returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -282,7 +282,7 @@ class ConvertKitAPITest extends TestCase
      * Test that get_resources() throws a ClientException when an invalid
      * resource type is specified.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -296,7 +296,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that form_subscribe() and form_unsubscribe() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -326,7 +326,7 @@ class ConvertKitAPITest extends TestCase
      * Test that form_subscribe() throws a ClientException when an invalid
      * form ID is specified.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -338,12 +338,52 @@ class ConvertKitAPITest extends TestCase
         ]);
     }
 
+    /**
+     * Test that get_subscriber_id() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberID()
+    {
+        $subscriber_id = $this->api->get_subscriber_id($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
+        $this->assertIsInt($subscriber_id);
+        $this->assertEquals($subscriber_id, (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+    }
 
+    /**
+     * Test that get_subscriber_id() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberIDWithInvalidEmailAddress()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $result = $this->api->get_subscriber_id('not-an-email-address');
+    }
+
+    /**
+     * Test that get_subscriber_id() return false when no subscriber found
+     * matching the given email address.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberIDWithNotSubscribedEmailAddress()
+    {
+        $result = $this->api->get_subscriber_id('not-a-subscriber@test.com');
+        $this->assertFalse($result);
+    }
 
     /**
      * Test that get_subscriber() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -363,7 +403,7 @@ class ConvertKitAPITest extends TestCase
      * Test that get_subscriber() throws a ClientException when an invalid
      * subscriber ID is specified.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -376,7 +416,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_subscriber_tags() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -391,7 +431,7 @@ class ConvertKitAPITest extends TestCase
      * Test that get_subscriber_tags() throws a ClientException when an invalid
      * subscriber ID is specified.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -404,7 +444,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that list_purchases() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
@@ -423,7 +463,7 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that create_purchase() returns the expected data.
      *
-     * @since   1.0.
+     * @since   1.0.0
      *
      * @return void
      */
