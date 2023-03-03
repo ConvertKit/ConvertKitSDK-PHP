@@ -28,10 +28,7 @@
   "autoload": {
     "psr-4": {
       "ConvertKit_API\\": "src/"
-    },
-    "classmap": [
-      "src/lib/"
-    ]
+    }
   },
   "minimum-stability": "dev",
   "prefer-stable": true
