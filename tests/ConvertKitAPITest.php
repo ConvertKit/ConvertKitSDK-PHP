@@ -507,16 +507,85 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that fetching a URL works.
+     * Test that fetching a legacy form's markup works.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetResource()
+    public function testGetResourceLegacyForm()
+    {
+        $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_FORM_URL']);
+
+        // Assert that the markup is HTML.
+        $this->assertTrue($this->isHtml($markup));
+
+        // Confirm that encoding works correctly.
+        $this->assertStringContainsString('Vantar þinn ungling sjálfstraust í stærðfræði?', $markup);
+    }
+
+    /**
+     * Test that fetching a landing page's markup works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceLandingPage()
+    {
+        $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
+
+        // Assert that the markup is HTML.
+        $this->assertTrue($this->isHtml($markup));
+
+        // Confirm that encoding works correctly.
+        $this->assertStringContainsString('Vantar þinn ungling sjálfstraust í stærðfræði?', $markup);
+    }
+
+    /**
+     * Test that fetching a legacy landing page's markup works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceLegacyLandingPage()
     {
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
+
+        // Assert that the markup is HTML.
         $this->assertTrue($this->isHtml($markup));
+
+        // Confirm that encoding works correctly.
+        $this->assertStringContainsString('Legacy Landing Page', $markup);
+    }
+
+    /**
+     * Test that get_resource() throws an InvalidArgumentException when an invalid
+     * URL is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceInvalidURL()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $markup = $this->api->get_resource('not-a-url');
+    }
+
+    /**
+     * Test that get_resource() throws a ClientException when an inaccessible
+     * URL is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceInaccessibleURL()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $markup = $this->api->get_resource('https://convertkit.com/a/url/that/does/not/exist');
     }
 
     /**
