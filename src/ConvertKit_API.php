@@ -81,7 +81,6 @@ class ConvertKit_API
      */
     public function __construct($api_key, $api_secret, $debug = false)
     {
-
         $this->api_key = $api_key;
         $this->api_secret = $api_secret;
         $this->debug = $debug;
@@ -200,7 +199,6 @@ class ConvertKit_API
      */
     public function add_tag($tag, $options)
     {
-
         if (!is_int($tag) || !is_array($options)) {
             throw new \InvalidArgumentException();
         }
@@ -225,7 +223,6 @@ class ConvertKit_API
      */
     public function get_resources($resource)
     {
-
         if (!is_string($resource)) {
             throw new \InvalidArgumentException();
         }
@@ -307,7 +304,6 @@ class ConvertKit_API
      */
     public function form_subscribe($form_id, $options)
     {
-
         if (!is_int($form_id) || !is_array($options)) {
             throw new \InvalidArgumentException();
         }
@@ -330,7 +326,6 @@ class ConvertKit_API
      */
     public function form_unsubscribe($options)
     {
-
         if (!is_array($options)) {
             throw new \InvalidArgumentException();
         }
@@ -353,7 +348,6 @@ class ConvertKit_API
      */
     public function get_subscriber_id($email_address)
     {
-
         if (!is_string($email_address) || !filter_var($email_address, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException();
         }
@@ -400,7 +394,6 @@ class ConvertKit_API
      */
     public function get_subscriber($subscriber_id)
     {
-
         if (!is_int($subscriber_id) || $subscriber_id < 1) {
             throw new \InvalidArgumentException();
         }
@@ -424,7 +417,6 @@ class ConvertKit_API
      */
     public function get_subscriber_tags($subscriber_id)
     {
-
         if (!is_int($subscriber_id) || $subscriber_id < 1) {
             throw new \InvalidArgumentException();
         }
@@ -447,7 +439,6 @@ class ConvertKit_API
      */
     public function list_purchases($options)
     {
-
         if (!is_array($options)) {
             throw new \InvalidArgumentException();
         }
@@ -470,7 +461,6 @@ class ConvertKit_API
      */
     public function create_purchase($options)
     {
-
         if (!is_array($options)) {
             throw new \InvalidArgumentException();
         }
@@ -496,7 +486,6 @@ class ConvertKit_API
      */
     public function get_resource($url)
     {
-
         if (!is_string($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
             throw new \InvalidArgumentException();
         }
@@ -624,7 +613,6 @@ class ConvertKit_API
      */
     public function make_request($endpoint, $method, $args = array())
     {
-
         if (!is_string($endpoint) || !is_string($method) || !is_array($args)) {
             throw new \InvalidArgumentException();
         }
@@ -682,7 +670,6 @@ class ConvertKit_API
      */
     private function check_if_subscriber_in_array($email_address, $subscribers)
     {
-
         foreach ($subscribers as $subscriber) {
             if ($subscriber->email_address === $email_address) {
                 $this->create_log("Subscriber found!");
