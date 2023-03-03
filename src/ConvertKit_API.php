@@ -637,15 +637,15 @@ class ConvertKit_API
      * Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
      * DOM Elements.
      *
-     * @param DOMNodeList $elements  Elements.
-     * @param string      $attribute HTML Attribute.
-     * @param string      $url       Absolute URL to prepend to relative URLs.
+     * @param \DOMNodeList $elements  Elements.
+     * @param string       $attribute HTML Attribute.
+     * @param string       $url       Absolute URL to prepend to relative URLs.
      *
      * @since 1.0.0
      *
      * @return void
      */
-    private function convert_relative_to_absolute_urls(DOMNodeList $elements, string $attribute, string $url)
+    private function convert_relative_to_absolute_urls(\DOMNodeList $elements, string $attribute, string $url)
     {
         // Anchor hrefs.
         foreach ($elements as $element) {
