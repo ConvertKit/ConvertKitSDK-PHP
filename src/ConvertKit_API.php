@@ -465,71 +465,127 @@ class ConvertKit_API {
     }
 
     /**
-     * Get markup from ConvertKit for the provided $url
+     * Get markup from ConvertKit for the provided $url.
+     * 
+     * Supports legacy forms and legacy landing pages.
+     * Forms and Landing Pages should be embedded using the supplied JS embed script in
+     * the API response when using get_resources().
      *
      * @param string $url URL of API action.
      * @return false|string
      */
     public function get_resource( $url ) {
 
-        if( !is_string($url) ) {
+        if(  !is_string($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
             throw new \InvalidArgumentException;
-        }
-
-        if (strpos( $url, 'api_key' ) === false) {
-            $url .= '?api_key=' . $this->api_key;
         }
 
         $resource = '';
 
         $this->create_log(sprintf("Getting resource %s", $url));
 
-        if ( ! empty( $url ) && isset( $this->markup[ $url ] ) ) {
+        // If the resource was already fetched, return the cached version now.
+        if ( isset( $this->markup[ $url ] ) ) {
             $this->create_log("Resource already set");
-            $resource = $this->markup[ $url ];
-        } elseif ( ! empty( $url ) ) {
-
-            if ( ! function_exists( 'str_get_html' ) ) {
-                require_once( dirname( __FILE__ ) . '/lib/simple-html-dom.php' );
-            }
-
-            if ( ! function_exists( 'url_to_absolute' ) ) {
-                require_once( dirname( __FILE__ ) . '/lib/url-to-absolute.php' );
-            }
-
-            $this->create_log("Getting html from url");
-            $html = file_get_html($url);
-
-            foreach ( $html->find( 'a, link' ) as $element ) {
-                if ( isset( $element->href ) ) {
-                    $this->create_log(sprintf("To absolute url: %s", $element->href));
-                    echo url_to_absolute( $url, $element->href );
-                    $element->href = url_to_absolute( $url, $element->href );
-                }
-            }
-
-            foreach ( $html->find( 'img, script' ) as $element ) {
-                if ( isset( $element->src ) ) {
-                    $this->create_log(sprintf("To absolute src: %s", $element->src));
-                    $element->src = url_to_absolute( $url, $element->src );
-                }
-            }
-
-            foreach ( $html->find( 'form' ) as $element ) {
-                if ( isset( $element->action ) ) {
-                    $this->create_log(sprintf("To absolute form: %s", $element->action));
-                    $element->action = url_to_absolute( $url, $element->action );
-                } else {
-                    $element->action = $url;
-                }
-            }
-
-            $resource = $html->save();
-            $this->markup[ $url ] = $resource;
-
+            return $this->markup[ $url ];
         }
 
+        // Fetch the resource
+        $request = new Request('GET', $url, array(
+            'Accept-Encoding' => 'gzip',
+        ));
+        $response = $this->client->send($request);
+
+        // Fetch HTML.
+        $body = $response->getBody()->getContents();
+
+        // Forcibly tell DOMDocument that this HTML uses the UTF-8 charset.
+        // <meta charset="utf-8"> isn't enough, as DOMDocument still interprets the HTML as ISO-8859, which breaks character encoding
+        // Use of mb_convert_encoding() with HTML-ENTITIES is deprecated in PHP 8.2, so we have to use this method.
+        // If we don't, special characters render incorrectly.
+        $body = str_replace( '<head>', '<head>' . "\n" . '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', $body );
+
+        // Get just the scheme and host from the URL.
+        $url_scheme           = parse_url( $url );
+        $url_scheme_host_only = $url_scheme['scheme'] . '://' . $url_scheme['host'];
+
+        // Load the HTML into a DOMDocument.
+        libxml_use_internal_errors( true );
+        $html = new \DOMDocument();
+        $html->loadHTML( $body );
+
+        // Convert any relative URLs to absolute URLs in the HTML DOM.
+        $this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'a' ), 'href', $url_scheme_host_only );
+        $this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'link' ), 'href', $url_scheme_host_only );
+        $this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'img' ), 'src', $url_scheme_host_only );
+        $this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'script' ), 'src', $url_scheme_host_only );
+        $this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'form' ), 'action', $url_scheme_host_only );
+
+        // Remove some HTML tags that DOMDocument adds, returning the output.
+        // We do this instead of using LIBXML_HTML_NOIMPLIED in loadHTML(), because Legacy Forms are not always contained in
+        // a single root / outer element, which is required for LIBXML_HTML_NOIMPLIED to correctly work.
+        $resource = $this->strip_html_head_body_tags( $html->saveHTML() );
+
+        // Cache and return.
+        $this->markup[ $url ] = $resource;
         return $resource;
+    }
+
+    /**
+     * Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
+     * DOM Elements.
+     *
+     * @since   1.0.0
+     *
+     * @param   DOMNodeList<DOMElement> $elements   Elements.
+     * @param   string                  $attribute  HTML Attribute.
+     * @param   string                  $url        Absolute URL to prepend to relative URLs.
+     */
+    private function convert_relative_to_absolute_urls( $elements, $attribute, $url )
+    {
+        // Anchor hrefs.
+        foreach ( $elements as $element ) {
+            // Skip if the attribute's value is empty.
+            if ( empty( $element->getAttribute( $attribute ) ) ) {
+                continue;
+            }
+
+            // Skip if the attribute's value is a fully qualified URL.
+            if ( filter_var( $element->getAttribute( $attribute ), FILTER_VALIDATE_URL ) ) {
+                continue;
+            }
+
+            // Skip if this is a Google Font CSS URL.
+            if ( strpos( $element->getAttribute( $attribute ), '//fonts.googleapis.com' ) !== false ) {
+                continue;
+            }
+
+            // If here, the attribute's value is a relative URL, missing the http(s) and domain.
+            // Prepend the URL to the attribute's value.
+            $element->setAttribute( $attribute, $url . $element->getAttribute( $attribute ) );
+        }
+    }
+
+    /**
+     * Strips <html>, <head> and <body> opening and closing tags from the given markup,
+     * as well as the Content-Type meta tag we might have added in get_html().
+     *
+     * @since   1.0.0
+     *
+     * @param   string $markup     HTML Markup.
+     * @return  string              HTML Markup
+     * */
+    private function strip_html_head_body_tags( $markup )
+    {
+        $markup = str_replace( '<html>', '', $markup );
+        $markup = str_replace( '</html>', '', $markup );
+        $markup = str_replace( '<head>', '', $markup );
+        $markup = str_replace( '</head>', '', $markup );
+        $markup = str_replace( '<body>', '', $markup );
+        $markup = str_replace( '</body>', '', $markup );
+        $markup = str_replace( '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', '', $markup );
+
+        return $markup;
     }
 
     /**
