@@ -111,7 +111,7 @@ class ConvertKitAPITest extends TestCase
         // Assert sort order is ascending.
         $this->assertGreaterThanOrEqual(
             $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_a
+            $result['subscriptions'][1]->created_at
         );
     }
 
@@ -139,7 +139,7 @@ class ConvertKitAPITest extends TestCase
         // Assert sort order.
         $this->assertLessThanOrEqual(
             $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_a
+            $result['subscriptions'][1]->created_at
         );
     }
 
