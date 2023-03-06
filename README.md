@@ -84,7 +84,7 @@ Apply a tag to a Subscriber.
 
 ```php
 $tag_id = '99999'; // This tag must be valid for your ConvertKit account.
-$api->add_tag(tag_id, [
+$api->add_tag($tag_id, [
 			'email' => 'test@test.com'
 		]);
 ```
