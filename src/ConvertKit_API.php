@@ -128,7 +128,7 @@ class ConvertKit_API
      */
     public function get_account()
     {
-        $request = $this->api_version . '/account';
+        $request = 'account';
 
         $options = [
             'api_secret' => $this->api_secret,
@@ -147,7 +147,7 @@ class ConvertKit_API
      */
     public function get_sequences()
     {
-        $request = $this->api_version . '/sequences';
+        $request = 'sequences';
 
         $options = [
             'api_key' => $this->api_key,
@@ -169,7 +169,7 @@ class ConvertKit_API
      */
     public function get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc')
     {
-        $request = $this->api_version . sprintf('/sequences/%s/subscriptions', $sequence_id);
+        $request = sprintf('/sequences/%s/subscriptions', $sequence_id);
 
         $options = [
             'api_secret' => $this->api_secret,
@@ -199,7 +199,7 @@ class ConvertKit_API
      */
     public function add_subscriber_to_sequence(int $sequence_id, string $email)
     {
-        $request = $this->api_version . sprintf('/courses/%s/subscribe', $sequence_id);
+        $request = sprintf('/courses/%s/subscribe', $sequence_id);
 
         $options = [
             'api_key' => $this->api_key,
@@ -236,7 +236,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = $this->api_version . sprintf('/tags/%s/subscribe', $tag);
+        $request = sprintf('/tags/%s/subscribe', $tag);
 
         $options['api_key'] = $this->api_key;
 
@@ -271,7 +271,13 @@ class ConvertKit_API
                 'Accept-Encoding' => 'gzip',
             ];
 
-            $request = sprintf('/%s/%s', $this->api_version, (($resource === 'landing_pages') ? 'forms' : $resource));
+            // Assign the resource to the request variable.
+            $request = $resource;
+
+            // Landing pages are included in the /forms endpoint.
+            if ($resource === 'landing_pages') {
+                $request = 'forms';
+            }
 
             $this->create_log(sprintf('GET request %s, %s', $request, json_encode($options)));
 
@@ -363,7 +369,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = $this->api_version . sprintf('/forms/%s/subscribe', $form_id);
+        $request = sprintf('/forms/%s/subscribe', $form_id);
 
         $options['api_key'] = $this->api_key;
 
@@ -388,7 +394,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = $this->api_version . '/unsubscribe';
+        $request = 'unsubscribe';
 
         $options['api_secret'] = $this->api_secret;
 
@@ -414,7 +420,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = $this->api_version . '/subscribers';
+        $request = 'subscribers';
 
         $options = [
             'api_secret'    => $this->api_secret,
@@ -465,7 +471,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = $this->api_version . sprintf('/subscribers/%s', $subscriber_id);
+        $request = sprintf('/subscribers/%s', $subscriber_id);
 
         $options = [
             'api_secret' => $this->api_secret,
@@ -492,7 +498,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = $this->api_version . sprintf('/subscribers/%s/tags', $subscriber_id);
+        $request = sprintf('/subscribers/%s/tags', $subscriber_id);
 
         $options = [
             'api_key' => $this->api_key,
@@ -519,7 +525,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = $this->api_version . '/purchases';
+        $request = 'purchases';
 
         $options['api_secret'] = $this->api_secret;
 
@@ -544,7 +550,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = $this->api_version . '/purchases';
+        $request = 'purchases';
 
         $options['api_secret'] = $this->api_secret;
 
@@ -771,7 +777,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $url = $this->api_url_base . $endpoint;
+        $url = $this->api_url_base . $this->api_version . '/' . $endpoint;
 
         $this->create_log(sprintf('Making request on %s.', $url));
 
