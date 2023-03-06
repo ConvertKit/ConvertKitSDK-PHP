@@ -136,7 +136,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('GET account: %s, %s', $request, json_encode($options)));
 
-        return $this->make_request($request, 'GET', $options);
+        return $this->get($request, $options);
     }
 
 
@@ -155,7 +155,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('GET sequences: %s, %s', $request, json_encode($options)));
 
-        return $this->make_request($request, 'GET', $options);
+        return $this->get($request, $options);
     }
 
 
@@ -185,7 +185,7 @@ class ConvertKit_API
             )
         );
 
-        return $this->make_request($request, 'GET', $options);
+        return $this->get($request, $options);
     }
 
 
@@ -216,7 +216,7 @@ class ConvertKit_API
             )
         );
 
-        return $this->make_request($request, 'POST', $options);
+        return $this->post($request, $options);
     }
 
 
@@ -242,7 +242,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('POST add tag: %s, %s, %s', $request, json_encode($options), $tag));
 
-        return $this->make_request($request, 'POST', $options);
+        return $this->post($request, $options);
     }
 
 
@@ -275,7 +275,7 @@ class ConvertKit_API
 
             $this->create_log(sprintf('GET request %s, %s', $request, json_encode($options)));
 
-            $resources = $this->make_request($request, 'GET', $options);
+            $resources = $this->get($request, $options);
 
             if (!$resources) {
                 $this->create_log('No resources');
@@ -369,7 +369,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('POST form subscribe: %s, %s, %s', $request, json_encode($options), $form_id));
 
-        return $this->make_request($request, 'POST', $options);
+        return $this->post($request, $options);
     }
 
 
@@ -394,7 +394,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('PUT form unsubscribe: %s, %s', $request, json_encode($options)));
 
-        return $this->make_request($request, 'PUT', $options);
+        return $this->put($request, $options);
     }
 
 
@@ -431,7 +431,7 @@ class ConvertKit_API
             )
         );
 
-        $subscribers = $this->make_request($request, 'GET', $options);
+        $subscribers = $this->get($request, $options);
 
         if (!$subscribers) {
             $this->create_log('No subscribers');
@@ -473,7 +473,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('GET subscriber tags: %s, %s, %s', $request, json_encode($options), $subscriber_id));
 
-        return $this->make_request($request, 'GET', $options);
+        return $this->get($request, $options);
     }
 
 
@@ -500,7 +500,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('GET subscriber tags: %s, %s, %s', $request, json_encode($options), $subscriber_id));
 
-        return $this->make_request($request, 'GET', $options);
+        return $this->get($request, $options);
     }
 
 
@@ -525,7 +525,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('GET list purchases: %s, %s', $request, json_encode($options)));
 
-        return $this->make_request($request, 'GET', $options);
+        return $this->get($request, $options);
     }
 
 
@@ -550,7 +550,7 @@ class ConvertKit_API
 
         $this->create_log(sprintf('POST create purchase: %s, %s', $request, json_encode($options)));
 
-        return $this->make_request($request, 'POST', $options);
+        return $this->post($request, $options);
     }
 
 
@@ -694,6 +694,65 @@ class ConvertKit_API
         return $markup;
     }
 
+    /**
+     * Performs a GET request to the API.
+     *
+     * @param string $endpoint API Endpoint.
+     * @param array  $args     Request arguments.
+     *
+     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
+     * @return false|mixed
+     */
+    public function get(string $endpoint, array $args = [])
+    {
+        return $this->make_request($endpoint, 'GET', $args);
+    }
+
+    /**
+     * Performs a POST request to the API.
+     *
+     * @param string $endpoint API Endpoint.
+     * @param array  $args     Request arguments.
+     *
+     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
+     * @return false|mixed
+     */
+    public function post(string $endpoint, array $args = [])
+    {
+        return $this->make_request($endpoint, 'POST', $args);
+    }
+
+    /**
+     * Performs a PUT request to the API.
+     *
+     * @param string $endpoint API Endpoint.
+     * @param array  $args     Request arguments.
+     *
+     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
+     * @return false|mixed
+     */
+    public function put(string $endpoint, array $args = [])
+    {
+        return $this->make_request($endpoint, 'PUT', $args);
+    }
+
+    /**
+     * Performs a DELETE request to the API.
+     *
+     * @param string $endpoint API Endpoint.
+     * @param array  $args     Request arguments.
+     *
+     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
+     * @return false|mixed
+     */
+    public function delete(string $endpoint, array $args = [])
+    {
+        return $this->make_request($endpoint, 'DELETE', $args);
+    }
 
     /**
      * Performs an API request using Guzzle.
