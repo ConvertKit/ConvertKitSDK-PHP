@@ -169,7 +169,7 @@ class ConvertKit_API
      */
     public function get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc')
     {
-        $request = sprintf('/sequences/%s/subscriptions', $sequence_id);
+        $request = sprintf('sequences/%s/subscriptions', $sequence_id);
 
         $options = [
             'api_secret' => $this->api_secret,
@@ -199,7 +199,7 @@ class ConvertKit_API
      */
     public function add_subscriber_to_sequence(int $sequence_id, string $email)
     {
-        $request = sprintf('/courses/%s/subscribe', $sequence_id);
+        $request = sprintf('courses/%s/subscribe', $sequence_id);
 
         $options = [
             'api_key' => $this->api_key,
@@ -236,7 +236,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = sprintf('/tags/%s/subscribe', $tag);
+        $request = sprintf('tags/%s/subscribe', $tag);
 
         $options['api_key'] = $this->api_key;
 
@@ -369,7 +369,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = sprintf('/forms/%s/subscribe', $form_id);
+        $request = sprintf('forms/%s/subscribe', $form_id);
 
         $options['api_key'] = $this->api_key;
 
@@ -471,7 +471,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = sprintf('/subscribers/%s', $subscriber_id);
+        $request = sprintf('subscribers/%s', $subscriber_id);
 
         $options = [
             'api_secret' => $this->api_secret,
@@ -498,7 +498,7 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = sprintf('/subscribers/%s/tags', $subscriber_id);
+        $request = sprintf('subscribers/%s/tags', $subscriber_id);
 
         $options = [
             'api_key' => $this->api_key,
