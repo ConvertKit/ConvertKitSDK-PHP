@@ -54,5 +54,8 @@
 
         <!-- Permit padding surrounding a concat operator -->
         <exclude name="Squiz.Strings.ConcatenationSpacing.PaddingFound" />
+
+        <!-- Don't require break to align with switch -->
+        <exclude name="Squiz.ControlStructures.SwitchDeclaration.BreakIndent" />
     </rule>
 </ruleset>

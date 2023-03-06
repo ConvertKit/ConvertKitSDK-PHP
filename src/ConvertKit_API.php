@@ -128,15 +128,12 @@ class ConvertKit_API
      */
     public function get_account()
     {
-        $request = 'account';
-
-        $options = [
-            'api_secret' => $this->api_secret,
-        ];
-
-        $this->create_log(sprintf('GET account: %s, %s', $request, json_encode($options)));
-
-        return $this->get($request, $options);
+        return $this->get(
+            'account',
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
 
@@ -147,15 +144,12 @@ class ConvertKit_API
      */
     public function get_sequences()
     {
-        $request = 'sequences';
-
-        $options = [
-            'api_key' => $this->api_key,
-        ];
-
-        $this->create_log(sprintf('GET sequences: %s, %s', $request, json_encode($options)));
-
-        return $this->get($request, $options);
+        return $this->get(
+            'sequences',
+            [
+                'api_key' => $this->api_key,
+            ]
+        );
     }
 
 
@@ -169,23 +163,13 @@ class ConvertKit_API
      */
     public function get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc')
     {
-        $request = sprintf('/sequences/%s/subscriptions', $sequence_id);
-
-        $options = [
-            'api_secret' => $this->api_secret,
-            'sort_order' => $sort_order,
-        ];
-
-        $this->create_log(
-            sprintf(
-                'GET sequence subscriptions: %s, %s, %s',
-                $request,
-                json_encode($options),
-                $sequence_id
-            )
+        return $this->get(
+            sprintf('sequences/%s/subscriptions', $sequence_id),
+            [
+                'api_secret' => $this->api_secret,
+                'sort_order' => $sort_order,
+            ]
         );
-
-        return $this->get($request, $options);
     }
 
 
@@ -199,24 +183,13 @@ class ConvertKit_API
      */
     public function add_subscriber_to_sequence(int $sequence_id, string $email)
     {
-        $request = sprintf('/courses/%s/subscribe', $sequence_id);
-
-        $options = [
-            'api_key' => $this->api_key,
-            'email'   => $email,
-        ];
-
-        $this->create_log(
-            sprintf(
-                'POST add subscriber to sequence: %s, %s, %s, %s',
-                $request,
-                json_encode($options),
-                $sequence_id,
-                $email
-            )
+        return $this->post(
+            sprintf('courses/%s/subscribe', $sequence_id),
+            [
+                'api_key' => $this->api_key,
+                'email'   => $email,
+            ]
         );
-
-        return $this->post($request, $options);
     }
 
 
@@ -236,13 +209,13 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = sprintf('/tags/%s/subscribe', $tag);
-
+        // Add API Key to array of options.
         $options['api_key'] = $this->api_key;
 
-        $this->create_log(sprintf('POST add tag: %s, %s, %s', $request, json_encode($options), $tag));
-
-        return $this->post($request, $options);
+        return $this->post(
+            sprintf('tags/%s/subscribe', $tag),
+            $options
+        );
     }
 
 
@@ -264,90 +237,111 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        if (! array_key_exists($resource, $this->resources)) {
-            $options = [
+        // Return cached resource if it exists.
+        if (array_key_exists($resource, $this->resources)) {
+            return $this->resources[$resource];
+        }
+
+        // Assign the resource to the request variable.
+        $request = $resource;
+
+        // Landing pages are included in the /forms endpoint.
+        if ($resource === 'landing_pages') {
+            $request = 'forms';
+        }
+
+        // Fetch resources.
+        $resources = $this->get(
+            $request,
+            [
                 'api_key'         => $this->api_key,
                 'timeout'         => 10,
                 'Accept-Encoding' => 'gzip',
-            ];
+            ]
+        );
 
-            // Assign the resource to the request variable.
-            $request = $resource;
+        $this->create_log(sprintf('%s response %s', $resource, json_encode($resources)));
 
-            // Landing pages are included in the /forms endpoint.
-            if ($resource === 'landing_pages') {
-                $request = 'forms';
-            }
+        // Return a blank array if no resources exist.
+        if (!$resources) {
+            $this->create_log('No resources');
+            return [];
+        }
 
-            $this->create_log(sprintf('GET request %s, %s', $request, json_encode($options)));
+        // Build array of resources.
+        $_resource = [];
+        switch ($resource) {
+            // Forms.
+            case 'forms':
+                // Bail if no forms are set.
+                if (!isset($resources->forms)) {
+                    $this->create_log('No form resources');
+                    return [];
+                }
 
-            $resources = $this->get($request, $options);
-
-            if (!$resources) {
-                $this->create_log('No resources');
-                $this->resources[$resource] = [
-                    [
-                        'id'   => '-2',
-                        'name' => 'Error contacting API',
-                    ],
-                ];
-            } else {
-                $_resource = [];
-
-                if ('forms' === $resource) {
-                    $response = [];
-                    if (isset($resources->forms)) {
-                        $response = $resources->forms;
+                // Exclude archived forms.
+                foreach ($resources->forms as $form) {
+                    if (isset($form->archived) && $form->archived) {
+                        continue;
                     }
 
-                    $this->create_log(sprintf('forms response %s', json_encode($response)));
-                    foreach ($response as $form) {
-                        if (isset($form->archived) && $form->archived) {
-                            continue;
-                        }
+                    $_resource[] = $form;
+                }
+                break;
 
-                        $_resource[] = $form;
-                    }
-                } else if ('landing_pages' === $resource) {
-                    $response = [];
-                    if (isset($resources->forms)) {
-                        $response = $resources->forms;
-                    }
+            // Landing Pages.
+            case 'landing_pages':
+                // Bail if no landing pages are set.
+                if (!isset($resources->forms)) {
+                    $this->create_log('No landing page resources');
+                    return [];
+                }
 
-                    $this->create_log(sprintf('landing_pages response %s', json_encode($response)));
-                    foreach ($response as $landing_page) {
-                        if ('hosted' === $landing_page->type) {
-                            if (isset($landing_page->archived) && $landing_page->archived) {
-                                continue;
-                            }
-
-                            $_resource[] = $landing_page;
-                        }
-                    }
-                } else if ('subscription_forms' === $resource) {
-                    $this->create_log('subscription_forms');
-                    foreach ($resources as $mapping) {
-                        if (isset($mapping->archived) && $mapping->archived) {
-                            continue;
-                        }
-
-                        $_resource[$mapping->id] = $mapping->form_id;
-                    }
-                } else if ('tags' === $resource) {
-                    $response = [];
-                    if (isset($resources->tags)) {
-                        $response = $resources->tags;
+                // Exclude forms and archived forms/landing pages.
+                foreach ($resources->forms as $form) {
+                    if (isset($form->archived) && $form->archived) {
+                        continue;
                     }
 
-                    $this->create_log(sprintf('tags response %s', json_encode($response)));
-                    foreach ($response as $tag) {
-                        $_resource[] = $tag;
+                    if ($form->type !== 'hosted') {
+                        continue;
                     }
-                }//end if
 
-                $this->resources[$resource] = $_resource;
-            }//end if
-        }//end if
+                    $_resource[] = $form;
+                }
+                break;
+
+            // Subscription Forms.
+            case 'subscription_forms':
+                // Exclude archived subscription forms.
+                foreach ($resources as $mapping) {
+                    if (isset($mapping->archived) && $mapping->archived) {
+                        continue;
+                    }
+
+                    $_resource[$mapping->id] = $mapping->form_id;
+                }
+                break;
+
+            // Tags.
+            case 'tags':
+                // Bail if no tags are set.
+                if (!isset($resources->tags)) {
+                    $this->create_log('No tag resources');
+                    return [];
+                }
+
+                foreach ($resources->tags as $tag) {
+                    $_resource[] = $tag;
+                }
+                break;
+
+            default:
+                throw new \InvalidArgumentException('An unsupported resource was specified.');
+        }//end switch
+
+        // Cache resources and return.
+        $this->resources[$resource] = $_resource;
 
         return $this->resources[$resource];
     }
@@ -369,13 +363,10 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = sprintf('/forms/%s/subscribe', $form_id);
-
+        // Add API Key to array of options.
         $options['api_key'] = $this->api_key;
 
-        $this->create_log(sprintf('POST form subscribe: %s, %s, %s', $request, json_encode($options), $form_id));
-
-        return $this->post($request, $options);
+        return $this->post(sprintf('forms/%s/subscribe', $form_id), $options);
     }
 
 
@@ -394,13 +385,10 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = 'unsubscribe';
-
+        // Add API Secret to array of options.
         $options['api_secret'] = $this->api_secret;
 
-        $this->create_log(sprintf('PUT form unsubscribe: %s, %s', $request, json_encode($options)));
-
-        return $this->put($request, $options);
+        return $this->put('unsubscribe', $options);
     }
 
 
@@ -420,24 +408,14 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = 'subscribers';
-
-        $options = [
-            'api_secret'    => $this->api_secret,
-            'status'        => 'all',
-            'email_address' => $email_address,
-        ];
-
-        $this->create_log(
-            sprintf(
-                'GET subscriber id from all subscribers: %s, %s, %s',
-                $request,
-                json_encode($options),
-                $email_address
-            )
+        $subscribers = $this->get(
+            'subscribers',
+            [
+                'api_secret'    => $this->api_secret,
+                'status'        => 'all',
+                'email_address' => $email_address,
+            ]
         );
-
-        $subscribers = $this->get($request, $options);
 
         if (!$subscribers) {
             $this->create_log('No subscribers');
@@ -471,15 +449,12 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = sprintf('/subscribers/%s', $subscriber_id);
-
-        $options = [
-            'api_secret' => $this->api_secret,
-        ];
-
-        $this->create_log(sprintf('GET subscriber tags: %s, %s, %s', $request, json_encode($options), $subscriber_id));
-
-        return $this->get($request, $options);
+        return $this->get(
+            sprintf('subscribers/%s', $subscriber_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
 
@@ -498,15 +473,12 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = sprintf('/subscribers/%s/tags', $subscriber_id);
-
-        $options = [
-            'api_key' => $this->api_key,
-        ];
-
-        $this->create_log(sprintf('GET subscriber tags: %s, %s, %s', $request, json_encode($options), $subscriber_id));
-
-        return $this->get($request, $options);
+        return $this->get(
+            sprintf('subscribers/%s/tags', $subscriber_id),
+            [
+                'api_key' => $this->api_key,
+            ]
+        );
     }
 
 
@@ -525,13 +497,10 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = 'purchases';
-
+        // Add API Secret to array of options.
         $options['api_secret'] = $this->api_secret;
 
-        $this->create_log(sprintf('GET list purchases: %s, %s', $request, json_encode($options)));
-
-        return $this->get($request, $options);
+        return $this->get('purchases', $options);
     }
 
 
@@ -550,13 +519,10 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        $request = 'purchases';
-
+        // Add API Secret to array of options.
         $options['api_secret'] = $this->api_secret;
 
-        $this->create_log(sprintf('POST create purchase: %s, %s', $request, json_encode($options)));
-
-        return $this->post($request, $options);
+        return $this->post('purchases', $options);
     }
 
 
@@ -712,6 +678,10 @@ class ConvertKit_API
      */
     public function get(string $endpoint, array $args = [])
     {
+        // Log if debugging enabled.
+        $this->create_log(sprintf('GET %s: %s', $endpoint, json_encode($args)));
+
+        // Make request and return results.
         return $this->make_request($endpoint, 'GET', $args);
     }
 
@@ -727,6 +697,10 @@ class ConvertKit_API
      */
     public function post(string $endpoint, array $args = [])
     {
+        // Log if debugging enabled.
+        $this->create_log(sprintf('POST %s: %s', $endpoint, json_encode($args)));
+
+        // Make request and return results.
         return $this->make_request($endpoint, 'POST', $args);
     }
 
@@ -742,6 +716,10 @@ class ConvertKit_API
      */
     public function put(string $endpoint, array $args = [])
     {
+        // Log if debugging enabled.
+        $this->create_log(sprintf('PUT %s: %s', $endpoint, json_encode($args)));
+
+        // Make request and return results.
         return $this->make_request($endpoint, 'PUT', $args);
     }
 
@@ -757,6 +735,10 @@ class ConvertKit_API
      */
     public function delete(string $endpoint, array $args = [])
     {
+        // Log if debugging enabled.
+        $this->create_log(sprintf('DELETE %s: %s', $endpoint, json_encode($args)));
+
+        // Make request and return results.
         return $this->make_request($endpoint, 'DELETE', $args);
     }
 
@@ -777,10 +759,12 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
+        // Build URL.
         $url = $this->api_url_base . $this->api_version . '/' . $endpoint;
 
         $this->create_log(sprintf('Making request on %s.', $url));
 
+        // Build request body.
         $request_body = json_encode($args);
 
         $this->create_log(sprintf('%s, Request body: %s', $method, $request_body));
@@ -803,11 +787,13 @@ class ConvertKit_API
             );
         }
 
+        // Send request.
         $response = $this->client->send(
             $request,
             ['exceptions' => false]
         );
 
+        // Inspect response.
         $status_code = $response->getStatusCode();
 
         // If not between 200 and 300.
@@ -816,6 +802,7 @@ class ConvertKit_API
             return false;
         }
 
+        // Inspect response body.
         $response_body = json_decode($response->getBody()->getContents());
 
         if ($response_body) {
