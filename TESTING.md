@@ -36,6 +36,26 @@ If a test fails, you can inspect the output.
 
 Any errors should be corrected by making applicable code or test changes.
 
+## Run PHP CodeSniffer
+
+[PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) checks that all code meets the [PSR-12 Coding Standards](https://www.php-fig.org/psr/psr-12/).
+
+To run CodeSniffer on tests, enter the following command:
+
+```bash
+vendor/bin/phpcs
+```
+
+Any errors should be corrected by either:
+- making applicable code changes
+- (Experimental) running `vendor/bin/phpcbf` to automatically fix coding standards
+
+Need to change the coding standard rules applied?  Either:
+- ignore a rule in the affected code, by adding `phpcs:ignore {rule}`, where {rule} is the given rule that failed in the above output.
+- edit the [phpcs.tests.xml](phpcs.xml) file.
+
+**Rules can be ignored with caution**, but it's essential that rules relating to coding style and inline code commenting / docblocks remain.
+
 ## Run PHP CodeSniffer for Tests
 
 [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) checks that all test code meets the [PSR-12 Coding Standards](https://www.php-fig.org/psr/psr-12/).
