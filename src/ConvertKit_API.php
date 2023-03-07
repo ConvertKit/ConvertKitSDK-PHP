@@ -20,6 +20,13 @@ use GuzzleHttp\Psr7\Request;
 class ConvertKit_API
 {
     /**
+     * The SDK version.
+     *
+     * @var string
+     */
+    public const VERSION = '1.0.0';
+
+    /**
      * ConvertKit API Key
      *
      * @var string
@@ -95,7 +102,15 @@ class ConvertKit_API
         $this->api_key    = $api_key;
         $this->api_secret = $api_secret;
         $this->debug      = $debug;
-        $this->client     = new Client();
+
+        // Specify a User-Agent for API requests.
+        $this->client = new Client(
+            [
+                'headers' => [
+                    'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                ],
+            ]
+        );
 
         if ($debug) {
             $this->debug_logger = new Logger('ck-debug');
@@ -368,7 +383,7 @@ class ConvertKit_API
 
         return $this->post(
             sprintf('forms/%s/subscribe', $form_id),
-            $option
+            $options
         );
     }
 
