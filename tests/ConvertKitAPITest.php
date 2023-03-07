@@ -2,341 +2,626 @@
 
 use PHPUnit\Framework\TestCase;
 
-class ConvertKitAPITest extends TestCase {
+/**
+ * ConvertKit API class tests.
+ */
+class ConvertKitAPITest extends TestCase
+{
+    /**
+     * ConvertKit Class Object
+     *
+     * @var object
+     */
+    protected $api;
 
-	/**
-	 * ConvertKit Class Object
-	 *
-	 * @var object
-	 */
-	protected $api;
+    /**
+     * Load .env configuration into $_ENV superglobal, and initialize the API
+     * class before each test.
+     *
+     * @since   1.0.0
+     *
+     * @return  void
+     */
+    protected function setUp(): void
+    {
+        // Load environment credentials from root folder.
+        $dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__FILE__)));
+        $dotenv->load();
 
-	/**
-	 * Test subscribed user email
-	 *
-	 * @var string
-	 */
-	protected $test_email;
+        // Setup API.
+        $this->api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET']);
+    }
 
-	/**
-	 * Test subscribed user id
-	 *
-	 * @var string
-	 */
-	protected $test_user_id;
+    /**
+     * Test that a ClientException is thrown when invalid API credentials are supplied.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testInvalidAPICredentials()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $api = new \ConvertKit_API\ConvertKit_API('fakeApiKey', 'fakeApiSecret');
+        $result = $api->get_account();
+    }
 
-	/**
-	 * Test tag id
-	 *
-	 * @var int
-	 */
-	protected $test_tag_id;
+    /**
+     * Test that get_account() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetAccount()
+    {
+        $result = $this->api->get_account();
+        $this->assertInstanceOf('stdClass', $result);
 
-	/**
-	 * Form url
-	 *
-	 * @var int
-	 */
-	protected $test_form_url;
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('name', $result);
+        $this->assertArrayHasKey('plan_type', $result);
+        $this->assertArrayHasKey('primary_email_address', $result);
+    }
 
-	/**
-	 * Form id
-	 *
-	 * @var int
-	 */
-	protected $test_form_id;
+    /**
+     * Test that get_sequences() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequences()
+    {
+        $result = $this->api->get_sequences();
+        $this->assertInstanceOf('stdClass', $result);
 
-	protected function setUp() {
+        // Check first sequence in resultset has expected data.
+        $sequence = get_object_vars($result->courses[0]);
+        $this->assertArrayHasKey('id', $sequence);
+        $this->assertArrayHasKey('name', $sequence);
+        $this->assertArrayHasKey('hold', $sequence);
+        $this->assertArrayHasKey('repeat', $sequence);
+        $this->assertArrayHasKey('created_at', $sequence);
+    }
 
-		include_once( dirname(__FILE__) . "/config.php" );
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptions()
+    {
+        $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID']);
+        $this->assertInstanceOf('stdClass', $result);
 
-		$api_key             = CONVERTKIT_PUBLIC_KEY;
-		$api_secret          = CONVERTKIT_SECRET_KEY;
-		$this->test_email    = CONVERTKIT_TESTING_EMAIL;
-		$this->test_user_id  = CONVERTKIT_TESTING_USER_ID;
-		$this->test_form_id  = CONVERTKIT_TESTING_FORM_ID;
-		$this->test_tag_id   = CONVERTKIT_TESTING_TAG_ID;
-		$this->test_form_url = CONVERTKIT_TESTING_FORM_URL;
+        // Assert expected keys exist.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
 
-		$this->api = new \ConvertKit_API\ConvertKit_API($api_key, $api_secret);
-	}
+        // Assert subscriptions exist.
+        $this->assertIsArray($result['subscriptions']);
 
-	/**
-	 * @dataProvider inputGetResourcesArguments
-	 * @expectedException InvalidArgumentException
-	 *
-	 * @param $input
-	 */
-	public function testGetResourcesArguments($input) {
-		$this->api->get_resources($input);
-	}
+        // Assert sort order is ascending.
+        $this->assertGreaterThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
 
-	/**
-	 * Data provider for @testGetResourcesArguments
-	 *
-	 * @return array
-	 */
-	public function inputGetResourcesArguments() {
-		return [
-			[2],
-			[['2', '1']],
-			[new stdClass()]
-		];
-	}
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data in descending order.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithDescSortOrder()
+    {
+        $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'desc');
+        $this->assertInstanceOf('stdClass', $result);
 
-	/**
-	 * @dataProvider inputGetSubscriberId
-	 * @expectedException InvalidArgumentException
-	 *
-	 * @param $input
-	 */
-	public function testArgumentsGetSubscriberId($input) {
-		$this->api->get_subscriber_id($input);
-	}
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
 
-	/**
-	 * Data provider for @testGetSubscriberId
-	 *
-	 * @return array
-	 */
-	public function inputGetSubscriberId() {
-		return [
-			[2],
-			[['2', '1']],
-			[new stdClass()],
-			['teststring'],
-			['teststring@']
-		];
-	}
+        // Assert subscriptions exist.
+        $this->assertIsArray($result['subscriptions']);
 
-	/**
-	 * @dataProvider inputGetSubscriber
-	 * @expectedException InvalidArgumentException
-	 *
-	 * @param $input
-	 */
-	public function testArgumentsGetSubscriber($input) {
-		$this->api->get_subscriber($input);
-	}
+        // Assert sort order.
+        $this->assertLessThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
 
-	/**
-	 * Data provider for @testGetSubscriber
-	 *
-	 * @return array
-	 */
-	public function inputGetSubscriber() {
-		return [
-			[['2', '1']],
-			[new stdClass()],
-			['teststring'],
-			[1.2],
-			[-10],
-		];
-	}
+    /**
+     * Test that get_sequence_subscriptions() throws a ClientException when an invalid
+     * sequence ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithInvalidSequenceID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->get_sequence_subscriptions(12345);
+    }
 
-	/**
-	 * @dataProvider inputAddTag
-	 * @expectedException InvalidArgumentException
-	 *
-	 * @param $tag
-	 * @param $options
-	 */
-	public function testArgumentsAddTag($tag, $options) {
-		$this->api->add_tag($tag, $options);
-	}
+    /**
+     * Test that get_sequence_subscriptions() throws a ClientException when an invalid
+     * sort order is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithInvalidSortOrder()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'invalidSortOrder');
+    }
 
-	/**
-	 * Data provider for @testAddTag
-	 *
-	 * @return array
-	 */
-	public function inputAddTag() {
-		return [
-			[['2', '1'], 1],
-			[new stdClass(), 2],
-			['teststring', 3],
-			[3, 3],
-		];
-	}
+    /**
+     * Test that add_subscriber_to_sequence() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequence()
+    {
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $this->generateEmailAddress()
+        );
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+    }
 
-	public function testIncorrectApiData() {
-		$api_key = 'test';
-		$api_secret =  'test';
+    /**
+     * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
+     * sequence is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithInvalidSequenceID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->add_subscriber_to_sequence(12345, $this->generateEmailAddress());
+    }
 
-		$test_client = new \ConvertKit_API\ConvertKit_API($api_key, $api_secret);
-		$this->assertFalse($test_client->get_subscriber_id($this->test_email));
-		$this->assertFalse($test_client->get_subscriber($this->test_user_id));
-		$this->assertFalse($test_client->get_subscriber_tags($this->test_user_id));
-	}
+    /**
+     * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithInvalidEmailAddress()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->add_subscriber_to_sequence($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'not-an-email-address');
+    }
 
-	/**
-	 * Get subscriber id by email
-	 */
-	public function testGetSubscriberId() {
-		$subscriber_id = $this->api->get_subscriber_id($this->test_email);
-		$this->assertInternalType("int", $subscriber_id);
-	}
+    /**
+     * Test that add_tag() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddTag()
+    {
+        $result = $this->api->add_tag((int) $_ENV['CONVERTKIT_API_TAG_ID'], [
+            'email' => $this->generateEmailAddress(),
+        ]);
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+    }
 
-	/**
-	 * Get subscriber by id
-	 */
-	public function testGetSubscriber() {
-		$subscriber = $this->api->get_subscriber($this->test_user_id);
-		$this->assertInstanceOf('stdClass', $subscriber);
-		$this->assertArrayHasKey('subscriber', get_object_vars($subscriber));
-		$this->assertArrayHasKey('id', get_object_vars($subscriber->subscriber));
-		$this->assertEquals(get_object_vars($subscriber->subscriber)['id'], $this->test_user_id);
-	}
+    /**
+     * Test that get_resources() for Forms returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourcesForms()
+    {
+        $result = $this->api->get_resources('forms');
+        $this->assertIsArray($result);
+    }
 
-	/**
-	 * Get subscriber tags
-	 */
-	public function testGetSubscriberTags() {
-		$subscriber = $this->api->get_subscriber_tags($this->test_user_id);
-		$this->assertInstanceOf('stdClass', $subscriber);
-		$this->assertArrayHasKey('tags', get_object_vars($subscriber));
-	}
+    /**
+     * Test that get_resources() for Landing Pages returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourcesLandingPages()
+    {
+        $result = $this->api->get_resources('landing_pages');
+        $this->assertIsArray($result);
+    }
 
-	/**
-	 * Subscribe and unsubscribe from form
-	 */
-	public function testUserActions() {
+    /**
+     * Test that get_resources() for Subscription Forms returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourcesSubscriptionForms()
+    {
+        $result = $this->api->get_resources('subscription_forms');
+        $this->assertIsArray($result);
+    }
 
-		$random_email = str_shuffle('1234567890') . 'test@growdevelopment.com';
+    /**
+     * Test that get_resources() for Tags returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourcesTags()
+    {
+        $result = $this->api->get_resources('tags');
+        $this->assertIsArray($result);
+    }
 
-		/*
-		 * Subscribe
-		 */
-		$options = [
-			'email'      => $random_email,
-			'name'       => 'Full Name',
-			'first_name' => 'First Name',
-			'tags'       => $this->test_tag_id,
-			'fields'     => [
-				'phone' => 134567891243,
-				'shirt_size' => 'M',
-				'website_url' => 'testurl.com'
-			]
-		];
+    /**
+     * Test that get_resources() throws a ClientException when an invalid
+     * resource type is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourcesInvalidResourceType()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->get_resources('invalid-resource-type');
+        $this->assertIsArray($result);
+    }
 
-		$subscribed = $this->api->form_subscribe($this->test_form_id, $options);
-		$this->assertInstanceOf('stdClass', $subscribed);
-		$this->assertArrayHasKey('subscription', get_object_vars($subscribed));
-		$this->assertArrayHasKey('id', get_object_vars($subscribed->subscription));
-		$this->assertEquals(get_object_vars($subscribed->subscription)['subscribable_id'], $this->test_form_id);
+    /**
+     * Test that form_subscribe() and form_unsubscribe() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testFormSubscribe()
+    {
+        // Subscribe.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->form_subscribe((int) $_ENV['CONVERTKIT_API_FORM_ID'], [
+            'email' =>  $email,
+        ]);
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscription));
+        $this->assertEquals(get_object_vars($result->subscription)['subscribable_id'], $_ENV['CONVERTKIT_API_FORM_ID']);
 
-		/*
-		 * Add tag
-		 */
-		$added_tag = $this->api->add_tag($this->test_tag_id, [
-			'email' => $random_email
-		]);
-		$this->assertInstanceOf('stdClass', $added_tag);
-		$this->assertArrayHasKey('subscription', get_object_vars($added_tag));
-		$this->assertArrayHasKey('id', get_object_vars($added_tag->subscription));
-		$this->assertEquals(get_object_vars($added_tag->subscription)['subscribable_id'], $this->test_tag_id);
-		$this->assertEquals(get_object_vars($added_tag->subscription)['subscribable_type'], 'tag');
+        // Unsubscribe.
+        $result = $this->api->form_unsubscribe([
+            'email' =>  $email,
+        ]);
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('email_address', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['email_address'], $email);
+    }
 
-		/*
-		 * Purchase
-		 */
-		$purchase_options = [
-			'purchase' => [
-				'email_address'  => $random_email,
-				'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
-				'subtotal'       => 20.00,
-				'tax'            => 2.00,
-				'shipping'       => 2.00,
-				'discount'       => 3.00,
-				'total'          => 21.00,
-				'status'         => 'paid',
-				'products'       => array(
-					0 => array(
-						'name' => 'Floppy Disk (512k)',
-						'sku' => '7890-ijkl',
-						'unit_price' => 5.00,
-						'quantity' => 2
-					)
-				)
-			]
-		];
-		$purchase = $this->api->create_purchase($purchase_options);
-		$this->assertInstanceOf('stdClass', $purchase);
-		$this->assertArrayHasKey('transaction_id', get_object_vars($purchase));
+    /**
+     * Test that form_subscribe() throws a ClientException when an invalid
+     * form ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testFormSubscribeWithInvalidFormID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->form_subscribe(12345, [
+            'email' =>  $this->generateEmailAddress(),
+        ]);
+    }
 
-		/*
-		 * Unsubscribe
-		 */
-		$unsubscribed = $this->api->form_unsubscribe([
-			'email' => $random_email
-		]);
+    /**
+     * Test that get_subscriber_id() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberID()
+    {
+        $subscriber_id = $this->api->get_subscriber_id($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
+        $this->assertIsInt($subscriber_id);
+        $this->assertEquals($subscriber_id, (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+    }
 
-		$this->assertInstanceOf('stdClass', $unsubscribed);
-		$this->assertArrayHasKey('subscriber', get_object_vars($unsubscribed));
-		$this->assertArrayHasKey('email_address', get_object_vars($unsubscribed->subscriber));
-		$this->assertEquals(get_object_vars($unsubscribed->subscriber)['email_address'], $random_email);
+    /**
+     * Test that get_subscriber_id() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberIDWithInvalidEmailAddress()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $result = $this->api->get_subscriber_id('not-an-email-address');
+    }
 
-	}
+    /**
+     * Test that get_subscriber_id() return false when no subscriber found
+     * matching the given email address.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberIDWithNotSubscribedEmailAddress()
+    {
+        $result = $this->api->get_subscriber_id('not-a-subscriber@test.com');
+        $this->assertFalse($result);
+    }
 
-	/**
-	 * List purchases
-	 */
-	public function testListPurchases() {
+    /**
+     * Test that get_subscriber() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriber()
+    {
+        $subscriber = $this->api->get_subscriber((int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertInstanceOf('stdClass', $subscriber);
+        $this->assertArrayHasKey('subscriber', get_object_vars($subscriber));
+        $this->assertArrayHasKey('id', get_object_vars($subscriber->subscriber));
+        $this->assertEquals(
+            get_object_vars($subscriber->subscriber)['id'],
+            (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+        );
+    }
 
-		$list_purchases = $this->api->list_purchases(['page' => 1]);
-		$this->assertInstanceOf('stdClass', $list_purchases);
-		$this->assertArrayHasKey('total_purchases', get_object_vars($list_purchases));
-		$this->assertArrayHasKey('page', get_object_vars($list_purchases));
-		$this->assertArrayHasKey('total_pages', get_object_vars($list_purchases));
-		$this->assertArrayHasKey('purchases', get_object_vars($list_purchases));
+    /**
+     * Test that get_subscriber() throws a ClientException when an invalid
+     * subscriber ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberWithInvalidSubscriberID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $subscriber = $this->api->get_subscriber(12345);
+    }
 
-	}
+    /**
+     * Test that get_subscriber_tags() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberTags()
+    {
+        $subscriber = $this->api->get_subscriber_tags((int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertInstanceOf('stdClass', $subscriber);
+        $this->assertArrayHasKey('tags', get_object_vars($subscriber));
+    }
 
-	/**
-	 * Get resources
-	 */
-	public function testGetResources() {
+    /**
+     * Test that get_subscriber_tags() throws a ClientException when an invalid
+     * subscriber ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberTagsWithInvalidSubscriberID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $subscriber = $this->api->get_subscriber_tags(12345);
+    }
 
-		$resources = ['forms', 'landing_pages', 'tags'];
+    /**
+     * Test that list_purchases() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testListPurchases()
+    {
+        $purchases = $this->api->list_purchases([
+            'page' => 1,
+        ]);
+        $this->assertInstanceOf('stdClass', $purchases);
+        $this->assertArrayHasKey('total_purchases', get_object_vars($purchases));
+        $this->assertArrayHasKey('page', get_object_vars($purchases));
+        $this->assertArrayHasKey('total_pages', get_object_vars($purchases));
+        $this->assertArrayHasKey('purchases', get_object_vars($purchases));
+    }
 
-		foreach ($resources as $resource) {
-			$get_resources = $this->api->get_resources($resource);
-			$this->assertTrue(is_array($get_resources) || empty($get_resources));
-			if(count($get_resources) > 0) {
-				$get_resource = $get_resources[0];
-				$this->assertInstanceOf('stdClass', $get_resource);
-				$this->assertArrayHasKey('id', get_object_vars($get_resource));
-				$this->assertArrayHasKey('name', get_object_vars($get_resource));
-			}
-		}
+    /**
+     * Test that create_purchase() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreatePurchase()
+    {
+        $purchase = $this->api->create_purchase([
+            'purchase' => [
+                'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
+                'email_address'  => $this->generateEmailAddress(),
+                'first_name'     => 'John',
+                'currency'       => 'usd',
+                'transaction_time' => date('Y-m-d H:i:s'),
+                'subtotal'       => 20.00,
+                'tax'            => 2.00,
+                'shipping'       => 2.00,
+                'discount'       => 3.00,
+                'total'          => 21.00,
+                'status'         => 'paid',
+                'products'       => [
+                    [
+                        'pid' => 9999,
+                        'lid' => 7777,
+                        'name' => 'Floppy Disk (512k)',
+                        'sku' => '7890-ijkl',
+                        'unit_price' => 5.00,
+                        'quantity' => 2
+                    ],
+                    [
+                        'pid' => 5555,
+                        'lid' => 7778,
+                        'name' => 'Telephone Cord (data)',
+                        'sku' => 'mnop-1234',
+                        'unit_price' => 10.00,
+                        'quantity' => 1
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertInstanceOf('stdClass', $purchase);
+        $this->assertArrayHasKey('transaction_id', get_object_vars($purchase));
+    }
 
-	}
+    /**
+     * Test that fetching a legacy form's markup works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceLegacyForm()
+    {
+        $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_FORM_URL']);
 
-	/**
-	 * Get subscription forms
-	 */
-	public function testGetLandingPages() {
-		$landing_pages = $this->api->get_resources('subscription_forms');
-		$this->assertTrue(is_array($landing_pages) || empty($landing_pages));
-	}
+        // Assert that the markup is HTML.
+        $this->assertTrue($this->isHtml($markup));
 
-	/**
-	 * Get resource by url
-	 */
-	public function testGetResource() {
-		$markup = $this->api->get_resource($this->test_form_url);
-		$this->assertTrue($this->isHtml($markup));
-	}
+        // Confirm that encoding works correctly.
+        $this->assertStringContainsString('Vantar þinn ungling sjálfstraust í stærðfræði?', $markup);
+    }
 
-	/**
-	 * Checks if string is html
-	 *
-	 * @param $string
-	 *
-	 * @return bool
-	 */
-	protected static function isHtml($string) {
-		return preg_match("/<[^<]+>/",$string,$m) != 0;
-	}
+    /**
+     * Test that fetching a landing page's markup works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceLandingPage()
+    {
+        $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 
+        // Assert that the markup is HTML.
+        $this->assertTrue($this->isHtml($markup));
+
+        // Confirm that encoding works correctly.
+        $this->assertStringContainsString('Vantar þinn ungling sjálfstraust í stærðfræði?', $markup);
+    }
+
+    /**
+     * Test that fetching a legacy landing page's markup works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceLegacyLandingPage()
+    {
+        $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
+
+        // Assert that the markup is HTML.
+        $this->assertTrue($this->isHtml($markup));
+
+        // Confirm that encoding works correctly.
+        $this->assertStringContainsString('Legacy Landing Page', $markup);
+    }
+
+    /**
+     * Test that get_resource() throws an InvalidArgumentException when an invalid
+     * URL is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceInvalidURL()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $markup = $this->api->get_resource('not-a-url');
+    }
+
+    /**
+     * Test that get_resource() throws a ClientException when an inaccessible
+     * URL is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetResourceInaccessibleURL()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $markup = $this->api->get_resource('https://convertkit.com/a/url/that/does/not/exist');
+    }
+
+    /**
+     * Generates a unique email address for use in a test, comprising of a prefix,
+     * date + time and PHP version number.
+     *
+     * This ensures that if tests are run in parallel, the same email address
+     * isn't used for two tests across parallel testing runs.
+     *
+     * @since   1.0.0
+     *
+     * @param   string $domain     Domain (default: convertkit.com).
+     *
+     * @return  string
+     */
+    private function generateEmailAddress($domain = 'convertkit.com')
+    {
+        return 'wordpress-' . date('Y-m-d-H-i-s') . '-php-' . PHP_VERSION_ID . '@' . $domain;
+    }
+
+    /**
+     * Checks if string is html
+     *
+     * @since   1.0.0
+     *
+     * @param   $string Possible HTML.
+     * @return  bool
+     */
+    private function isHtml($string)
+    {
+        return preg_match("/<[^<]+>/", $string, $m) != 0;
+    }
 }
