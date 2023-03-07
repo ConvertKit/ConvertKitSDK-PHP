@@ -366,7 +366,10 @@ class ConvertKit_API
         // Add API Key to array of options.
         $options['api_key'] = $this->api_key;
 
-        return $this->post(sprintf('forms/%s/subscribe', $form_id), $options);
+        return $this->post(
+            sprintf('forms/%s/subscribe', $form_id),
+            $option
+        );
     }
 
 
@@ -422,15 +425,13 @@ class ConvertKit_API
             return false;
         }
 
-        $subscriber_id = $this::check_if_subscriber_in_array($email_address, $subscribers->subscribers);
-
-        if ($subscriber_id) {
-            return $subscriber_id;
+        if ($subscribers->total_subscribers === 0) {
+            $this->create_log('No subscribers');
+            return false;
         }
 
-        $this->create_log('Subscriber not found');
-
-        return false;
+        // Return the subscriber's ID.
+        return $subscribers->subscribers[0]->id;
     }
 
 
@@ -811,28 +812,6 @@ class ConvertKit_API
         }
 
         $this->create_log('Failed to finish request.');
-        return false;
-    }
-
-
-    /**
-     * Looks for subscriber with email in array
-     *
-     * @param string $email_address Email Address.
-     * @param array  $subscribers   Subscribers.
-     *
-     * @return false|integer  false if not found, else subscriber object
-     */
-    private function check_if_subscriber_in_array(string $email_address, array $subscribers)
-    {
-        foreach ($subscribers as $subscriber) {
-            if ($subscriber->email_address === $email_address) {
-                $this->create_log('Subscriber found!');
-                return $subscriber->id;
-            }
-        }
-
-        $this->create_log('Subscriber not found on current page.');
         return false;
     }
 }
