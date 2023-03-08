@@ -211,8 +211,8 @@ class ConvertKit_API
     /**
      * Adds a tag to a subscriber
      *
-     * @param integer               $tag     Tag ID.
-     * @param array<string, mixed>  $options Array of user data.
+     * @param integer              $tag     Tag ID.
+     * @param array<string, mixed> $options Array of user data.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -638,14 +638,14 @@ class ConvertKit_API
      * DOM Elements.
      *
      * @param \DOMNodeList<\DOMElement> $elements  Elements.
-     * @param string       $attribute HTML Attribute.
-     * @param string       $url       Absolute URL to prepend to relative URLs.
+     * @param string                    $attribute HTML Attribute.
+     * @param string                    $url       Absolute URL to prepend to relative URLs.
      *
      * @since 1.0.0
      *
      * @return void
      */
-    private function convert_relative_to_absolute_urls(\DOMNodeList $elements, string $attribute, string $url)
+    private function convert_relative_to_absolute_urls(\DOMNodeList $elements, string $attribute, string $url) // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint, Generic.Files.LineLength.TooLong
     {
         // Anchor hrefs.
         foreach ($elements as $element) {
@@ -697,8 +697,8 @@ class ConvertKit_API
     /**
      * Performs a GET request to the API.
      *
-     * @param string                $endpoint API Endpoint.
-     * @param array<string,string>  $args     Request arguments.
+     * @param string               $endpoint API Endpoint.
+     * @param array<string,string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -716,8 +716,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string                $endpoint API Endpoint.
-     * @param array<string,string>  $args     Request arguments.
+     * @param string               $endpoint API Endpoint.
+     * @param array<string,string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -735,8 +735,8 @@ class ConvertKit_API
     /**
      * Performs a PUT request to the API.
      *
-     * @param string                $endpoint API Endpoint.
-     * @param array<string,string>  $args     Request arguments.
+     * @param string               $endpoint API Endpoint.
+     * @param array<string,string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -754,8 +754,8 @@ class ConvertKit_API
     /**
      * Performs a DELETE request to the API.
      *
-     * @param string                $endpoint API Endpoint.
-     * @param array<string,string>  $args     Request arguments.
+     * @param string               $endpoint API Endpoint.
+     * @param array<string,string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -773,9 +773,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string                $endpoint API Endpoint.
-     * @param string                $method   Request method (POST, GET, PUT, PATCH, DELETE).
-     * @param array<string,string>  $args     Request arguments.
+     * @param string               $endpoint API Endpoint.
+     * @param string               $method   Request method (POST, GET, PUT, PATCH, DELETE).
+     * @param array<string,string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
