@@ -89,6 +89,7 @@ class ConvertKit_API
      */
     protected $client;
 
+
     /**
      * Constructor for ConvertKitAPI instance
      *
