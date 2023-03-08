@@ -1,0 +1,9 @@
+# Parameters
+parameters:
+    # Paths to scan
+    paths:
+        - src/
+
+    # Should not need to edit anything below here
+    # Rule Level: https://phpstan.org/user-guide/rule-levels
+    level: 6

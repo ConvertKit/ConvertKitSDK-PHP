@@ -57,14 +57,14 @@ class ConvertKit_API
     /**
      * API resources
      *
-     * @var array
+     * @var array<int, array<int, \stdClass>>
      */
     protected $resources = [];
 
     /**
      * Additional markup
      *
-     * @var array
+     * @var array<string, string>
      */
     protected $markup = [];
 
@@ -78,7 +78,7 @@ class ConvertKit_API
     /**
      * Debug
      *
-     * @var boolean
+     * @var \Monolog\Logger
      */
     protected $debug_logger;
 
@@ -211,8 +211,8 @@ class ConvertKit_API
     /**
      * Adds a tag to a subscriber
      *
-     * @param integer $tag     Tag ID.
-     * @param array   $options Array of user data.
+     * @param integer               $tag     Tag ID.
+     * @param array<string, mixed>  $options Array of user data.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -220,7 +220,10 @@ class ConvertKit_API
      */
     public function add_tag(int $tag, array $options)
     {
-        if (!is_int($tag) || !is_array($options)) {
+        if (!is_int($tag)) {
+            throw new \InvalidArgumentException();
+        }
+        if (!is_array($options)) {
             throw new \InvalidArgumentException();
         }
 
@@ -244,7 +247,7 @@ class ConvertKit_API
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
-     * @return object API response
+     * @return array<int, \stdClass> API response
      */
     public function get_resources(string $resource)
     {
@@ -365,8 +368,8 @@ class ConvertKit_API
     /**
      * Adds a subscriber to a form.
      *
-     * @param integer $form_id Form ID.
-     * @param array   $options Array of user data (email, name).
+     * @param integer               $form_id Form ID.
+     * @param array<string, string> $options Array of user data (email, name).
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -374,7 +377,10 @@ class ConvertKit_API
      */
     public function form_subscribe(int $form_id, array $options)
     {
-        if (!is_int($form_id) || !is_array($options)) {
+        if (!is_int($form_id)) {
+            throw new \InvalidArgumentException();
+        }
+        if (!is_array($options)) {
             throw new \InvalidArgumentException();
         }
 
@@ -391,7 +397,7 @@ class ConvertKit_API
     /**
      * Remove subscription from a form
      *
-     * @param array $options Array of user data (email).
+     * @param array<string, string> $options Array of user data (email).
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -422,7 +428,10 @@ class ConvertKit_API
      */
     public function get_subscriber_id(string $email_address)
     {
-        if (!is_string($email_address) || !filter_var($email_address, FILTER_VALIDATE_EMAIL)) {
+        if (!is_string($email_address)) {
+            throw new \InvalidArgumentException();
+        }
+        if (!filter_var($email_address, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException();
         }
 
@@ -481,7 +490,7 @@ class ConvertKit_API
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
-     * @return false|array
+     * @return false|array<int,\stdClass>
      */
     public function get_subscriber_tags(int $subscriber_id)
     {
@@ -501,7 +510,7 @@ class ConvertKit_API
     /**
      * List purchases.
      *
-     * @param array $options Request options.
+     * @param array<string, string> $options Request options.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -523,7 +532,7 @@ class ConvertKit_API
     /**
      * Creates a purchase.
      *
-     * @param array $options Purchase data.
+     * @param array<string, string> $options Purchase data.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -557,7 +566,10 @@ class ConvertKit_API
      */
     public function get_resource(string $url)
     {
-        if (!is_string($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+        if (!is_string($url)) {
+            throw new \InvalidArgumentException();
+        }
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
             throw new \InvalidArgumentException();
         }
 
@@ -625,7 +637,7 @@ class ConvertKit_API
      * Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
      * DOM Elements.
      *
-     * @param \DOMNodeList $elements  Elements.
+     * @param \DOMNodeList<\DOMElement> $elements  Elements.
      * @param string       $attribute HTML Attribute.
      * @param string       $url       Absolute URL to prepend to relative URLs.
      *
@@ -685,8 +697,8 @@ class ConvertKit_API
     /**
      * Performs a GET request to the API.
      *
-     * @param string $endpoint API Endpoint.
-     * @param array  $args     Request arguments.
+     * @param string                $endpoint API Endpoint.
+     * @param array<string,string>  $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -704,8 +716,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string $endpoint API Endpoint.
-     * @param array  $args     Request arguments.
+     * @param string                $endpoint API Endpoint.
+     * @param array<string,string>  $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -723,8 +735,8 @@ class ConvertKit_API
     /**
      * Performs a PUT request to the API.
      *
-     * @param string $endpoint API Endpoint.
-     * @param array  $args     Request arguments.
+     * @param string                $endpoint API Endpoint.
+     * @param array<string,string>  $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -742,8 +754,8 @@ class ConvertKit_API
     /**
      * Performs a DELETE request to the API.
      *
-     * @param string $endpoint API Endpoint.
-     * @param array  $args     Request arguments.
+     * @param string                $endpoint API Endpoint.
+     * @param array<string,string>  $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -761,9 +773,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string $endpoint API Endpoint.
-     * @param string $method   Request method (POST, GET, PUT, PATCH, DELETE).
-     * @param array  $args     Request arguments.
+     * @param string                $endpoint API Endpoint.
+     * @param string                $method   Request method (POST, GET, PUT, PATCH, DELETE).
+     * @param array<string,string>  $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -771,7 +783,13 @@ class ConvertKit_API
      */
     public function make_request(string $endpoint, string $method, array $args = [])
     {
-        if (!is_string($endpoint) || !is_string($method) || !is_array($args)) {
+        if (!is_string($endpoint)) {
+            throw new \InvalidArgumentException();
+        }
+        if (!is_string($method)) {
+            throw new \InvalidArgumentException();
+        }
+        if (!is_array($args)) {
             throw new \InvalidArgumentException();
         }
 
