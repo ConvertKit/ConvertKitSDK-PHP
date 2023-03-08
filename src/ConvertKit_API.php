@@ -57,7 +57,7 @@ class ConvertKit_API
     /**
      * API resources
      *
-     * @var array<int, array<int, \stdClass>>
+     * @var array<int|string, array<int|string, mixed|\stdClass>>
      */
     protected $resources = [];
 
@@ -85,10 +85,9 @@ class ConvertKit_API
     /**
      * Guzzle Http Client
      *
-     * @var object
+     * @var \GuzzleHttp\Client
      */
     protected $client;
-
 
     /**
      * Constructor for ConvertKitAPI instance
@@ -135,7 +134,6 @@ class ConvertKit_API
         }
     }
 
-
     /**
      * Gets the current account
      *
@@ -151,7 +149,6 @@ class ConvertKit_API
         );
     }
 
-
     /**
      * Gets all sequences
      *
@@ -166,7 +163,6 @@ class ConvertKit_API
             ]
         );
     }
-
 
     /**
      * Gets subscribers to a sequence
@@ -187,7 +183,6 @@ class ConvertKit_API
         );
     }
 
-
     /**
      * Adds a subscriber to a sequence by email address
      *
@@ -206,7 +201,6 @@ class ConvertKit_API
             ]
         );
     }
-
 
     /**
      * Adds a tag to a subscriber
@@ -236,7 +230,6 @@ class ConvertKit_API
         );
     }
 
-
     /**
      * Gets a resource index
      * Possible resources: forms, landing_pages, subscription_forms, tags
@@ -247,7 +240,7 @@ class ConvertKit_API
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
-     * @return array<int, \stdClass> API response
+     * @return array<int|string, mixed|\stdClass> API response
      */
     public function get_resources(string $resource)
     {
@@ -364,7 +357,6 @@ class ConvertKit_API
         return $this->resources[$resource];
     }
 
-
     /**
      * Adds a subscriber to a form.
      *
@@ -393,7 +385,6 @@ class ConvertKit_API
         );
     }
 
-
     /**
      * Remove subscription from a form
      *
@@ -414,7 +405,6 @@ class ConvertKit_API
 
         return $this->put('unsubscribe', $options);
     }
-
 
     /**
      * Get the ConvertKit subscriber ID associated with email address if it exists.
@@ -458,7 +448,6 @@ class ConvertKit_API
         return $subscribers->subscribers[0]->id;
     }
 
-
     /**
      * Get subscriber by id
      *
@@ -481,7 +470,6 @@ class ConvertKit_API
             ]
         );
     }
-
 
     /**
      * Get a list of the tags for a subscriber.
@@ -506,7 +494,6 @@ class ConvertKit_API
         );
     }
 
-
     /**
      * List purchases.
      *
@@ -527,7 +514,6 @@ class ConvertKit_API
 
         return $this->get('purchases', $options);
     }
-
 
     /**
      * Creates a purchase.
@@ -550,7 +536,6 @@ class ConvertKit_API
         return $this->post('purchases', $options);
     }
 
-
     /**
      * Get markup from ConvertKit for the provided $url.
      *
@@ -561,6 +546,7 @@ class ConvertKit_API
      * @param string $url URL of HTML page.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     * @throws \Exception If parsing the legacy form or landing page failed.
      *
      * @return false|string
      */
@@ -606,8 +592,7 @@ class ConvertKit_API
         );
 
         // Get just the scheme and host from the URL.
-        $url_scheme           = parse_url($url);
-        $url_scheme_host_only = $url_scheme['scheme'] . '://' . $url_scheme['host'];
+        $url_scheme_host_only = parse_url($url, PHP_URL_SCHEME) . '://' . parse_url($url, PHP_URL_HOST);
 
         // Load the HTML into a DOMDocument.
         libxml_use_internal_errors(true);
@@ -621,17 +606,24 @@ class ConvertKit_API
         $this->convert_relative_to_absolute_urls($html->getElementsByTagName('script'), 'src', $url_scheme_host_only);
         $this->convert_relative_to_absolute_urls($html->getElementsByTagName('form'), 'action', $url_scheme_host_only);
 
+        // Save HTML.
+        $resource = $html->saveHTML();
+
+        // If the result is false, return a blank string.
+        if (!$resource) {
+            throw new \Exception(sprintf('Could not parse %s', $url));
+        }
+
         // Remove some HTML tags that DOMDocument adds, returning the output.
         // We do this instead of using LIBXML_HTML_NOIMPLIED in loadHTML(), because Legacy Forms
         // are not always contained in a single root / outer element, which is required for
         // LIBXML_HTML_NOIMPLIED to correctly work.
-        $resource = $this->strip_html_head_body_tags($html->saveHTML());
+        $resource = $this->strip_html_head_body_tags($resource);
 
         // Cache and return.
         $this->markup[$url] = $resource;
         return $resource;
     }
-
 
     /**
      * Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
@@ -670,7 +662,6 @@ class ConvertKit_API
         }
     }
 
-
     /**
      * Strips <html>, <head> and <body> opening and closing tags from the given markup,
      * as well as the Content-Type meta tag we might have added in get_html().
@@ -697,8 +688,8 @@ class ConvertKit_API
     /**
      * Performs a GET request to the API.
      *
-     * @param string               $endpoint API Endpoint.
-     * @param array<string,string> $args     Request arguments.
+     * @param string                    $endpoint API Endpoint.
+     * @param array<string, int|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -716,8 +707,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string               $endpoint API Endpoint.
-     * @param array<string,string> $args     Request arguments.
+     * @param string                    $endpoint API Endpoint.
+     * @param array<string, int|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -735,8 +726,8 @@ class ConvertKit_API
     /**
      * Performs a PUT request to the API.
      *
-     * @param string               $endpoint API Endpoint.
-     * @param array<string,string> $args     Request arguments.
+     * @param string                    $endpoint API Endpoint.
+     * @param array<string, int|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -754,8 +745,8 @@ class ConvertKit_API
     /**
      * Performs a DELETE request to the API.
      *
-     * @param string               $endpoint API Endpoint.
-     * @param array<string,string> $args     Request arguments.
+     * @param string                    $endpoint API Endpoint.
+     * @param array<string, int|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -773,11 +764,12 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string               $endpoint API Endpoint.
-     * @param string               $method   Request method (POST, GET, PUT, PATCH, DELETE).
-     * @param array<string,string> $args     Request arguments.
+     * @param string                    $endpoint API Endpoint.
+     * @param string                    $method   Request method (POST, GET, PUT, PATCH, DELETE).
+     * @param array<string, int|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     * @throws \Exception If JSON encoding arguments failed.
      *
      * @return false|mixed
      */
@@ -802,6 +794,11 @@ class ConvertKit_API
         $request_body = json_encode($args);
 
         $this->create_log(sprintf('%s, Request body: %s', $method, $request_body));
+
+        // Bail if an error occured encoind the arguments.
+        if (!$request_body) {
+            throw new \Exception('Error encoding arguments');
+        }
 
         if ($method === 'GET') {
             if ($args) {
@@ -831,7 +828,7 @@ class ConvertKit_API
         $status_code = $response->getStatusCode();
 
         // If not between 200 and 300.
-        if (!preg_match('/^[2-3][0-9]{2}/', $status_code)) {
+        if (!preg_match('/^[2-3][0-9]{2}/', (string) $status_code)) {
             $this->create_log(sprintf('Response code is %s.', $status_code));
             return false;
         }
