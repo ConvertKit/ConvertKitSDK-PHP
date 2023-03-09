@@ -66,6 +66,55 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_forms() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetForms()
+    {
+        $result = $this->api->get_forms();
+        $this->assertIsArray($result);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $form = get_object_vars($result[0]);
+        $this->assertArrayHasKey('id', $form);
+        $this->assertArrayHasKey('name', $form);
+        $this->assertArrayHasKey('created_at', $form);
+        $this->assertArrayHasKey('type', $form);
+        $this->assertArrayHasKey('format', $form);
+        $this->assertArrayHasKey('embed_js', $form);
+        $this->assertArrayHasKey('embed_url', $form);
+        $this->assertArrayHasKey('archived', $form);
+    }
+
+    /**
+     * Test that get_landing_pages() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetLandingPages()
+    {
+        $result = $this->api->get_landing_pages();
+        $this->assertIsArray($result);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $landingPage = get_object_vars($result[0]);
+        $this->assertArrayHasKey('id', $landingPage);
+        $this->assertArrayHasKey('name', $landingPage);
+        $this->assertArrayHasKey('created_at', $landingPage);
+        $this->assertArrayHasKey('type', $landingPage);
+        $this->assertEquals('hosted', $landingPage['type']);
+        $this->assertArrayHasKey('format', $landingPage);
+        $this->assertArrayHasKey('embed_js', $landingPage);
+        $this->assertArrayHasKey('embed_url', $landingPage);
+        $this->assertArrayHasKey('archived', $landingPage);
+    }
+
+    /**
      * Test that get_sequences() returns the expected data.
      *
      * @since   1.0.0

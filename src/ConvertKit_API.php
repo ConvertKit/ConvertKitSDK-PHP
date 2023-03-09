@@ -151,6 +151,30 @@ class ConvertKit_API
     }
 
     /**
+     * Gets all forms.
+     *
+     * @since 1.0.0
+     *
+     * @return false|mixed
+     */
+    public function get_forms()
+    {
+        return $this->get_resources('forms');
+    }
+
+    /**
+     * Gets all landing pages.
+     *
+     * @since 1.0.0
+     *
+     * @return false|mixed
+     */
+    public function get_landing_pages()
+    {
+        return $this->get_resources('landing_pages');
+    }
+
+    /**
      * Gets all sequences
      *
      * @return false|mixed
@@ -266,9 +290,7 @@ class ConvertKit_API
         $resources = $this->get(
             $request,
             [
-                'api_key'         => $this->api_key,
-                'timeout'         => 10,
-                'Accept-Encoding' => 'gzip',
+                'api_key' => $this->api_key,
             ]
         );
 
@@ -291,9 +313,15 @@ class ConvertKit_API
                     return [];
                 }
 
-                // Exclude archived forms.
+                // Build array of forms.
                 foreach ($resources->forms as $form) {
+                    // Exclude archived forms.
                     if (isset($form->archived) && $form->archived) {
+                        continue;
+                    }
+
+                    // Exclude hosted forms.
+                    if ($form->type === 'hosted') {
                         continue;
                     }
 
@@ -309,12 +337,13 @@ class ConvertKit_API
                     return [];
                 }
 
-                // Exclude forms and archived forms/landing pages.
                 foreach ($resources->forms as $form) {
+                    // Exclude archived landing pages.
                     if (isset($form->archived) && $form->archived) {
                         continue;
                     }
 
+                    // Exclude non-hosted (i.e. forms).
                     if ($form->type !== 'hosted') {
                         continue;
                     }
