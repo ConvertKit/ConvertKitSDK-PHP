@@ -22,6 +22,27 @@ If your work fixes existing functionality, check if a test exists. Either update
 
 Tests are written in PHP using [PHPUnit](https://phpunit.de/), and the existing `tests/ConvertKitAPITest.php` is a good place to start as a guide.
 
+## Run PHPStan
+
+[PHPStan](https://phpstan.org) performs static analysis on the Plugin's PHP code.  This ensures:
+
+- DocBlocks declarations are valid and uniform
+- DocBlocks declarations for WordPress `do_action()` and `apply_filters()` calls are valid
+- Typehinting variables and return types declared in DocBlocks are correctly cast
+- Any unused functions are detected
+- Unnecessary checks / code is highlighted for possible removal
+- Conditions that do not evaluate can be fixed/removed as necessary
+
+In the Plugin's directory, run the following command to run PHPStan:
+
+```bash
+vendor/bin/phpstan --memory-limit=1G
+```
+
+Any errors should be corrected by making applicable code changes.
+
+False positives [can be excluded by configuring](https://phpstan.org/user-guide/ignoring-errors) the `phpstan.neon` file.
+
 ## Run PHPUnit
 
 Once you have written your code and tests, run the tests to make sure there are no errors.
