@@ -152,7 +152,7 @@ class ConvertKit_API
 
     /**
      * Gets all sequences
-     * 
+     *
      * @see https://developers.convertkit.com/#list-sequences
      *
      * @return false|mixed
@@ -175,13 +175,18 @@ class ConvertKit_API
      * @param string                $first_name  First Name.
      * @param array<string, string> $fields      Custom Fields.
      * @param array<string, int>    $tag_ids     Tag ID(s) to subscribe to.
-     * 
+     *
      * @see https://developers.convertkit.com/#add-subscriber-to-a-sequence
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = '', array $fields = [], array $tag_ids = [])
-    {
+    public function add_subscriber_to_sequence(
+        int $sequence_id,
+        string $email,
+        string $first_name = '',
+        array $fields = [],
+        array $tag_ids = []
+    ) {
         // Build parameters.
         $options = [
             'api_key' => $this->api_key,
@@ -194,7 +199,7 @@ class ConvertKit_API
         if (!empty($fields)) {
             $options['fields'] = $fields;
         }
-        if (!empty($tags)) {
+        if (!empty($tag_ids)) {
             $options['tags'] = $tag_ids;
         }
 
@@ -212,7 +217,7 @@ class ConvertKit_API
      * @param string  $sort_order       Sort Order (asc|desc).
      * @param string  $subscriber_state Subscriber State (active,cancelled).
      * @param integer $page             Page.
-     * 
+     *
      * @see https://developers.convertkit.com/#list-subscriptions-to-a-sequence
      *
      * @return false|mixed
@@ -222,14 +227,14 @@ class ConvertKit_API
         string $sort_order = 'asc',
         string $subscriber_state = 'active',
         int $page = 1
-    ){
+    ) {
         return $this->get(
             sprintf('sequences/%s/subscriptions', $sequence_id),
             [
-                'api_secret'        => $this->api_secret,
-                'sort_order'        => $sort_order,
-                'subscriber_state'  => $subscriber_state,
-                'page'              => $page,
+                'api_secret'       => $this->api_secret,
+                'sort_order'       => $sort_order,
+                'subscriber_state' => $subscriber_state,
+                'page'             => $page,
             ]
         );
     }
@@ -720,8 +725,8 @@ class ConvertKit_API
     /**
      * Performs a GET request to the API.
      *
-     * @param string                    $endpoint API Endpoint.
-     * @param array<string, int|string> $args     Request arguments.
+     * @param string                                                     $endpoint API Endpoint.
+     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -739,8 +744,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string                    $endpoint API Endpoint.
-     * @param array<string, int|string> $args     Request arguments.
+     * @param string                                                     $endpoint API Endpoint.
+     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -758,8 +763,8 @@ class ConvertKit_API
     /**
      * Performs a PUT request to the API.
      *
-     * @param string                    $endpoint API Endpoint.
-     * @param array<string, int|string> $args     Request arguments.
+     * @param string                                                     $endpoint API Endpoint.
+     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -777,8 +782,8 @@ class ConvertKit_API
     /**
      * Performs a DELETE request to the API.
      *
-     * @param string                    $endpoint API Endpoint.
-     * @param array<string, int|string> $args     Request arguments.
+     * @param string                                                     $endpoint API Endpoint.
+     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -796,9 +801,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string                    $endpoint API Endpoint.
-     * @param string                    $method   Request method (POST, GET, PUT, PATCH, DELETE).
-     * @param array<string, int|string> $args     Request arguments.
+     * @param string                                                     $endpoint API Endpoint.
+     * @param string                                                     $method   Request method.
+     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      * @throws \Exception If JSON encoding arguments failed.

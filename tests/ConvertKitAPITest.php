@@ -143,7 +143,11 @@ class ConvertKitAPITest extends TestCase
     {
         $emailAddress = $this->generateEmailAddress();
         $firstName = 'First Name';
-        $result = $this->api->add_subscriber_to_sequence($_ENV['CONVERTKIT_API_SEQUENCE_ID'], $emailAddress, $firstName);
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $emailAddress,
+            $firstName
+        );
 
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscription', get_object_vars($result));
@@ -208,7 +212,7 @@ class ConvertKitAPITest extends TestCase
 
         // Fetch subscriber tags from API to confirm the tag saved.
         $subscriberTags = $this->api->get_subscriber_tags($result->subscription->subscriber->id);
-        // @TODO.
+        $this->assertEquals($subscriberTags->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
     /**
