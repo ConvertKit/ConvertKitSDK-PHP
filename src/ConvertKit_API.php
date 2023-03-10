@@ -151,6 +151,59 @@ class ConvertKit_API
     }
 
     /**
+     * Gets all forms.
+     *
+     * @since 1.0.0
+     *
+     * @return false|mixed
+     */
+    public function get_forms()
+    {
+        return $this->get_resources('forms');
+    }
+
+    /**
+     * Gets all landing pages.
+     *
+     * @since 1.0.0
+     *
+     * @return false|mixed
+     */
+    public function get_landing_pages()
+    {
+        return $this->get_resources('landing_pages');
+    }
+
+    /**
+     * List subscriptions to a form
+     *
+     * @param integer $form_id          Form ID.
+     * @param string  $sort_order       Sort Order (asc|desc).
+     * @param string  $subscriber_state Subscriber State (active,cancelled).
+     * @param integer $page             Page.
+     *
+     * @see https://developers.convertkit.com/#list-subscriptions-to-a-form
+     *
+     * @return false|mixed
+     */
+    public function get_form_subscriptions(
+        int $form_id,
+        string $sort_order = 'asc',
+        string $subscriber_state = 'active',
+        int $page = 1
+    ) {
+        return $this->get(
+            sprintf('forms/%s/subscriptions', $form_id),
+            [
+                'api_secret'       => $this->api_secret,
+                'sort_order'       => $sort_order,
+                'subscriber_state' => $subscriber_state,
+                'page'             => $page,
+            ]
+        );
+    }
+
+    /**
      * Gets all sequences
      *
      * @see https://developers.convertkit.com/#list-sequences
@@ -302,9 +355,7 @@ class ConvertKit_API
         $resources = $this->get(
             $request,
             [
-                'api_key'         => $this->api_key,
-                'timeout'         => 10,
-                'Accept-Encoding' => 'gzip',
+                'api_key' => $this->api_key,
             ]
         );
 
@@ -327,9 +378,15 @@ class ConvertKit_API
                     return [];
                 }
 
-                // Exclude archived forms.
+                // Build array of forms.
                 foreach ($resources->forms as $form) {
+                    // Exclude archived forms.
                     if (isset($form->archived) && $form->archived) {
+                        continue;
+                    }
+
+                    // Exclude hosted forms.
+                    if ($form->type === 'hosted') {
                         continue;
                     }
 
@@ -345,12 +402,13 @@ class ConvertKit_API
                     return [];
                 }
 
-                // Exclude forms and archived forms/landing pages.
                 foreach ($resources->forms as $form) {
+                    // Exclude archived landing pages.
                     if (isset($form->archived) && $form->archived) {
                         continue;
                     }
 
+                    // Exclude non-hosted (i.e. forms).
                     if ($form->type !== 'hosted') {
                         continue;
                     }
