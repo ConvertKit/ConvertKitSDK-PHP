@@ -115,6 +115,119 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptions()
+    {
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID']);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order is ascending.
+        $this->assertGreaterThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the sort order is descending.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithDescSortOrder()
+    {
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'desc');
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order.
+        $this->assertLessThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the subscription status
+     * is cancelled.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithCancelledSubscriberState()
+    {
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'cancelled');
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertEquals($result['total_subscriptions'], 0);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the page is set to 2.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithPage()
+    {
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'active', 2);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertEquals($result['page'], 2);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithInvalidFormID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->get_form_subscriptions(12345);
+    }
+
+    /**
      * Test that get_sequences() returns the expected data.
      *
      * @since   1.0.0

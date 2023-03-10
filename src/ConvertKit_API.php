@@ -175,6 +175,35 @@ class ConvertKit_API
     }
 
     /**
+     * List subscriptions to a form
+     *
+     * @param integer $form_id          Form ID.
+     * @param string  $sort_order       Sort Order (asc|desc).
+     * @param string  $subscriber_state Subscriber State (active,cancelled).
+     * @param integer $page             Page.
+     *
+     * @see https://developers.convertkit.com/#list-subscriptions-to-a-form
+     *
+     * @return false|mixed
+     */
+    public function get_form_subscriptions(
+        int $form_id,
+        string $sort_order = 'asc',
+        string $subscriber_state = 'active',
+        int $page = 1
+    ) {
+        return $this->get(
+            sprintf('forms/%s/subscriptions', $form_id),
+            [
+                'api_secret'       => $this->api_secret,
+                'sort_order'       => $sort_order,
+                'subscriber_state' => $subscriber_state,
+                'page'             => $page,
+            ]
+        );
+    }
+
+    /**
      * Gets all sequences
      *
      * @return false|mixed
