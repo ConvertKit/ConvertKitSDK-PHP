@@ -379,6 +379,25 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_tags() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTags()
+    {
+        $result = $this->api->get_tags();
+        $this->assertIsArray($result);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $tag = get_object_vars($result[0]);
+        $this->assertArrayHasKey('id', $tag);
+        $this->assertArrayHasKey('name', $tag);
+        $this->assertArrayHasKey('created_at', $tag);
+    }
+
+    /**
      * Test that add_tag() returns the expected data.
      *
      * @since   1.0.0

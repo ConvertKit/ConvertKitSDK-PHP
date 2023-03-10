@@ -257,10 +257,40 @@ class ConvertKit_API
     }
 
     /**
+     * Gets all tags.
+     *
+     * @since 1.0.0
+     * 
+     * @see https://developers.convertkit.com/#list-tags
+     *
+     * @return false|mixed
+     */
+    public function get_tags()
+    {
+        return $this->get_resources('tags');
+    }
+
+    /**
+     * Creates a tags.
+     *
+     * @since 1.0.0
+     * 
+     * @see https://developers.convertkit.com/#create-a-tag
+     *
+     * @return false|mixed
+     */
+    public function create_tag(string $tag)
+    {
+
+    }
+
+    /**
      * Adds a tag to a subscriber
      *
      * @param integer              $tag     Tag ID.
      * @param array<string, mixed> $options Array of user data.
+     * 
+     * @see https://developers.convertkit.com/#tag-a-subscriber
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -281,6 +311,63 @@ class ConvertKit_API
         return $this->post(
             sprintf('tags/%s/subscribe', $tag),
             $options
+        );
+    }
+
+    /**
+     * Removes a tag from a subscriber.
+     *
+     * @since 1.0.0
+     * 
+     * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber
+     *
+     * @return false|mixed
+     */
+    public function remove_tag_from_subscriber(int $subscriber_id)
+    {
+
+    }
+
+    /**
+     * Removes a tag from a subscriber by email address.
+     *
+     * @since 1.0.0
+     * 
+     * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber-by-email
+     *
+     * @return false|mixed
+     */
+    public function remove_tag_from_subscriber_by_email(string $email)
+    {
+
+    }
+
+    /**
+     * List subscriptions to a tag
+     *
+     * @param integer $tag_id           Tag ID.
+     * @param string  $sort_order       Sort Order (asc|desc).
+     * @param string  $subscriber_state Subscriber State (active,cancelled).
+     * @param integer $page             Page.
+     *
+     * @see https://developers.convertkit.com/#list-subscriptions-to-a-tag
+     *
+     * @return false|mixed
+     */
+    public function get_tag_subscriptions(
+        int $tag_id,
+        string $sort_order = 'asc',
+        string $subscriber_state = 'active',
+        int $page = 1
+    ) {
+        return $this->get(
+            sprintf('tags/%s/subscriptions', $tag_id),
+            [
+                'api_secret'       => $this->api_secret,
+                'sort_order'       => $sort_order,
+                'subscriber_state' => $subscriber_state,
+                'page'             => $page,
+            ]
         );
     }
 
