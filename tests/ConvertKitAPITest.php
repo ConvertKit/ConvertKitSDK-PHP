@@ -87,6 +87,131 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that add_subscriber_to_sequence() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequence()
+    {
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $this->generateEmailAddress()
+        );
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+    }
+
+    /**
+     * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
+     * sequence is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithInvalidSequenceID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->add_subscriber_to_sequence(12345, $this->generateEmailAddress());
+    }
+
+    /**
+     * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithInvalidEmailAddress()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->add_subscriber_to_sequence($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'not-an-email-address');
+    }
+
+    /**
+     * Test that add_subscriber_to_sequence() returns the expected data
+     * when a first_name parameter is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithFirstName()
+    {
+        $emailAddress = $this->generateEmailAddress();
+        $firstName = 'First Name';
+        $result = $this->api->add_subscriber_to_sequence($_ENV['CONVERTKIT_API_SEQUENCE_ID'], $emailAddress, $firstName);
+
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the first name was saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
+        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
+    }
+
+    /**
+     * Test that add_subscriber_to_sequence() returns the expected data
+     * when custom field data is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithCustomFields()
+    {
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $this->generateEmailAddress(),
+            'First Name',
+            [
+                'last_name' => 'Last Name',
+            ]
+        );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the custom fields were saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
+    }
+
+    /**
+     * Test that add_subscriber_to_sequence() returns the expected data
+     * when custom field data is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithTagID()
+    {
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $this->generateEmailAddress(),
+            'First Name',
+            [],
+            [
+                (int) $_ENV['CONVERTKIT_API_TAG_ID']
+            ]
+        );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber tags from API to confirm the tag saved.
+        $subscriberTags = $this->api->get_subscriber_tags($result->subscription->subscriber->id);
+        // @TODO.
+    }
+
+    /**
      * Test that get_sequence_subscriptions() returns the expected data.
      *
      * @since   1.0.0
@@ -145,20 +270,6 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that get_sequence_subscriptions() throws a ClientException when an invalid
-     * sequence ID is specified.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetSequenceSubscriptionsWithInvalidSequenceID()
-    {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->get_sequence_subscriptions(12345);
-    }
-
-    /**
-     * Test that get_sequence_subscriptions() throws a ClientException when an invalid
      * sort order is specified.
      *
      * @since   1.0.0
@@ -172,48 +283,17 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_subscriber_to_sequence() returns the expected data.
+     * Test that get_sequence_subscriptions() throws a ClientException when an invalid
+     * sequence ID is specified.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testAddSubscriberToSequence()
-    {
-        $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $this->generateEmailAddress()
-        );
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
-    }
-
-    /**
-     * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
-     * sequence is specified.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testAddSubscriberToSequenceWithInvalidSequenceID()
+    public function testGetSequenceSubscriptionsWithInvalidSequenceID()
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->add_subscriber_to_sequence(12345, $this->generateEmailAddress());
-    }
-
-    /**
-     * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
-     * email address is specified.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testAddSubscriberToSequenceWithInvalidEmailAddress()
-    {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->add_subscriber_to_sequence($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'not-an-email-address');
+        $result = $this->api->get_sequence_subscriptions(12345);
     }
 
     /**

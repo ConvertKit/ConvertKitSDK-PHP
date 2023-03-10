@@ -152,6 +152,8 @@ class ConvertKit_API
 
     /**
      * Gets all sequences
+     * 
+     * @see https://developers.convertkit.com/#list-sequences
      *
      * @return false|mixed
      */
@@ -166,39 +168,68 @@ class ConvertKit_API
     }
 
     /**
-     * Gets subscribers to a sequence
+     * Adds a subscriber to a sequence by email address
      *
-     * @param integer $sequence_id Sequence ID.
-     * @param string  $sort_order  Sort Order (asc|desc).
+     * @param integer               $sequence_id Sequence ID.
+     * @param string                $email       Email Address.
+     * @param string                $first_name  First Name.
+     * @param array<string, string> $fields      Custom Fields.
+     * @param array<string, int>    $tag_ids     Tag ID(s) to subscribe to.
+     * 
+     * @see https://developers.convertkit.com/#add-subscriber-to-a-sequence
      *
      * @return false|mixed
      */
-    public function get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc')
+    public function add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = '', array $fields = [], array $tag_ids = [])
     {
-        return $this->get(
-            sprintf('sequences/%s/subscriptions', $sequence_id),
-            [
-                'api_secret' => $this->api_secret,
-                'sort_order' => $sort_order,
-            ]
+        // Build parameters.
+        $options = [
+            'api_key' => $this->api_key,
+            'email'   => $email,
+        ];
+
+        if (!empty($first_name)) {
+            $options['first_name'] = $first_name;
+        }
+        if (!empty($fields)) {
+            $options['fields'] = $fields;
+        }
+        if (!empty($tags)) {
+            $options['tags'] = $tag_ids;
+        }
+
+        // Send request.
+        return $this->post(
+            sprintf('sequences/%s/subscribe', $sequence_id),
+            $options
         );
     }
 
     /**
-     * Adds a subscriber to a sequence by email address
+     * Gets subscribers to a sequence
      *
-     * @param integer $sequence_id Sequence ID.
-     * @param string  $email       Email Address.
+     * @param integer $sequence_id      Sequence ID.
+     * @param string  $sort_order       Sort Order (asc|desc).
+     * @param string  $subscriber_state Subscriber State (active,cancelled).
+     * @param integer $page             Page.
+     * 
+     * @see https://developers.convertkit.com/#list-subscriptions-to-a-sequence
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_sequence(int $sequence_id, string $email)
-    {
-        return $this->post(
-            sprintf('courses/%s/subscribe', $sequence_id),
+    public function get_sequence_subscriptions(
+        int $sequence_id,
+        string $sort_order = 'asc',
+        string $subscriber_state = 'active',
+        int $page = 1
+    ){
+        return $this->get(
+            sprintf('sequences/%s/subscriptions', $sequence_id),
             [
-                'api_key' => $this->api_key,
-                'email'   => $email,
+                'api_secret'        => $this->api_secret,
+                'sort_order'        => $sort_order,
+                'subscriber_state'  => $subscriber_state,
+                'page'              => $page,
             ]
         );
     }
