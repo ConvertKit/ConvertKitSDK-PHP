@@ -594,6 +594,8 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
+     * @see https://developers.convertkit.com/#list-fields
+     *
      * @return false|object
      */
     public function get_custom_fields()
@@ -612,6 +614,8 @@ class ConvertKit_API
      * @param string $label Custom Field label.
      *
      * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#create-field
      *
      * @return false|object
      */
@@ -632,6 +636,8 @@ class ConvertKit_API
      * @param array<string> $labels Custom Fields labels.
      *
      * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#create-field
      *
      * @return false|object
      */
@@ -654,6 +660,8 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
+     * @see https://developers.convertkit.com/#update-field
+     *
      * @return false|object
      */
     public function update_custom_field(int $id, string $label)
@@ -673,6 +681,8 @@ class ConvertKit_API
      * @param integer $id Custom Field ID.
      *
      * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#destroy-field
      *
      * @return false|object
      */
