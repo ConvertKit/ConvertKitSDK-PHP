@@ -525,7 +525,7 @@ class ConvertKit_API
      * Get subscriber by id
      *
      * @param integer $subscriber_id Subscriber ID.
-     * 
+     *
      * @see https://developers.convertkit.com/#view-a-single-subscriber
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
@@ -549,10 +549,10 @@ class ConvertKit_API
     /**
      * Updates the information for a single subscriber.
      *
-     * @param integer               $subscriber_id  Existing Subscriber ID.
-     * @param string                $first_name     New First Name.
-     * @param string                $email_address  New Email Address.
-     * @param array<string, string> $fields         Updated Custom Fields.
+     * @param integer               $subscriber_id Existing Subscriber ID.
+     * @param string                $first_name    New First Name.
+     * @param string                $email_address New Email Address.
+     * @param array<string, string> $fields        Updated Custom Fields.
      *
      * @see https://developers.convertkit.com/#update-subscriber
      *
@@ -578,7 +578,7 @@ class ConvertKit_API
         if (!empty($fields)) {
             $options['fields'] = $fields;
         }
- 
+
         // Send request.
         return $this->put(
             sprintf('subscribers/%s', $subscriber_id),
@@ -589,25 +589,28 @@ class ConvertKit_API
     /**
      * Unsubscribe an email address from all forms and sequences.
      *
-     * @param string    $email  Email Address.
-     * 
+     * @param string $email Email Address.
+     *
      * @see https://developers.convertkit.com/#unsubscribe-subscriber
      *
      * @return false|object
      */
     public function unsubscribe(string $email)
     {
-        return $this->put('unsubscribe', [
-            'api_secret' => $this->api_secret,
-            'email'      => $email,
-        ]);
+        return $this->put(
+            'unsubscribe',
+            [
+                'api_secret' => $this->api_secret,
+                'email'      => $email,
+            ]
+        );
     }
 
     /**
      * Remove subscription from a form
      *
      * @param array<string, string> $options Array of user data (email).
-     * 
+     *
      * @see https://developers.convertkit.com/#unsubscribe-subscriber
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
@@ -623,7 +626,7 @@ class ConvertKit_API
             'form_unsubscribe() is deprecated in 1.0.  Use unsubscribe($email) instead.',
             E_USER_NOTICE
         );
-        
+
         if (!is_array($options)) {
             throw new \InvalidArgumentException();
         }
@@ -638,7 +641,7 @@ class ConvertKit_API
      * Get a list of the tags for a subscriber.
      *
      * @param integer $subscriber_id Subscriber ID.
-     * 
+     *
      * @see https://developers.convertkit.com/#list-tags-for-a-subscriber
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
