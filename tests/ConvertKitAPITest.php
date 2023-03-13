@@ -794,6 +794,24 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that create_purchase() throws a ClientException when an invalid
+     * purchase data is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreatePurchaseWithMissingData()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->create_purchase([
+            'invalid-key' => [
+                'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
+            ],
+        ]);
+    }
+
+    /**
      * Test that fetching a legacy form's markup works.
      *
      * @since   1.0.0
