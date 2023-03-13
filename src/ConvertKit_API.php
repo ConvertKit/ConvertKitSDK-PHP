@@ -661,7 +661,7 @@ class ConvertKit_API
             [
                 'api_secret' => $this->api_secret,
                 'target_url' => $url,
-                'event'      => json_encode($eventData),
+                'event'      => $eventData,
             ]
         );
     }

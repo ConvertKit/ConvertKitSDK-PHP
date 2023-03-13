@@ -694,6 +694,83 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that creating and destroying a webhook works.
+     *
+     * We do both, so we don't end up with unnecessary webhooks remaining
+     * on the ConvertKit account when running tests.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateAndDestroyWebhook()
+    {
+        // Create a webhook first.
+        $result = $this->api->create_webhook(
+            'https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d',
+            'subscriber.subscriber_activate',
+        );
+        $ruleID = $result->rule->id;
+
+        // Destroy the webhook.
+        $result = $this->api->destroy_webhook($ruleID);
+        $this->assertEquals($result->success, true);
+    }
+
+    /**
+     * Test that creating and destroying a webhook works with an event parameter.
+     *
+     * We do both, so we don't end up with unnecessary webhooks remaining
+     * on the ConvertKit account when running tests.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateAndDestroyWebhookWithEventParameter()
+    {
+        // Create a webhook first.
+        $result = $this->api->create_webhook(
+            'https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d',
+            'subscriber.form_subscribe',
+            $_ENV['CONVERTKIT_API_FORM_ID']
+        );
+        $ruleID = $result->rule->id;
+
+        // Destroy the webhook.
+        $result = $this->api->destroy_webhook($ruleID);
+        $this->assertEquals($result->success, true);
+    }
+
+    /**
+     * Test that create_webook() throws an InvalidArgumentException when an invalid
+     * event is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateWebhookWithInvalidEvent()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->api->create_webhook('https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d', 'invalid.event');
+    }
+
+    /**
+     * Test that destroy_webhook() throws a ClientException when an invalid
+     * rule ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testDestroyWebhookWithInvalidRuleID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->destroy_webhook(12345);
+    }
+
+    /**
      * Test that list_purchases() returns the expected data.
      *
      * @since   1.0.0
