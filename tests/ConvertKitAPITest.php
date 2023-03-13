@@ -490,15 +490,15 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTag()
     {
-        $tag = 'Tag Test ' . mt_rand();
-        $result = $this->api->create_tag($tag);
+        $tagName = 'Tag Test ' . mt_rand();
+        $result = $this->api->create_tag($tagName);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $tag = get_object_vars($result);
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
         $this->assertArrayHasKey('created_at', $tag);
-        $this->assertEquals($tag['name'], $tag);
+        $this->assertEquals($tag['name'], $tagName);
     }
 
     /**
