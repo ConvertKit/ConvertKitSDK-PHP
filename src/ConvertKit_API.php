@@ -329,10 +329,50 @@ class ConvertKit_API
     }
 
     /**
+     * Tags a subscriber to the given tag.
+     *
+     * @param integer               $tag_id      Tag ID.
+     * @param string                $email       Email Address.
+     * @param string                $first_name  First Name.
+     * @param array<string, string> $fields      Custom Fields.
+     *
+     * @see https://developers.convertkit.com/#tag-a-subscriber
+     *
+     * @return false|mixed
+     */
+    public function tag_subscriber(
+        int $tag_id,
+        string $email,
+        string $first_name = '',
+        array $fields = []
+    ) {
+        // Build parameters.
+        $options = [
+            'api_secret' => $this->api_secret,
+            'email'      => $email,
+        ];
+
+        if (!empty($first_name)) {
+            $options['first_name'] = $first_name;
+        }
+        if (!empty($fields)) {
+            $options['fields'] = $fields;
+        }
+
+        // Send request.
+        return $this->post(
+            sprintf('tags/%s/subscribe', $tag_id),
+            $options
+        );
+    }
+
+    /**
      * Adds a tag to a subscriber
      *
      * @param integer              $tag     Tag ID.
      * @param array<string, mixed> $options Array of user data.
+     * 
+     * @deprecated 1.0.0 Use tag_subscriber($tag_id, $email, $first_name, $fields).
      * 
      * @see https://developers.convertkit.com/#tag-a-subscriber
      *
@@ -342,6 +382,9 @@ class ConvertKit_API
      */
     public function add_tag(int $tag, array $options)
     {
+        // This function is deprecated in 1.0, as we prefer functions with structured arguments.
+        trigger_error( 'add_tag() is deprecated in 1.0.  Use tag_subscribe($tag_id, $email, $first_name, $fields) instead.', E_USER_NOTICE);
+
         if (!is_int($tag)) {
             throw new \InvalidArgumentException();
         }

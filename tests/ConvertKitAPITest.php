@@ -530,20 +530,78 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_tag() returns the expected data.
+     * Test that tag_subscriber() returns the expected data.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testAddTag()
+    public function testTagSubscriber()
     {
-        $result = $this->api->add_tag((int) $_ENV['CONVERTKIT_API_TAG_ID'], [
-            'email' => $this->generateEmailAddress(),
-        ]);
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $this->generateEmailAddress()
+        );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscription', get_object_vars($result));
     }
+
+    /**
+     * Test that tag_subscriber() returns the expected data
+     * when a first_name parameter is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberWithFirstName()
+    {
+        $emailAddress = $this->generateEmailAddress();
+        $firstName = 'First Name';
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $emailAddress,
+            $firstName
+        );
+
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the first name was saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
+        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
+    }
+
+    /**
+     * Test that tag_subscriber() returns the expected data
+     * when custom field data is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberWithCustomFields()
+    {
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $this->generateEmailAddress(),
+            'First Name',
+            [
+                'last_name' => 'Last Name',
+            ]
+        );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the custom fields were saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
+    }
+
+    ///
 
     /**
      * Test that get_resources() for Forms returns the expected data.
