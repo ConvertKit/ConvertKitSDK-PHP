@@ -590,6 +590,100 @@ class ConvertKit_API
     }
 
     /**
+     * Creates a webhook that will be called based on the chosen event types.
+     * 
+     * @param   string  $url    URL to receive event.
+     * @param   array   $events Array of events to subscribe to.
+     * 
+     * @since   1.0.0
+     * 
+     * @see https://developers.convertkit.com/#create-a-webhook
+     * 
+     * @throws \InvalidArgumentException If the event is not supported.
+     * 
+     * @return false|object
+     */
+    public function create_webhook(string $url, string $event, string|int $parameter)
+    {
+        // Depending on the event, build the required event array structure.
+        switch($event) {
+            case 'subscriber.subscriber_activate':
+            case 'subscriber.subscriber_unsubscribe':
+            case 'purchase.purchase_create':
+                $eventData = [
+                    'name' => $event,
+                ];
+                break;
+            case 'subscriber.form_subscribe':
+                $eventData = [
+                    'name'    => $event,
+                    'form_id' => $parameter, // Form ID.
+                ];
+                break;
+            case 'subscriber.course_subscribe':
+            case 'subscriber.course_complete':
+                $eventData = [
+                    'name'      => $event,
+                    'course_id' => $parameter, // Course ID.
+                ];
+                break;
+            case 'subscriber.link_click':
+                $eventData = [
+                    'name'            => $event,
+                    'initiator_value' => $parameter, // URL clicked.
+                ];
+                break;
+            case 'subscriber.product_purchase':
+                $eventData = [
+                    'name'       => $event,
+                    'product_id' => $parameter, // Product ID.
+                ];
+                break;
+            case 'subscriber.tag_add':
+            case 'subscriber.tag_remove':
+                $eventData = [
+                    'name'   => $event,
+                    'tag_id' => $parameter, // Tag ID.
+                ];
+                break;
+
+            default:
+                throw new \InvalidArgumentException(sprintf('The event %s is not supported', $event));
+        }
+
+        // Send request.
+        return $this->post(
+            'automations/hooks',
+            [
+                'api_secret' => $this->api_secret,
+                'target_url' => $url,
+                'event'      => json_encode($eventData)
+            ]
+        );
+    }
+
+    /**
+     * Deletes an existing webhook.
+     * 
+     * @param   integer     $rule_id    Rule ID.
+     * 
+     * @since   1.0.0
+     * 
+     * @see https://developers.convertkit.com/#destroy-webhook
+     * 
+     * @return false|object
+     */
+    public function destroy_webhook(int $rule_id)
+    {
+        return $this->delete(
+            sprintf('automations/hooks/%s', $rule_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
      * List purchases.
      *
      * @param array<string, string> $options Request options.
