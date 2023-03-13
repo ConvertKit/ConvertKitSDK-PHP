@@ -307,9 +307,11 @@ class ConvertKit_API
     }
 
     /**
-     * Creates a tags.
+     * Creates a tag.
      *
      * @since 1.0.0
+     * 
+     * @param string  $tag Tag Name.
      * 
      * @see https://developers.convertkit.com/#create-a-tag
      *
@@ -329,7 +331,7 @@ class ConvertKit_API
     }
 
     /**
-     * Tags a subscriber to the given tag.
+     * Tags a subscriber with the given existing Tag.
      *
      * @param integer               $tag_id      Tag ID.
      * @param string                $email       Email Address.
@@ -367,7 +369,7 @@ class ConvertKit_API
     }
 
     /**
-     * Adds a tag to a subscriber
+     * Adds a tag to a subscriber.
      *
      * @param integer              $tag     Tag ID.
      * @param array<string, mixed> $options Array of user data.
@@ -406,13 +408,21 @@ class ConvertKit_API
      *
      * @since 1.0.0
      * 
+     * @param   integer     $tag_id         Tag ID.
+     * @param   integer     $subscriber_id  Subscriber ID.
+     * 
      * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber
      *
      * @return false|mixed
      */
-    public function remove_tag_from_subscriber(int $subscriber_id)
+    public function remove_tag_from_subscriber(int $tag_id, int $subscriber_id)
     {
-
+        return $this->delete(
+            sprintf('subscribers/%s/tags/%s', $subscriber_id, $tag_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -420,13 +430,22 @@ class ConvertKit_API
      *
      * @since 1.0.0
      * 
+     * @param   integer     $tag_id     Tag ID.
+     * @param   string      $email      Subscriber email address.
+     * 
      * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber-by-email
      *
      * @return false|mixed
      */
-    public function remove_tag_from_subscriber_by_email(string $email)
+    public function remove_tag_from_subscriber_by_email(int $tag_id, string $email)
     {
-
+        return $this->post(
+            sprintf('tags/%s/unsubscribe', $tag_id),
+            [
+                'api_secret' => $this->api_secret,
+                'email'      => $email,
+            ]
+        );
     }
 
     /**
