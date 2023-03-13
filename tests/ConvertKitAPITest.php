@@ -482,6 +482,54 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that create_tag() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateTag()
+    {
+        $tag = 'Tag Test ' . mt_rand();
+        $result = $this->api->create_tag($tag);
+        
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $tag = get_object_vars($result);
+        $this->assertArrayHasKey('id', $tag);
+        $this->assertArrayHasKey('name', $tag);
+        $this->assertArrayHasKey('created_at', $tag);
+        $this->assertEquals($tag['name'], $tag);
+    }
+
+    /**
+     * Test that create_tag() throws a ClientException when creating
+     * a blank tag.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateTagBlank()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->create_tag('');
+    }
+
+    /**
+     * Test that create_tag() throws a ClientException when creating
+     * a tag that already exists.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateTagThatExists()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->create_tag($_ENV['CONVERTKIT_API_TAG_NAME']);
+    }
+
+    /**
      * Test that add_tag() returns the expected data.
      *
      * @since   1.0.0
@@ -874,7 +922,7 @@ class ConvertKitAPITest extends TestCase
      */
     private function generateEmailAddress($domain = 'convertkit.com')
     {
-        return 'wordpress-' . date('Y-m-d-H-i-s') . '-php-' . PHP_VERSION_ID . '@' . $domain;
+        return 'php-sdk-' . date('Y-m-d-H-i-s') . '-php-' . PHP_VERSION_ID . '@' . $domain;
     }
 
     /**

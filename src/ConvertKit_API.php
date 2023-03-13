@@ -317,7 +317,15 @@ class ConvertKit_API
      */
     public function create_tag(string $tag)
     {
-
+        return $this->post(
+            'tags',
+            [
+                'api_key'   => $this->api_key,
+                'tag'       => [
+                    'name' => $tag,
+                ],
+            ]
+        );
     }
 
     /**
