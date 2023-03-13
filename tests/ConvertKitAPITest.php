@@ -492,7 +492,7 @@ class ConvertKitAPITest extends TestCase
     {
         $tag = 'Tag Test ' . mt_rand();
         $result = $this->api->create_tag($tag);
-        
+
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $tag = get_object_vars($result);
         $this->assertArrayHasKey('id', $tag);
@@ -603,9 +603,9 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that remove_tag_from_subscriber() works.
-     * 
+     *
      * @since   1.0.0
-     * 
+     *
      * @return void
      */
     public function testRemoveTagFromSubscriber()
@@ -667,9 +667,9 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that remove_tag_from_subscriber() works.
-     * 
+     *
      * @since   1.0.0
-     * 
+     *
      * @return void
      */
     public function testRemoveTagFromSubscriberByEmail()

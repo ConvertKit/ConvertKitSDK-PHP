@@ -296,7 +296,7 @@ class ConvertKit_API
      * Gets all tags.
      *
      * @since 1.0.0
-     * 
+     *
      * @see https://developers.convertkit.com/#list-tags
      *
      * @return false|mixed
@@ -309,10 +309,10 @@ class ConvertKit_API
     /**
      * Creates a tag.
      *
+     * @param string $tag Tag Name.
+     *
      * @since 1.0.0
-     * 
-     * @param string  $tag Tag Name.
-     * 
+     *
      * @see https://developers.convertkit.com/#create-a-tag
      *
      * @return false|mixed
@@ -322,10 +322,8 @@ class ConvertKit_API
         return $this->post(
             'tags',
             [
-                'api_key'   => $this->api_key,
-                'tag'       => [
-                    'name' => $tag,
-                ],
+                'api_key' => $this->api_key,
+                'tag'     => ['name' => $tag],
             ]
         );
     }
@@ -333,10 +331,10 @@ class ConvertKit_API
     /**
      * Tags a subscriber with the given existing Tag.
      *
-     * @param integer               $tag_id      Tag ID.
-     * @param string                $email       Email Address.
-     * @param string                $first_name  First Name.
-     * @param array<string, string> $fields      Custom Fields.
+     * @param integer               $tag_id     Tag ID.
+     * @param string                $email      Email Address.
+     * @param string                $first_name First Name.
+     * @param array<string, string> $fields     Custom Fields.
      *
      * @see https://developers.convertkit.com/#tag-a-subscriber
      *
@@ -373,9 +371,9 @@ class ConvertKit_API
      *
      * @param integer              $tag     Tag ID.
      * @param array<string, mixed> $options Array of user data.
-     * 
+     *
      * @deprecated 1.0.0 Use tag_subscriber($tag_id, $email, $first_name, $fields).
-     * 
+     *
      * @see https://developers.convertkit.com/#tag-a-subscriber
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
@@ -385,7 +383,10 @@ class ConvertKit_API
     public function add_tag(int $tag, array $options)
     {
         // This function is deprecated in 1.0, as we prefer functions with structured arguments.
-        trigger_error( 'add_tag() is deprecated in 1.0.  Use tag_subscribe($tag_id, $email, $first_name, $fields) instead.', E_USER_NOTICE);
+        trigger_error(
+            'add_tag() is deprecated in 1.0.  Use tag_subscribe($tag_id, $email, $first_name, $fields) instead.',
+            E_USER_NOTICE
+        );
 
         if (!is_int($tag)) {
             throw new \InvalidArgumentException();
@@ -406,11 +407,11 @@ class ConvertKit_API
     /**
      * Removes a tag from a subscriber.
      *
+     * @param integer $tag_id        Tag ID.
+     * @param integer $subscriber_id Subscriber ID.
+     *
      * @since 1.0.0
-     * 
-     * @param   integer     $tag_id         Tag ID.
-     * @param   integer     $subscriber_id  Subscriber ID.
-     * 
+     *
      * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber
      *
      * @return false|mixed
@@ -428,11 +429,11 @@ class ConvertKit_API
     /**
      * Removes a tag from a subscriber by email address.
      *
+     * @param integer $tag_id Tag ID.
+     * @param string  $email  Subscriber email address.
+     *
      * @since 1.0.0
-     * 
-     * @param   integer     $tag_id     Tag ID.
-     * @param   string      $email      Subscriber email address.
-     * 
+     *
      * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber-by-email
      *
      * @return false|mixed
