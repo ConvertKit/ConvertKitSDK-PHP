@@ -665,7 +665,53 @@ class ConvertKitAPITest extends TestCase
         );
     }
 
-    ///
+    /**
+     * Test that remove_tag_from_subscriber() works.
+     * 
+     * @since   1.0.0
+     * 
+     * @return void
+     */
+    public function testRemoveTagFromSubscriberByEmail()
+    {
+        // Tag the subscriber first.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $email
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Remove tag from subscriber.
+        $result = $this->api->remove_tag_from_subscriber_by_email(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $email
+        );
+
+        // Confirm that the subscriber no longer has the tag.
+        $result = $this->api->get_subscriber_tags($subscriberID);
+        $this->assertIsArray($result->tags);
+        $this->assertEmpty($result->tags);
+    }
+
+    /**
+     * Test that remove_tag_from_subscriber() throws a ClientException when an invalid
+     * tag ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testRemoveTagFromSubscriberByEmailWithInvalidTagID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->remove_tag_from_subscriber_by_email(
+            12345,
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        );
+    }
 
     /**
      * Test that get_resources() for Forms returns the expected data.
