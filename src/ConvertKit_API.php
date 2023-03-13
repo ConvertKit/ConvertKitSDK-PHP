@@ -609,9 +609,9 @@ class ConvertKit_API
     /**
      * Creates a webhook that will be called based on the chosen event types.
      *
-     * @param string         $url       URL to receive event.
-     * @param string         $event     Event to subscribe to.
-     * @param string|integer $parameter Optional parameter depending on the event.
+     * @param string $url       URL to receive event.
+     * @param string $event     Event to subscribe to.
+     * @param string $parameter Optional parameter depending on the event.
      *
      * @since 1.0.0
      *
@@ -621,7 +621,7 @@ class ConvertKit_API
      *
      * @return false|object
      */
-    public function create_webhook(string $url, string $event, string|int $parameter = '')
+    public function create_webhook(string $url, string $event, string $parameter = '')
     {
         // Depending on the event, build the required event array structure.
         switch ($event) {
