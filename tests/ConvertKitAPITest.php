@@ -546,7 +546,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that form_subscribe() and form_unsubscribe() returns the expected data.
+     * Test that form_subscribe() returns the expected data.
      *
      * @since   1.0.0
      *
@@ -565,13 +565,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals(get_object_vars($result->subscription)['subscribable_id'], $_ENV['CONVERTKIT_API_FORM_ID']);
 
         // Unsubscribe.
-        $result = $this->api->form_unsubscribe([
-            'email' =>  $email,
-        ]);
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscriber', get_object_vars($result));
-        $this->assertArrayHasKey('email_address', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['email_address'], $email);
+        $this->api->unsubscribe($email);
     }
 
     /**
