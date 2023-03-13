@@ -714,6 +714,123 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptions()
+    {
+        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID']);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order is ascending.
+        $this->assertGreaterThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the sort order is descending.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithDescSortOrder()
+    {
+        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'desc');
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order.
+        $this->assertLessThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the subscription status
+     * is cancelled.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithCancelledSubscriberState()
+    {
+        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'asc', 'cancelled');
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertGreaterThan(1, $result['total_subscriptions']);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the page is set to 2.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithPage()
+    {
+        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'asc', 'active', 2);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertEquals($result['page'], 2);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithInvalidFormID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->get_tag_subscriptions(12345);
+    }
+
+
+
+    ///
+
+    /**
      * Test that get_resources() for Forms returns the expected data.
      *
      * @since   1.0.0
