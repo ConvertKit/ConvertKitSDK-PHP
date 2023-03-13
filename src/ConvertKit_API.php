@@ -611,6 +611,23 @@ class ConvertKit_API
     }
 
     /**
+     * Retuns a specific purchase.
+     *
+     * @param integer $purchase_id Purchase ID.
+     *
+     * @return false|object
+     */
+    public function get_purchase(int $purchase_id)
+    {
+        return $this->get(
+            sprintf('purchases/%s', $purchase_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
      * Creates a purchase.
      *
      * @param array<string, string> $options Purchase data.
