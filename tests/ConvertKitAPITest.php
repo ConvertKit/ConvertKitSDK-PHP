@@ -1430,6 +1430,41 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_purchases() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetPurchase()
+    {
+        // Get ID of first purchase.
+        $purchases = $this->api->list_purchases([
+            'page' => 1,
+        ]);
+        $id = $purchases->purchases[0]->id;
+
+        // Get purchase.
+        $result = $this->api->get_purchase($id);
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertEquals($result->id, $id);
+    }
+
+    /**
+     * Test that get_purchases() throws a ClientException when an invalid
+     * purchase ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetPurchaseWithInvalidID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->get_purchase(12345);
+    }
+
+    /**
      * Test that create_purchase() returns the expected data.
      *
      * @since   1.0.0
@@ -1473,6 +1508,24 @@ class ConvertKitAPITest extends TestCase
         ]);
         $this->assertInstanceOf('stdClass', $purchase);
         $this->assertArrayHasKey('transaction_id', get_object_vars($purchase));
+    }
+
+    /**
+     * Test that create_purchase() throws a ClientException when an invalid
+     * purchase data is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreatePurchaseWithMissingData()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->create_purchase([
+            'invalid-key' => [
+                'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
+            ],
+        ]);
     }
 
     /**

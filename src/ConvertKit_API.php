@@ -932,6 +932,8 @@ class ConvertKit_API
      *
      * @param array<string, string> $options Request options.
      *
+     * @see https://developers.convertkit.com/#list-purchases
+     *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
      * @return false|object
@@ -949,9 +951,30 @@ class ConvertKit_API
     }
 
     /**
+     * Retuns a specific purchase.
+     *
+     * @param integer $purchase_id Purchase ID.
+     *
+     * @see https://developers.convertkit.com/#retrieve-a-specific-purchase
+     *
+     * @return false|object
+     */
+    public function get_purchase(int $purchase_id)
+    {
+        return $this->get(
+            sprintf('purchases/%s', $purchase_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
      * Creates a purchase.
      *
      * @param array<string, string> $options Purchase data.
+     *
+     * @see https://developers.convertkit.com/#create-a-purchase
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
