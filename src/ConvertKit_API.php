@@ -175,6 +175,34 @@ class ConvertKit_API
     }
 
     /**
+     * Adds a subscriber to a form.
+     *
+     * @param integer               $form_id Form ID.
+     * @param array<string, string> $options Array of user data (email, name).
+     *
+     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
+     * @return false|object
+     */
+    public function form_subscribe(int $form_id, array $options)
+    {
+        if (!is_int($form_id)) {
+            throw new \InvalidArgumentException();
+        }
+        if (!is_array($options)) {
+            throw new \InvalidArgumentException();
+        }
+
+        // Add API Key to array of options.
+        $options['api_key'] = $this->api_key;
+
+        return $this->post(
+            sprintf('forms/%s/subscribe', $form_id),
+            $options
+        );
+    }
+
+    /**
      * List subscriptions to a form
      *
      * @param integer $form_id          Form ID.
@@ -453,55 +481,6 @@ class ConvertKit_API
     }
 
     /**
-     * Adds a subscriber to a form.
-     *
-     * @param integer               $form_id Form ID.
-     * @param array<string, string> $options Array of user data (email, name).
-     *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
-     * @return false|object
-     */
-    public function form_subscribe(int $form_id, array $options)
-    {
-        if (!is_int($form_id)) {
-            throw new \InvalidArgumentException();
-        }
-        if (!is_array($options)) {
-            throw new \InvalidArgumentException();
-        }
-
-        // Add API Key to array of options.
-        $options['api_key'] = $this->api_key;
-
-        return $this->post(
-            sprintf('forms/%s/subscribe', $form_id),
-            $options
-        );
-    }
-
-    /**
-     * Remove subscription from a form
-     *
-     * @param array<string, string> $options Array of user data (email).
-     *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
-     * @return false|object
-     */
-    public function form_unsubscribe(array $options)
-    {
-        if (!is_array($options)) {
-            throw new \InvalidArgumentException();
-        }
-
-        // Add API Secret to array of options.
-        $options['api_secret'] = $this->api_secret;
-
-        return $this->put('unsubscribe', $options);
-    }
-
-    /**
      * Get the ConvertKit subscriber ID associated with email address if it exists.
      * Return false if subscriber not found.
      *
@@ -524,7 +503,6 @@ class ConvertKit_API
             'subscribers',
             [
                 'api_secret'    => $this->api_secret,
-                'status'        => 'all',
                 'email_address' => $email_address,
             ]
         );
@@ -548,6 +526,8 @@ class ConvertKit_API
      *
      * @param integer $subscriber_id Subscriber ID.
      *
+     * @see https://developers.convertkit.com/#view-a-single-subscriber
+     *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
      * @return false|integer
@@ -567,9 +547,102 @@ class ConvertKit_API
     }
 
     /**
+     * Updates the information for a single subscriber.
+     *
+     * @param integer               $subscriber_id Existing Subscriber ID.
+     * @param string                $first_name    New First Name.
+     * @param string                $email_address New Email Address.
+     * @param array<string, string> $fields        Updated Custom Fields.
+     *
+     * @see https://developers.convertkit.com/#update-subscriber
+     *
+     * @return false|mixed
+     */
+    public function update_subscriber(
+        int $subscriber_id,
+        string $first_name = '',
+        string $email_address = '',
+        array $fields = []
+    ) {
+        // Build parameters.
+        $options = [
+            'api_secret' => $this->api_secret,
+        ];
+
+        if (!empty($first_name)) {
+            $options['first_name'] = $first_name;
+        }
+        if (!empty($email_address)) {
+            $options['email_address'] = $email_address;
+        }
+        if (!empty($fields)) {
+            $options['fields'] = $fields;
+        }
+
+        // Send request.
+        return $this->put(
+            sprintf('subscribers/%s', $subscriber_id),
+            $options
+        );
+    }
+
+    /**
+     * Unsubscribe an email address from all forms and sequences.
+     *
+     * @param string $email Email Address.
+     *
+     * @see https://developers.convertkit.com/#unsubscribe-subscriber
+     *
+     * @return false|object
+     */
+    public function unsubscribe(string $email)
+    {
+        return $this->put(
+            'unsubscribe',
+            [
+                'api_secret' => $this->api_secret,
+                'email'      => $email,
+            ]
+        );
+    }
+
+    /**
+     * Remove subscription from a form
+     *
+     * @param array<string, string> $options Array of user data (email).
+     *
+     * @see https://developers.convertkit.com/#unsubscribe-subscriber
+     *
+     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
+     * @return false|object
+     */
+    public function form_unsubscribe(array $options)
+    {
+        // This function is deprecated in 1.0, as we prefer functions with structured arguments.
+        // This function name is also misleading, as it doesn't just unsubscribe the email
+        // address from forms.
+        trigger_error(
+            'form_unsubscribe() is deprecated in 1.0.  Use unsubscribe($email) instead.',
+            E_USER_NOTICE
+        );
+
+        if (!is_array($options)) {
+            throw new \InvalidArgumentException();
+        }
+
+        // Add API Secret to array of options.
+        $options['api_secret'] = $this->api_secret;
+
+        return $this->put('unsubscribe', $options);
+    }
+
+    /**
      * Get a list of the tags for a subscriber.
      *
      * @param integer $subscriber_id Subscriber ID.
+     *
+     * @see https://developers.convertkit.com/#list-tags-for-a-subscriber
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *

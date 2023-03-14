@@ -546,7 +546,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that form_subscribe() and form_unsubscribe() returns the expected data.
+     * Test that form_subscribe() returns the expected data.
      *
      * @since   1.0.0
      *
@@ -565,13 +565,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals(get_object_vars($result->subscription)['subscribable_id'], $_ENV['CONVERTKIT_API_FORM_ID']);
 
         // Unsubscribe.
-        $result = $this->api->form_unsubscribe([
-            'email' =>  $email,
-        ]);
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscriber', get_object_vars($result));
-        $this->assertArrayHasKey('email_address', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['email_address'], $email);
+        $this->api->unsubscribe($email);
     }
 
     /**
@@ -663,6 +657,204 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
         $subscriber = $this->api->get_subscriber(12345);
+    }
+
+    /**
+     * Test that update_subscriber() works when no changes are made.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberWithNoChanges()
+    {
+        $result = $this->api->update_subscriber($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+    }
+
+    /**
+     * Test that update_subscriber() works when updating the subscriber's first name.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberFirstName()
+    {
+        // Add a subscriber.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $email
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Update subscriber's first name.
+        $result = $this->api->update_subscriber(
+            $subscriberID,
+            'First Name'
+        );
+
+        // Confirm the change is reflected in the subscriber.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $subscriberID);
+        $this->assertEquals(get_object_vars($result->subscriber)['first_name'], 'First Name');
+
+        // Unsubscribe.
+        $this->api->unsubscribe($email);
+    }
+
+    /**
+     * Test that update_subscriber() works when updating the subscriber's email address.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberEmailAddress()
+    {
+        // Add a subscriber.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $email
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Update subscriber's email address.
+        $newEmail = $this->generateEmailAddress();
+        $result = $this->api->update_subscriber(
+            $subscriberID,
+            '',
+            $newEmail
+        );
+
+        // Confirm the change is reflected in the subscriber.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $subscriberID);
+        $this->assertEquals(get_object_vars($result->subscriber)['email_address'], $newEmail);
+
+        // Unsubscribe.
+        $this->api->unsubscribe($newEmail);
+    }
+
+    /**
+     * Test that update_subscriber() works when updating the subscriber's custom fields.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberCustomFields()
+    {
+        // Add a subscriber.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $email
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Update subscriber's email address.
+        $result = $this->api->update_subscriber(
+            $subscriberID,
+            '',
+            '',
+            [
+                'last_name' => 'Last Name',
+            ]
+        );
+
+        // Confirm the change is reflected in the subscriber.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $subscriberID);
+        $this->assertEquals($result->subscriber->fields->last_name, 'Last Name');
+
+        // Unsubscribe.
+        $this->api->unsubscribe($email);
+    }
+
+    /**
+     * Test that update_subscriber() throws a ClientException when an invalid
+     * subscriber ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberWithInvalidSubscriberID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $subscriber = $this->api->update_subscriber(12345);
+    }
+
+    /**
+     * Test that unsubscribe() works with a valid subscriber email address.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUnsubscribe()
+    {
+        // Add a subscriber.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $email
+        );
+
+        // Unsubscribe.
+        $result = $this->api->unsubscribe($email);
+
+        // Confirm the change is reflected in the subscriber.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertEquals($result->subscriber->email_address, $email);
+        $this->assertEquals($result->subscriber->state, 'cancelled');
+    }
+
+    /**
+     * Test that unsubscribe() throws a ClientException when an email
+     * address is specified that is not subscribed.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUnsubscribeWithNotSubscribedEmailAddress()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $subscriber = $this->api->unsubscribe('not-subscribed@convertkit.com');
+    }
+
+    /**
+     * Test that unsubscribe() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUnsubscribeWithInvalidEmailAddress()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $subscriber = $this->api->unsubscribe('invalid-email');
     }
 
     /**
