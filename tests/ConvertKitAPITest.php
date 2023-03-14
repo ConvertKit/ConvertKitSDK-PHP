@@ -463,20 +463,372 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_tag() returns the expected data.
+     * Test that get_tags() returns the expected data.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testAddTag()
+    public function testGetTags()
     {
-        $result = $this->api->add_tag((int) $_ENV['CONVERTKIT_API_TAG_ID'], [
-            'email' => $this->generateEmailAddress(),
-        ]);
+        $result = $this->api->get_tags();
+        $this->assertIsArray($result);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $tag = get_object_vars($result[0]);
+        $this->assertArrayHasKey('id', $tag);
+        $this->assertArrayHasKey('name', $tag);
+        $this->assertArrayHasKey('created_at', $tag);
+    }
+
+    /**
+     * Test that create_tag() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateTag()
+    {
+        $tagName = 'Tag Test ' . mt_rand();
+        $result = $this->api->create_tag($tagName);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $tag = get_object_vars($result);
+        $this->assertArrayHasKey('id', $tag);
+        $this->assertArrayHasKey('name', $tag);
+        $this->assertArrayHasKey('created_at', $tag);
+        $this->assertEquals($tag['name'], $tagName);
+    }
+
+    /**
+     * Test that create_tag() throws a ClientException when creating
+     * a blank tag.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateTagBlank()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->create_tag('');
+    }
+
+    /**
+     * Test that create_tag() throws a ClientException when creating
+     * a tag that already exists.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateTagThatExists()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->create_tag($_ENV['CONVERTKIT_API_TAG_NAME']);
+    }
+
+    /**
+     * Test that tag_subscriber() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriber()
+    {
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $this->generateEmailAddress()
+        );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscription', get_object_vars($result));
     }
+
+    /**
+     * Test that tag_subscriber() returns the expected data
+     * when a first_name parameter is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberWithFirstName()
+    {
+        $emailAddress = $this->generateEmailAddress();
+        $firstName = 'First Name';
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $emailAddress,
+            $firstName
+        );
+
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the first name was saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
+        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
+    }
+
+    /**
+     * Test that tag_subscriber() returns the expected data
+     * when custom field data is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberWithCustomFields()
+    {
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $this->generateEmailAddress(),
+            'First Name',
+            [
+                'last_name' => 'Last Name',
+            ]
+        );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the custom fields were saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
+    }
+
+    /**
+     * Test that remove_tag_from_subscriber() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testRemoveTagFromSubscriber()
+    {
+        // Tag the subscriber first.
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $this->generateEmailAddress()
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Remove tag from subscriber.
+        $result = $this->api->remove_tag_from_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $subscriberID
+        );
+
+        // Confirm that the subscriber no longer has the tag.
+        $result = $this->api->get_subscriber_tags($subscriberID);
+        $this->assertIsArray($result->tags);
+        $this->assertEmpty($result->tags);
+    }
+
+    /**
+     * Test that remove_tag_from_subscriber() throws a ClientException when an invalid
+     * tag ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testRemoveTagFromSubscriberWithInvalidTagID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->remove_tag_from_subscriber(
+            12345,
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+        );
+    }
+
+    /**
+     * Test that remove_tag_from_subscriber() throws a ClientException when an invalid
+     * subscriber ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testRemoveTagFromSubscriberWithInvalidSubscriberID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->remove_tag_from_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            12345
+        );
+    }
+
+    /**
+     * Test that remove_tag_from_subscriber() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testRemoveTagFromSubscriberByEmail()
+    {
+        // Tag the subscriber first.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->tag_subscriber(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $email
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Remove tag from subscriber.
+        $result = $this->api->remove_tag_from_subscriber_by_email(
+            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            $email
+        );
+
+        // Confirm that the subscriber no longer has the tag.
+        $result = $this->api->get_subscriber_tags($subscriberID);
+        $this->assertIsArray($result->tags);
+        $this->assertEmpty($result->tags);
+    }
+
+    /**
+     * Test that remove_tag_from_subscriber() throws a ClientException when an invalid
+     * tag ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testRemoveTagFromSubscriberByEmailWithInvalidTagID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->remove_tag_from_subscriber_by_email(
+            12345,
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptions()
+    {
+        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID']);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order is ascending.
+        $this->assertGreaterThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the sort order is descending.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithDescSortOrder()
+    {
+        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'desc');
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order.
+        $this->assertLessThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the subscription status
+     * is cancelled.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithCancelledSubscriberState()
+    {
+        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'asc', 'cancelled');
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertGreaterThan(1, $result['total_subscriptions']);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the page is set to 2.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithPage()
+    {
+        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'asc', 'active', 2);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertEquals($result['page'], 2);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithInvalidFormID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->get_tag_subscriptions(12345);
+    }
+
+
+
+    ///
 
     /**
      * Test that get_resources() for Forms returns the expected data.
@@ -546,7 +898,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that form_subscribe() and form_unsubscribe() returns the expected data.
+     * Test that form_subscribe() returns the expected data.
      *
      * @since   1.0.0
      *
@@ -565,13 +917,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals(get_object_vars($result->subscription)['subscribable_id'], $_ENV['CONVERTKIT_API_FORM_ID']);
 
         // Unsubscribe.
-        $result = $this->api->form_unsubscribe([
-            'email' =>  $email,
-        ]);
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscriber', get_object_vars($result));
-        $this->assertArrayHasKey('email_address', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['email_address'], $email);
+        $this->api->unsubscribe($email);
     }
 
     /**
@@ -663,6 +1009,204 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
         $subscriber = $this->api->get_subscriber(12345);
+    }
+
+    /**
+     * Test that update_subscriber() works when no changes are made.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberWithNoChanges()
+    {
+        $result = $this->api->update_subscriber($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+    }
+
+    /**
+     * Test that update_subscriber() works when updating the subscriber's first name.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberFirstName()
+    {
+        // Add a subscriber.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $email
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Update subscriber's first name.
+        $result = $this->api->update_subscriber(
+            $subscriberID,
+            'First Name'
+        );
+
+        // Confirm the change is reflected in the subscriber.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $subscriberID);
+        $this->assertEquals(get_object_vars($result->subscriber)['first_name'], 'First Name');
+
+        // Unsubscribe.
+        $this->api->unsubscribe($email);
+    }
+
+    /**
+     * Test that update_subscriber() works when updating the subscriber's email address.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberEmailAddress()
+    {
+        // Add a subscriber.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $email
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Update subscriber's email address.
+        $newEmail = $this->generateEmailAddress();
+        $result = $this->api->update_subscriber(
+            $subscriberID,
+            '',
+            $newEmail
+        );
+
+        // Confirm the change is reflected in the subscriber.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $subscriberID);
+        $this->assertEquals(get_object_vars($result->subscriber)['email_address'], $newEmail);
+
+        // Unsubscribe.
+        $this->api->unsubscribe($newEmail);
+    }
+
+    /**
+     * Test that update_subscriber() works when updating the subscriber's custom fields.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberCustomFields()
+    {
+        // Add a subscriber.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $email
+        );
+
+        // Get subscriber ID.
+        $subscriberID = $result->subscription->subscriber->id;
+
+        // Update subscriber's email address.
+        $result = $this->api->update_subscriber(
+            $subscriberID,
+            '',
+            '',
+            [
+                'last_name' => 'Last Name',
+            ]
+        );
+
+        // Confirm the change is reflected in the subscriber.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $subscriberID);
+        $this->assertEquals($result->subscriber->fields->last_name, 'Last Name');
+
+        // Unsubscribe.
+        $this->api->unsubscribe($email);
+    }
+
+    /**
+     * Test that update_subscriber() throws a ClientException when an invalid
+     * subscriber ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateSubscriberWithInvalidSubscriberID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $subscriber = $this->api->update_subscriber(12345);
+    }
+
+    /**
+     * Test that unsubscribe() works with a valid subscriber email address.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUnsubscribe()
+    {
+        // Add a subscriber.
+        $email = $this->generateEmailAddress();
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $email
+        );
+
+        // Unsubscribe.
+        $result = $this->api->unsubscribe($email);
+
+        // Confirm the change is reflected in the subscriber.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertEquals($result->subscriber->email_address, $email);
+        $this->assertEquals($result->subscriber->state, 'cancelled');
+    }
+
+    /**
+     * Test that unsubscribe() throws a ClientException when an email
+     * address is specified that is not subscribed.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUnsubscribeWithNotSubscribedEmailAddress()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $subscriber = $this->api->unsubscribe('not-subscribed@convertkit.com');
+    }
+
+    /**
+     * Test that unsubscribe() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUnsubscribeWithInvalidEmailAddress()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $subscriber = $this->api->unsubscribe('invalid-email');
     }
 
     /**
@@ -796,6 +1340,179 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_custom_fields() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetCustomFields()
+    {
+        $result = $this->api->get_custom_fields();
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('custom_fields', get_object_vars($result));
+
+        // Inspect first custom field.
+        $customField = get_object_vars($result->custom_fields[0]);
+        $this->assertArrayHasKey('id', $customField);
+        $this->assertArrayHasKey('name', $customField);
+        $this->assertArrayHasKey('key', $customField);
+        $this->assertArrayHasKey('label', $customField);
+    }
+
+    /**
+     * Test that create_custom_field() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateCustomField()
+    {
+        $label = 'Custom Field ' . mt_rand();
+        $result = $this->api->create_custom_field($label);
+
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayHasKey('name', $result);
+        $this->assertArrayHasKey('key', $result);
+        $this->assertArrayHasKey('label', $result);
+        $this->assertEquals($result['label'], $label);
+
+        // Delete custom field.
+        $this->api->delete_custom_field($result['id']);
+    }
+
+    /**
+     * Test that create_custom_field() throws a ClientException when a blank
+     * label is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateCustomFieldWithBlankLabel()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->create_custom_field('');
+    }
+
+    /**
+     * Test that create_custom_fields() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateCustomFields()
+    {
+        $labels = [
+            'Custom Field ' . mt_rand(),
+            'Custom Field ' . mt_rand(),
+        ];
+        $result = $this->api->create_custom_fields($labels);
+
+        // Confirm result is an array comprising of each custom field that was created.
+        $this->assertIsArray($result);
+        foreach ($result as $index => $customField) {
+            // Confirm individual custom field.
+            $customField = get_object_vars($customField);
+            $this->assertArrayHasKey('id', $customField);
+            $this->assertArrayHasKey('name', $customField);
+            $this->assertArrayHasKey('key', $customField);
+            $this->assertArrayHasKey('label', $customField);
+
+            // Confirm label is correct.
+            $this->assertEquals($labels[$index], $customField['label']);
+
+            // Delete custom field as tests passed.
+            $this->api->delete_custom_field($customField['id']);
+        }
+    }
+
+    /**
+     * Test that update_custom_field() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateCustomField()
+    {
+        // Create custom field.
+        $label = 'Custom Field ' . mt_rand();
+        $result = $this->api->create_custom_field($label);
+        $id = $result->id;
+
+        // Change label.
+        $newLabel = 'Custom Field ' . mt_rand();
+        $this->api->update_custom_field($id, $newLabel);
+
+        // Confirm label changed.
+        $customFields = $this->api->get_custom_fields();
+        foreach ($customFields->custom_fields as $customField) {
+            if ($customField->id === $id) {
+                $this->assertEquals($customField->label, $newLabel);
+            }
+        }
+
+        // Delete custom field as tests passed.
+        $this->api->delete_custom_field($id);
+    }
+
+    /**
+     * Test that update_custom_field() throws a ClientException when an
+     * invalid custom field ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateCustomFieldWithInvalidID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->update_custom_field(12345, 'Something');
+    }
+
+    /**
+     * Test that delete_custom_field() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testDeleteCustomField()
+    {
+        // Create custom field.
+        $label = 'Custom Field ' . mt_rand();
+        $result = $this->api->create_custom_field($label);
+        $id = $result->id;
+
+        // Delete custom field as tests passed.
+        $this->api->delete_custom_field($id);
+
+        // Confirm custom field no longer exists.
+        $customFields = $this->api->get_custom_fields();
+        foreach ($customFields->custom_fields as $customField) {
+            $this->assertNotEquals($customField->id, $id);
+        }
+    }
+
+    /**
+     * Test that delete_custom_field() throws a ClientException when an
+     * invalid custom field ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testDeleteCustomFieldWithInvalidID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->delete_custom_field(12345);
+    }
+
+    /**
      * Test that list_purchases() returns the expected data.
      *
      * @since   1.0.0
@@ -812,6 +1529,41 @@ class ConvertKitAPITest extends TestCase
         $this->assertArrayHasKey('page', get_object_vars($purchases));
         $this->assertArrayHasKey('total_pages', get_object_vars($purchases));
         $this->assertArrayHasKey('purchases', get_object_vars($purchases));
+    }
+
+    /**
+     * Test that get_purchases() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetPurchase()
+    {
+        // Get ID of first purchase.
+        $purchases = $this->api->list_purchases([
+            'page' => 1,
+        ]);
+        $id = $purchases->purchases[0]->id;
+
+        // Get purchase.
+        $result = $this->api->get_purchase($id);
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertEquals($result->id, $id);
+    }
+
+    /**
+     * Test that get_purchases() throws a ClientException when an invalid
+     * purchase ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetPurchaseWithInvalidID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->get_purchase(12345);
     }
 
     /**
@@ -858,6 +1610,24 @@ class ConvertKitAPITest extends TestCase
         ]);
         $this->assertInstanceOf('stdClass', $purchase);
         $this->assertArrayHasKey('transaction_id', get_object_vars($purchase));
+    }
+
+    /**
+     * Test that create_purchase() throws a ClientException when an invalid
+     * purchase data is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreatePurchaseWithMissingData()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->create_purchase([
+            'invalid-key' => [
+                'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
+            ],
+        ]);
     }
 
     /**
@@ -957,7 +1727,7 @@ class ConvertKitAPITest extends TestCase
      */
     private function generateEmailAddress($domain = 'convertkit.com')
     {
-        return 'wordpress-' . date('Y-m-d-H-i-s') . '-php-' . PHP_VERSION_ID . '@' . $domain;
+        return 'php-sdk-' . date('Y-m-d-H-i-s') . '-php-' . PHP_VERSION_ID . '@' . $domain;
     }
 
     /**
