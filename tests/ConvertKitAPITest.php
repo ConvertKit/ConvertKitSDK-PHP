@@ -1238,6 +1238,179 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_custom_fields() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetCustomFields()
+    {
+        $result = $this->api->get_custom_fields();
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('custom_fields', get_object_vars($result));
+
+        // Inspect first custom field.
+        $customField = get_object_vars($result->custom_fields[0]);
+        $this->assertArrayHasKey('id', $customField);
+        $this->assertArrayHasKey('name', $customField);
+        $this->assertArrayHasKey('key', $customField);
+        $this->assertArrayHasKey('label', $customField);
+    }
+
+    /**
+     * Test that create_custom_field() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateCustomField()
+    {
+        $label = 'Custom Field ' . mt_rand();
+        $result = $this->api->create_custom_field($label);
+
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayHasKey('name', $result);
+        $this->assertArrayHasKey('key', $result);
+        $this->assertArrayHasKey('label', $result);
+        $this->assertEquals($result['label'], $label);
+
+        // Delete custom field.
+        $this->api->delete_custom_field($result['id']);
+    }
+
+    /**
+     * Test that create_custom_field() throws a ClientException when a blank
+     * label is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateCustomFieldWithBlankLabel()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->create_custom_field('');
+    }
+
+    /**
+     * Test that create_custom_fields() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateCustomFields()
+    {
+        $labels = [
+            'Custom Field ' . mt_rand(),
+            'Custom Field ' . mt_rand(),
+        ];
+        $result = $this->api->create_custom_fields($labels);
+
+        // Confirm result is an array comprising of each custom field that was created.
+        $this->assertIsArray($result);
+        foreach ($result as $index => $customField) {
+            // Confirm individual custom field.
+            $customField = get_object_vars($customField);
+            $this->assertArrayHasKey('id', $customField);
+            $this->assertArrayHasKey('name', $customField);
+            $this->assertArrayHasKey('key', $customField);
+            $this->assertArrayHasKey('label', $customField);
+
+            // Confirm label is correct.
+            $this->assertEquals($labels[$index], $customField['label']);
+
+            // Delete custom field as tests passed.
+            $this->api->delete_custom_field($customField['id']);
+        }
+    }
+
+    /**
+     * Test that update_custom_field() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateCustomField()
+    {
+        // Create custom field.
+        $label = 'Custom Field ' . mt_rand();
+        $result = $this->api->create_custom_field($label);
+        $id = $result->id;
+
+        // Change label.
+        $newLabel = 'Custom Field ' . mt_rand();
+        $this->api->update_custom_field($id, $newLabel);
+
+        // Confirm label changed.
+        $customFields = $this->api->get_custom_fields();
+        foreach ($customFields->custom_fields as $customField) {
+            if ($customField->id === $id) {
+                $this->assertEquals($customField->label, $newLabel);
+            }
+        }
+
+        // Delete custom field as tests passed.
+        $this->api->delete_custom_field($id);
+    }
+
+    /**
+     * Test that update_custom_field() throws a ClientException when an
+     * invalid custom field ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateCustomFieldWithInvalidID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->update_custom_field(12345, 'Something');
+    }
+
+    /**
+     * Test that delete_custom_field() works.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testDeleteCustomField()
+    {
+        // Create custom field.
+        $label = 'Custom Field ' . mt_rand();
+        $result = $this->api->create_custom_field($label);
+        $id = $result->id;
+
+        // Delete custom field as tests passed.
+        $this->api->delete_custom_field($id);
+
+        // Confirm custom field no longer exists.
+        $customFields = $this->api->get_custom_fields();
+        foreach ($customFields->custom_fields as $customField) {
+            $this->assertNotEquals($customField->id, $id);
+        }
+    }
+
+    /**
+     * Test that delete_custom_field() throws a ClientException when an
+     * invalid custom field ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testDeleteCustomFieldWithInvalidID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->delete_custom_field(12345);
+    }
+
+    /**
      * Test that list_purchases() returns the expected data.
      *
      * @since   1.0.0

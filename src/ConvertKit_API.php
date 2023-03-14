@@ -821,6 +821,113 @@ class ConvertKit_API
     }
 
     /**
+     * List custom fields.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#list-fields
+     *
+     * @return false|object
+     */
+    public function get_custom_fields()
+    {
+        return $this->get(
+            'custom_fields',
+            [
+                'api_key' => $this->api_key,
+            ]
+        );
+    }
+
+    /**
+     * Creates a custom field.
+     *
+     * @param string $label Custom Field label.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#create-field
+     *
+     * @return false|object
+     */
+    public function create_custom_field(string $label)
+    {
+        return $this->post(
+            'custom_fields',
+            [
+                'api_secret' => $this->api_secret,
+                'label'      => [$label],
+            ]
+        );
+    }
+
+    /**
+     * Creates multiple custom fields.
+     *
+     * @param array<string> $labels Custom Fields labels.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#create-field
+     *
+     * @return false|object
+     */
+    public function create_custom_fields(array $labels)
+    {
+        return $this->post(
+            'custom_fields',
+            [
+                'api_secret' => $this->api_secret,
+                'label'      => $labels,
+            ]
+        );
+    }
+
+    /**
+     * Updates an existing custom field.
+     *
+     * @param integer $id    Custom Field ID.
+     * @param string  $label Updated Custom Field label.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#update-field
+     *
+     * @return false|object
+     */
+    public function update_custom_field(int $id, string $label)
+    {
+        return $this->put(
+            sprintf('custom_fields/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
+                'label'      => $label,
+            ]
+        );
+    }
+
+    /**
+     * Deletes an existing custom field.
+     *
+     * @param integer $id Custom Field ID.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#destroy-field
+     *
+     * @return false|object
+     */
+    public function delete_custom_field(int $id)
+    {
+        return $this->delete(
+            sprintf('custom_fields/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
      * List purchases.
      *
      * @param array<string, string> $options Request options.
@@ -1033,8 +1140,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string                                                     $endpoint API Endpoint.
-     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
+     * @param string                                                         $endpoint API Endpoint.
+     * @param array<string, int|string|array<int|string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -1090,9 +1197,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string                                                     $endpoint API Endpoint.
-     * @param string                                                     $method   Request method.
-     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
+     * @param string                                                         $endpoint API Endpoint.
+     * @param string                                                         $method   Request method.
+     * @param array<string, int|string|array<int|string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      * @throws \Exception If JSON encoding arguments failed.
