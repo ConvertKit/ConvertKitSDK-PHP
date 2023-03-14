@@ -321,10 +321,88 @@ class ConvertKit_API
     }
 
     /**
-     * Adds a tag to a subscriber
+     * Gets all tags.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#list-tags
+     *
+     * @return false|mixed
+     */
+    public function get_tags()
+    {
+        return $this->get_resources('tags');
+    }
+
+    /**
+     * Creates a tag.
+     *
+     * @param string $tag Tag Name.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#create-a-tag
+     *
+     * @return false|mixed
+     */
+    public function create_tag(string $tag)
+    {
+        return $this->post(
+            'tags',
+            [
+                'api_key' => $this->api_key,
+                'tag'     => ['name' => $tag],
+            ]
+        );
+    }
+
+    /**
+     * Tags a subscriber with the given existing Tag.
+     *
+     * @param integer               $tag_id     Tag ID.
+     * @param string                $email      Email Address.
+     * @param string                $first_name First Name.
+     * @param array<string, string> $fields     Custom Fields.
+     *
+     * @see https://developers.convertkit.com/#tag-a-subscriber
+     *
+     * @return false|mixed
+     */
+    public function tag_subscriber(
+        int $tag_id,
+        string $email,
+        string $first_name = '',
+        array $fields = []
+    ) {
+        // Build parameters.
+        $options = [
+            'api_secret' => $this->api_secret,
+            'email'      => $email,
+        ];
+
+        if (!empty($first_name)) {
+            $options['first_name'] = $first_name;
+        }
+        if (!empty($fields)) {
+            $options['fields'] = $fields;
+        }
+
+        // Send request.
+        return $this->post(
+            sprintf('tags/%s/subscribe', $tag_id),
+            $options
+        );
+    }
+
+    /**
+     * Adds a tag to a subscriber.
      *
      * @param integer              $tag     Tag ID.
      * @param array<string, mixed> $options Array of user data.
+     *
+     * @deprecated 1.0.0 Use tag_subscriber($tag_id, $email, $first_name, $fields).
+     *
+     * @see https://developers.convertkit.com/#tag-a-subscriber
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -332,6 +410,12 @@ class ConvertKit_API
      */
     public function add_tag(int $tag, array $options)
     {
+        // This function is deprecated in 1.0, as we prefer functions with structured arguments.
+        trigger_error(
+            'add_tag() is deprecated in 1.0.  Use tag_subscribe($tag_id, $email, $first_name, $fields) instead.',
+            E_USER_NOTICE
+        );
+
         if (!is_int($tag)) {
             throw new \InvalidArgumentException();
         }
@@ -345,6 +429,80 @@ class ConvertKit_API
         return $this->post(
             sprintf('tags/%s/subscribe', $tag),
             $options
+        );
+    }
+
+    /**
+     * Removes a tag from a subscriber.
+     *
+     * @param integer $tag_id        Tag ID.
+     * @param integer $subscriber_id Subscriber ID.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber
+     *
+     * @return false|mixed
+     */
+    public function remove_tag_from_subscriber(int $tag_id, int $subscriber_id)
+    {
+        return $this->delete(
+            sprintf('subscribers/%s/tags/%s', $subscriber_id, $tag_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
+     * Removes a tag from a subscriber by email address.
+     *
+     * @param integer $tag_id Tag ID.
+     * @param string  $email  Subscriber email address.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber-by-email
+     *
+     * @return false|mixed
+     */
+    public function remove_tag_from_subscriber_by_email(int $tag_id, string $email)
+    {
+        return $this->post(
+            sprintf('tags/%s/unsubscribe', $tag_id),
+            [
+                'api_secret' => $this->api_secret,
+                'email'      => $email,
+            ]
+        );
+    }
+
+    /**
+     * List subscriptions to a tag
+     *
+     * @param integer $tag_id           Tag ID.
+     * @param string  $sort_order       Sort Order (asc|desc).
+     * @param string  $subscriber_state Subscriber State (active,cancelled).
+     * @param integer $page             Page.
+     *
+     * @see https://developers.convertkit.com/#list-subscriptions-to-a-tag
+     *
+     * @return false|mixed
+     */
+    public function get_tag_subscriptions(
+        int $tag_id,
+        string $sort_order = 'asc',
+        string $subscriber_state = 'active',
+        int $page = 1
+    ) {
+        return $this->get(
+            sprintf('tags/%s/subscriptions', $tag_id),
+            [
+                'api_secret'       => $this->api_secret,
+                'sort_order'       => $sort_order,
+                'subscriber_state' => $subscriber_state,
+                'page'             => $page,
+            ]
         );
     }
 
