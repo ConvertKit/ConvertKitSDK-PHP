@@ -821,6 +821,203 @@ class ConvertKit_API
     }
 
     /**
+     * Gets a list of broadcasts.
+     * 
+     * @see https://developers.convertkit.com/#list-broadcasts
+     * 
+     * @return false|array<int,\stdClass>
+     */
+    public function get_broadcasts()
+    {
+        return $this->get(
+            'broadcasts',
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
+     * Creates a broadcast.
+     * 
+     * @see https://developers.convertkit.com/#create-a-broadcast
+     * 
+     * @param string    $content               The broadcast's email HTML content.
+     * @param string    $description           An internal description of this broadcast.
+     * @param string    $email_address         Sending email address; leave blank to use your account's default sending email address.
+     * @param string    $email_layout_template Name of the email template to use; leave blank to use your account's default email template.
+     * @param bool      $public                Specifies whether or not this is a public post.
+     * @param \DateTime $published_at          Specifies the time that this post was published (applicable only to public posts.
+     * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create a draft broadcast. If set to a future time, this is the time that the broadcast will be scheduled to send.
+     * @param string    $subject               The broadcast email's subject.
+     * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image (applicable only to public posts).
+     * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast post (applicable only to public posts).
+     */
+    public function create_broadcast(
+        string $content
+        string $description,
+        string $email_address = '',
+        string $email_layout_template = '',
+        bool $public = false,
+        \DateTime $published_at = '',
+        \DateTime $send_at = '',
+        string $subject = '',
+        string $thumbnail_alt = '',
+        string $thumbnail_url = ''
+    ) {
+        $options = [
+            'api_secret' => $this->api_secret,
+            'content' => $content,
+            'description' => $description,
+            'email_address' => $email_address,
+            'email_layout_template' => $email_layout_template,
+            'public' => $public,
+            'published_at' => $published_at->format('Y-m-d H:i:s'),
+            'send_at' => $send_at->format('Y-m-d H:i:s'),
+            'subject' => $subject,
+            'thumbnail_alt' => $thumbnail_alt,
+            'thumbnail_url' => $thumbnail_url,
+        ];
+
+        // Iterate through options, removing blank entries.
+        foreach($options as $key=>$value) {
+            if (strlen($value) === 0 ) {
+                unset($options[$key]);
+            }
+        }
+
+        // If the post isn't public, remove some options that don't apply.
+        if(!$public) {
+            unset($options['published_at'], $options['thumbnail_alt'], $options['thumbnail_url']);
+        }
+
+        // Send request.
+        return $this->post( 'broadcasts', $options );
+    }
+
+    /**
+     * Retrieve a specific broadcast.
+     * 
+     * @param int $id Broadcast ID.
+     * 
+     * @see https://developers.convertkit.com/#retrieve-a-specific-broadcast
+     * 
+     * @return false|\stdClass
+     */
+    public function get_broadcast(int $id)
+    {
+        return $this->get(
+            sprintf('broadcasts/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
+     * Get the statistics (recipient count, open rate, click rate, unsubscribe count, total clicks, status, and send progress) for a specific broadcast.
+     * 
+     * @param int $id Broadcast ID.
+     * 
+     * @see https://developers.convertkit.com/#retrieve-a-specific-broadcast
+     * 
+     * @return false|\stdClass
+     */
+    public function get_broadcast_stats(int $id)
+    {
+        return $this->get(
+            sprintf('broadcasts/%s/stats', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
+     * Updates a broadcast.
+     * 
+     * @see https://developers.convertkit.com/#create-a-broadcast
+     * 
+     * @param integer   $id                    Broadcast ID.
+     * @param string    $content               The broadcast's email HTML content.
+     * @param string    $description           An internal description of this broadcast.
+     * @param string    $email_address         Sending email address; leave blank to use your account's default sending email address.
+     * @param string    $email_layout_template Name of the email template to use; leave blank to use your account's default email template.
+     * @param bool      $public                Specifies whether or not this is a public post.
+     * @param \DateTime $published_at          Specifies the time that this post was published (applicable only to public posts.
+     * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create a draft broadcast. If set to a future time, this is the time that the broadcast will be scheduled to send.
+     * @param string    $subject               The broadcast email's subject.
+     * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image (applicable only to public posts).
+     * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast post (applicable only to public posts).
+     */
+    public function update_broadcast(
+        int $id,
+        string $content
+        string $description,
+        string $email_address = '',
+        string $email_layout_template = '',
+        bool $public = false,
+        \DateTime $published_at = '',
+        \DateTime $send_at = '',
+        string $subject = '',
+        string $thumbnail_alt = '',
+        string $thumbnail_url = ''
+    ) {
+        $options = [
+            'api_secret' => $this->api_secret,
+            'content' => $content,
+            'description' => $description,
+            'email_address' => $email_address,
+            'email_layout_template' => $email_layout_template,
+            'public' => $public,
+            'published_at' => $published_at->format('Y-m-d H:i:s'),
+            'send_at' => $send_at->format('Y-m-d H:i:s'),
+            'subject' => $subject,
+            'thumbnail_alt' => $thumbnail_alt,
+            'thumbnail_url' => $thumbnail_url,
+        ];
+
+        // Iterate through options, removing blank entries.
+        foreach($options as $key=>$value) {
+            if (strlen($value) === 0 ) {
+                unset($options[$key]);
+            }
+        }
+
+        // If the post isn't public, remove some options that don't apply.
+        if(!$public) {
+            unset($options['published_at'], $options['thumbnail_alt'], $options['thumbnail_url']);
+        }
+
+        // Send request.
+        return $this->put(
+            sprintf('broadcasts/%s', $id ),
+            $options
+        );
+    }
+
+    /**
+     * Deletes an existing broadcast.
+     *
+     * @param integer $id Broadcast ID.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#destroy-webhook
+     *
+     * @return false|object
+     */
+    public function destroy_broadcast(int $id)
+    {
+        return $this->delete(
+            sprintf('broadcasts/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
      * Returns all created webhooks.
      *
      * @since 1.0.0
