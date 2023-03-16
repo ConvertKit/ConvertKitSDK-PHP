@@ -4,7 +4,7 @@
   "keywords": ["convertkit", "api", "forms"],
   "require": {
     "php": ">=5.5",
-    "guzzlehttp/guzzle": "^6.3",
+    "guzzlehttp/guzzle": "^7.0",
     "monolog/monolog": "^2.0"
   },
   "require-dev": {
