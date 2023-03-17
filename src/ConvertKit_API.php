@@ -1044,12 +1044,17 @@ class ConvertKit_API
      *
      * @param string $url URL of HTML page.
      *
+     * @throws \InvalidArgumentException If the URL is not a valid URL format.
      * @throws \Exception If parsing the legacy form or landing page failed.
      *
      * @return false|string
      */
     public function get_resource(string $url)
     {
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new \InvalidArgumentException();
+        }
+
         $resource = '';
 
         $this->create_log(sprintf('Getting resource %s', $url));
