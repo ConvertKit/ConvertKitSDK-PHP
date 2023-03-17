@@ -180,19 +180,10 @@ class ConvertKit_API
      * @param integer               $form_id Form ID.
      * @param array<string, string> $options Array of user data (email, name).
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|object
      */
     public function form_subscribe(int $form_id, array $options)
     {
-        if (!is_int($form_id)) {
-            throw new \InvalidArgumentException();
-        }
-        if (!is_array($options)) {
-            throw new \InvalidArgumentException();
-        }
-
         // Add API Key to array of options.
         $options['api_key'] = $this->api_key;
 
@@ -404,8 +395,6 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/#tag-a-subscriber
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|object
      */
     public function add_tag(int $tag, array $options)
@@ -415,13 +404,6 @@ class ConvertKit_API
             'add_tag() is deprecated in 1.0.  Use tag_subscribe($tag_id, $email, $first_name, $fields) instead.',
             E_USER_NOTICE
         );
-
-        if (!is_int($tag)) {
-            throw new \InvalidArgumentException();
-        }
-        if (!is_array($options)) {
-            throw new \InvalidArgumentException();
-        }
 
         // Add API Key to array of options.
         $options['api_key'] = $this->api_key;
@@ -514,16 +496,12 @@ class ConvertKit_API
      *
      * @param string $resource Resource type.
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     * @throws \InvalidArgumentException If the resource argument is not a supported resource type.
      *
      * @return array<int|string, mixed|\stdClass> API response
      */
     public function get_resources(string $resource)
     {
-        if (!is_string($resource)) {
-            throw new \InvalidArgumentException();
-        }
-
         // Return cached resource if it exists.
         if (array_key_exists($resource, $this->resources)) {
             return $this->resources[$resource];
@@ -644,19 +622,10 @@ class ConvertKit_API
      *
      * @param string $email_address Email Address.
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|integer
      */
     public function get_subscriber_id(string $email_address)
     {
-        if (!is_string($email_address)) {
-            throw new \InvalidArgumentException();
-        }
-        if (!filter_var($email_address, FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException();
-        }
-
         $subscribers = $this->get(
             'subscribers',
             [
@@ -686,16 +655,10 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/#view-a-single-subscriber
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|integer
      */
     public function get_subscriber(int $subscriber_id)
     {
-        if (!is_int($subscriber_id) || $subscriber_id < 1) {
-            throw new \InvalidArgumentException();
-        }
-
         return $this->get(
             sprintf('subscribers/%s', $subscriber_id),
             [
@@ -771,8 +734,6 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/#unsubscribe-subscriber
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|object
      */
     public function form_unsubscribe(array $options)
@@ -784,10 +745,6 @@ class ConvertKit_API
             'form_unsubscribe() is deprecated in 1.0.  Use unsubscribe($email) instead.',
             E_USER_NOTICE
         );
-
-        if (!is_array($options)) {
-            throw new \InvalidArgumentException();
-        }
 
         // Add API Secret to array of options.
         $options['api_secret'] = $this->api_secret;
@@ -802,16 +759,10 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/#list-tags-for-a-subscriber
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|array<int,\stdClass>
      */
     public function get_subscriber_tags(int $subscriber_id)
     {
-        if (!is_int($subscriber_id) || $subscriber_id < 1) {
-            throw new \InvalidArgumentException();
-        }
-
         return $this->get(
             sprintf('subscribers/%s/tags', $subscriber_id),
             [
@@ -1032,16 +983,10 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/#list-purchases
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|object
      */
     public function list_purchases(array $options)
     {
-        if (!is_array($options)) {
-            throw new \InvalidArgumentException();
-        }
-
         // Add API Secret to array of options.
         $options['api_secret'] = $this->api_secret;
 
@@ -1074,16 +1019,10 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/#create-a-purchase
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|object
      */
     public function create_purchase(array $options)
     {
-        if (!is_array($options)) {
-            throw new \InvalidArgumentException();
-        }
-
         // Add API Secret to array of options.
         $options['api_secret'] = $this->api_secret;
 
@@ -1099,20 +1038,12 @@ class ConvertKit_API
      *
      * @param string $url URL of HTML page.
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      * @throws \Exception If parsing the legacy form or landing page failed.
      *
      * @return false|string
      */
     public function get_resource(string $url)
     {
-        if (!is_string($url)) {
-            throw new \InvalidArgumentException();
-        }
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new \InvalidArgumentException();
-        }
-
         $resource = '';
 
         $this->create_log(sprintf('Getting resource %s', $url));
@@ -1245,8 +1176,6 @@ class ConvertKit_API
      * @param string                                                     $endpoint API Endpoint.
      * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|mixed
      */
     public function get(string $endpoint, array $args = [])
@@ -1263,8 +1192,6 @@ class ConvertKit_API
      *
      * @param string                                                         $endpoint API Endpoint.
      * @param array<string, int|string|array<int|string, int|string>|string> $args     Request arguments.
-     *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
      * @return false|mixed
      */
@@ -1283,8 +1210,6 @@ class ConvertKit_API
      * @param string                                                     $endpoint API Endpoint.
      * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
      * @return false|mixed
      */
     public function put(string $endpoint, array $args = [])
@@ -1301,8 +1226,6 @@ class ConvertKit_API
      *
      * @param string                                                     $endpoint API Endpoint.
      * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
-     *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
      * @return false|mixed
      */
@@ -1322,23 +1245,12 @@ class ConvertKit_API
      * @param string                                                         $method   Request method.
      * @param array<string, int|string|array<int|string, int|string>|string> $args     Request arguments.
      *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      * @throws \Exception If JSON encoding arguments failed.
      *
      * @return false|mixed
      */
     public function make_request(string $endpoint, string $method, array $args = [])
     {
-        if (!is_string($endpoint)) {
-            throw new \InvalidArgumentException();
-        }
-        if (!is_string($method)) {
-            throw new \InvalidArgumentException();
-        }
-        if (!is_array($args)) {
-            throw new \InvalidArgumentException();
-        }
-
         // Build URL.
         $url = $this->api_url_base . $this->api_version . '/' . $endpoint;
 
