@@ -55,20 +55,6 @@ class ConvertKit_API
     protected $api_url_base = 'https://api.convertkit.com/';
 
     /**
-     * API resources
-     *
-     * @var array<int|string, array<int|string, mixed|\stdClass>>
-     */
-    protected $resources = [];
-
-    /**
-     * Additional markup
-     *
-     * @var array<string, string>
-     */
-    protected $markup = [];
-
-    /**
      * Debug
      *
      * @var boolean
@@ -524,11 +510,6 @@ class ConvertKit_API
             throw new \InvalidArgumentException();
         }
 
-        // Return cached resource if it exists.
-        if (array_key_exists($resource, $this->resources)) {
-            return $this->resources[$resource];
-        }
-
         // Assign the resource to the request variable.
         $request = $resource;
 
@@ -632,10 +613,7 @@ class ConvertKit_API
                 throw new \InvalidArgumentException('An unsupported resource was specified.');
         }//end switch
 
-        // Cache resources and return.
-        $this->resources[$resource] = $_resource;
-
-        return $this->resources[$resource];
+        return $_resource;
     }
 
     /**
@@ -1117,12 +1095,6 @@ class ConvertKit_API
 
         $this->create_log(sprintf('Getting resource %s', $url));
 
-        // If the resource was already fetched, return the cached version now.
-        if (isset($this->markup[$url])) {
-            $this->create_log('Resource already set');
-            return $this->markup[$url];
-        }
-
         // Fetch the resource.
         $request  = new Request(
             'GET',
@@ -1174,8 +1146,6 @@ class ConvertKit_API
         // LIBXML_HTML_NOIMPLIED to correctly work.
         $resource = $this->strip_html_head_body_tags($resource);
 
-        // Cache and return.
-        $this->markup[$url] = $resource;
         return $resource;
     }
 
