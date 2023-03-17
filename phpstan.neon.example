@@ -12,4 +12,3 @@ parameters:
     # or the symbols are inaccurate.
     ignoreErrors:
         - '#\$headers of class GuzzleHttp\\Psr7\\Request constructor expects#'
-        - '#Cannot call method format\(\) on null#'

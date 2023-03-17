@@ -881,8 +881,8 @@ class ConvertKit_API
             'email_address'         => $email_address,
             'email_layout_template' => $email_layout_template,
             'public'                => $public,
-            'published_at'          => (!isset($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
-            'send_at'               => (!isset($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
+            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
             'subject'               => $subject,
             'thumbnail_alt'         => $thumbnail_alt,
             'thumbnail_url'         => $thumbnail_url,
@@ -890,7 +890,7 @@ class ConvertKit_API
 
         // Iterate through options, removing blank entries.
         foreach ($options as $key => $value) {
-            if (strlen($value) === 0) {
+            if (is_string($value) && strlen($value) === 0) {
                 unset($options[$key]);
             }
         }
@@ -989,8 +989,8 @@ class ConvertKit_API
             'email_address'         => $email_address,
             'email_layout_template' => $email_layout_template,
             'public'                => $public,
-            'published_at'          => (!isset($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
-            'send_at'               => (!isset($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
+            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
             'subject'               => $subject,
             'thumbnail_alt'         => $thumbnail_alt,
             'thumbnail_url'         => $thumbnail_url,
@@ -998,7 +998,7 @@ class ConvertKit_API
 
         // Iterate through options, removing blank entries.
         foreach ($options as $key => $value) {
-            if (strlen($value) === 0) {
+            if (is_string($value) && strlen($value) === 0) {
                 unset($options[$key]);
             }
         }
@@ -1477,8 +1477,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string                                                         $endpoint API Endpoint.
-     * @param array<string, int|string|array<int|string, int|string>|string> $args     Request arguments.
+     * @param string                                                                  $endpoint API Endpoint.
+     * @param array<string, bool|integer|string|array<int|string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -1496,8 +1496,8 @@ class ConvertKit_API
     /**
      * Performs a PUT request to the API.
      *
-     * @param string                                                     $endpoint API Endpoint.
-     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
+     * @param string                                                              $endpoint API Endpoint.
+     * @param array<string, bool|integer|string|array<string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      *
@@ -1534,9 +1534,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string                                                         $endpoint API Endpoint.
-     * @param string                                                         $method   Request method.
-     * @param array<string, int|string|array<int|string, int|string>|string> $args     Request arguments.
+     * @param string                                                                  $endpoint API Endpoint.
+     * @param string                                                                  $method   Request method.
+     * @param array<string, bool|integer|string|array<int|string, int|string>|string> $args     Request arguments.
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
      * @throws \Exception If JSON encoding arguments failed.
