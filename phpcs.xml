@@ -42,9 +42,11 @@
         <exclude name="Squiz.Commenting.ClosingDeclarationComment.Missing" />
         <exclude name="Squiz.Commenting.FileComment.IncorrectAuthor" />
         <exclude name="Squiz.Commenting.FileComment.MissingCopyrightTag" />
+        <exclude name="Squiz.Commenting.PostStatementComment" />
 
         <!-- Permit inline if statements -->
         <exclude name="Squiz.PHP.DisallowInlineIf.Found" />
+        <exclude name="Squiz.PHP.DisallowComparisonAssignment" />
 
         <!-- Don't require various newlines and spacing before and after functions -->
         <exclude name="Squiz.WhiteSpace.FunctionSpacing.AfterLast" />

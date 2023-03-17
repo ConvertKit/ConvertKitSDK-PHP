@@ -843,16 +843,16 @@ class ConvertKit_API
      * @param string    $subject               The broadcast email's subject.
      * @param string    $content               The broadcast's email HTML content.
      * @param string    $description           An internal description of this broadcast.
-     * @param string    $email_address         Sending email address; leave blank to use your account's
-     *                                         default sending email address.
-     * @param string    $email_layout_template Name of the email template to use; leave blank to use your
-     *                                         account's default email template.
      * @param boolean   $public                Specifies whether or not this is a public post.
      * @param \DateTime $published_at          Specifies the time that this post was published (applicable
      *                                         only to public posts).
      * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
      *                                         a draft broadcast. If set to a future time, this is the time that
      *                                         the broadcast will be scheduled to send.
+     * @param string    $email_address         Sending email address; leave blank to use your account's
+     *                                         default sending email address.
+     * @param string    $email_layout_template Name of the email template to use; leave blank to use your
+     *                                         account's default email template.
      * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
      *                                         (applicable only to public posts).
      * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
@@ -881,8 +881,8 @@ class ConvertKit_API
             'email_address'         => $email_address,
             'email_layout_template' => $email_layout_template,
             'public'                => $public,
-            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
-            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
+            'published_at'          => (!isset($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'               => (!isset($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
             'subject'               => $subject,
             'thumbnail_alt'         => $thumbnail_alt,
             'thumbnail_url'         => $thumbnail_url,
@@ -950,16 +950,16 @@ class ConvertKit_API
      * @param string    $subject               The broadcast email's subject.
      * @param string    $content               The broadcast's email HTML content.
      * @param string    $description           An internal description of this broadcast.
-     * @param string    $email_address         Sending email address; leave blank to use your account's
-     *                                         default sending email address.
-     * @param string    $email_layout_template Name of the email template to use; leave blank to use your
-     *                                         account's default email template.
      * @param boolean   $public                Specifies whether or not this is a public post.
      * @param \DateTime $published_at          Specifies the time that this post was published (applicable
      *                                         only to public posts).
      * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
      *                                         a draft broadcast. If set to a future time, this is the time that
      *                                         the broadcast will be scheduled to send.
+     * @param string    $email_address         Sending email address; leave blank to use your account's
+     *                                         default sending email address.
+     * @param string    $email_layout_template Name of the email template to use; leave blank to use your
+     *                                         account's default email template.
      * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
      *                                         (applicable only to public posts).
      * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
@@ -989,8 +989,8 @@ class ConvertKit_API
             'email_address'         => $email_address,
             'email_layout_template' => $email_layout_template,
             'public'                => $public,
-            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
-            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
+            'published_at'          => (!isset($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'               => (!isset($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
             'subject'               => $subject,
             'thumbnail_alt'         => $thumbnail_alt,
             'thumbnail_url'         => $thumbnail_url,

@@ -1238,9 +1238,10 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that create_broadcast() and destroy_broadcast() works.
+     * Test that create_broadcast(), update_broadcast() and destroy_broadcast() works
+     * when specifying valid published_at and send_at values.
      *
-     * We do both, so we don't end up with unnecessary Broadcasts remaining
+     * We do all tests in a single function, so we don't end up with unnecessary Broadcasts remaining
      * on the ConvertKit account when running tests, which might impact
      * other tests that expect (or do not expect) specific Broadcasts.
      *
@@ -1248,7 +1249,7 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testCreateAndDestroyDraftBroadcast()
+    public function testCreateUpdateAndDestroyDraftBroadcast()
     {
         // Create a broadcast first.
         $result = $this->api->create_broadcast(
@@ -1266,7 +1267,24 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals('Test Broadcast from PHP SDK', $result['description']);
         $this->assertEquals(null, $result['published_at']);
         $this->assertEquals(null, $result['send_at']);
-        
+
+        // Update the existing broadcast.
+        $result = $this->api->update_broadcast(
+            $broadcastID,
+            'New Test Subject',
+            'New Test Content',
+            'New Test Broadcast from PHP SDK'
+        );
+
+        // Confirm the changes saved.
+        $result = get_object_vars($result->broadcast);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertEquals('New Test Subject', $result['subject']);
+        $this->assertEquals('New Test Content', $result['content']);
+        $this->assertEquals('New Test Broadcast from PHP SDK', $result['description']);
+        $this->assertEquals(null, $result['published_at']);
+        $this->assertEquals(null, $result['send_at']);
+
         // Destroy the broadcast.
         $this->api->destroy_broadcast($broadcastID);
     }
@@ -1307,14 +1325,109 @@ class ConvertKitAPITest extends TestCase
         $this->assertArrayHasKey('id', $result);
         $this->assertEquals('Test Subject', $result['subject']);
         $this->assertEquals('Test Content', $result['content']);
-        $this->assertEquals('Test Broadcast from PHP SDK', $result['description']);        
-        $this->assertEquals($publishedAt->format('Y-m-d').'T'.$publishedAt->format('H:i:s').'.000Z', $result['published_at']);
-        $this->assertEquals($sendAt->format('Y-m-d').'T'.$sendAt->format('H:i:s').'.000Z', $result['send_at']);
+        $this->assertEquals('Test Broadcast from PHP SDK', $result['description']);
+        $this->assertEquals(
+            $publishedAt->format('Y-m-d') . 'T' . $publishedAt->format('H:i:s') . '.000Z',
+            $result['published_at']
+        );
+        $this->assertEquals(
+            $sendAt->format('Y-m-d') . 'T' . $sendAt->format('H:i:s') . '.000Z',
+            $result['send_at']
+        );
 
         // Destroy the broadcast.
         $this->api->destroy_broadcast($broadcastID);
     }
 
+    /**
+     * Test that get_broadcast() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetBroadcast()
+    {
+        $result = $this->api->get_broadcast($_ENV['CONVERTKIT_API_BROADCAST_ID']);
+        $result = get_object_vars($result->broadcast);
+        $this->assertEquals($result['id'], $_ENV['CONVERTKIT_API_BROADCAST_ID']);
+    }
+
+    /**
+     * Test that get_broadcast() throws a ClientException when an invalid
+     * broadcast ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetBroadcastWithInvalidBroadcastID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->get_broadcast(12345);
+    }
+
+    /**
+     * Test that get_broadcast_stats() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetBroadcastStats()
+    {
+        $result = $this->api->get_broadcast_stats($_ENV['CONVERTKIT_API_BROADCAST_ID']);
+        $result = get_object_vars($result->broadcast);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayHasKey('stats', $result);
+        $this->assertEquals($result['stats']->recipients, 1);
+        $this->assertEquals($result['stats']->open_rate, 0);
+        $this->assertEquals($result['stats']->click_rate, 0);
+        $this->assertEquals($result['stats']->unsubscribes, 0);
+        $this->assertEquals($result['stats']->total_clicks, 0);
+    }
+
+    /**
+     * Test that get_broadcast_stats() throws a ClientException when an invalid
+     * broadcast ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetBroadcastStatsWithInvalidBroadcastID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->get_broadcast_stats(12345);
+    }
+
+    /**
+     * Test that update_broadcast() throws a ClientException when an invalid
+     * broadcast ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testUpdateBroadcastWithInvalidBroadcastID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->update_broadcast(12345);
+    }
+
+    /**
+     * Test that destroy_broadcast() throws a ClientException when an invalid
+     * broadcast ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testDestroyBroadcastWithInvalidBroadcastID()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->api->destroy_broadcast(12345);
+    }
 
     /**
      * Test that create_webhook() and destroy_webhook() works.
