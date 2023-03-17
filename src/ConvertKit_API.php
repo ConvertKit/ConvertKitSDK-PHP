@@ -1037,23 +1037,6 @@ class ConvertKit_API
     }
 
     /**
-     * Returns all created webhooks.
-     *
-     * @since 1.0.0
-     *
-     * @return false|object
-     */
-    public function get_webhooks()
-    {
-        return $this->get(
-            'automations/hooks',
-            [
-                'api_secret' => $this->api_secret,
-            ],
-        );
-    }
-
-    /**
      * Creates a webhook that will be called based on the chosen event types.
      *
      * @param string $url       URL to receive event.

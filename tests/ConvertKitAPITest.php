@@ -1238,31 +1238,6 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that get_webhooks() returns the expected data.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetWebhooks()
-    {
-        // Create a webhook first.
-        $result = $this->api->create_webhook(
-            'https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d',
-            'subscriber.subscriber_activate',
-        );
-        $ruleID = $result->rule->id;
-
-        // List webhooks, confirming the webhook created exists in the list.
-        $webhooks = $this->api->get_webhooks();
-        $this->assertIsArray($webhooks);
-
-        // Destroy the webhook.
-        $result = $this->api->destroy_webhook($ruleID);
-        $this->assertEquals($result->success, true);
-    }
-
-    /**
      * Test that create_webhook() and destroy_webhook() works.
      *
      * We do both, so we don't end up with unnecessary webhooks remaining
