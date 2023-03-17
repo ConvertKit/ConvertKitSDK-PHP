@@ -622,10 +622,16 @@ class ConvertKit_API
      *
      * @param string $email_address Email Address.
      *
+     * @throws \InvalidArgumentException If the email address is not a valid email format.
+     *
      * @return false|integer
      */
     public function get_subscriber_id(string $email_address)
     {
+        if (!filter_var($email_address, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('Email address is not a valid email format.');
+        }
+
         $subscribers = $this->get(
             'subscribers',
             [
