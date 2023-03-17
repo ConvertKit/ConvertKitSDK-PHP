@@ -840,6 +840,7 @@ class ConvertKit_API
     /**
      * Creates a broadcast.
      *
+     * @param string    $subject               The broadcast email's subject.
      * @param string    $content               The broadcast's email HTML content.
      * @param string    $description           An internal description of this broadcast.
      * @param string    $email_address         Sending email address; leave blank to use your account's
@@ -852,7 +853,6 @@ class ConvertKit_API
      * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
      *                                         a draft broadcast. If set to a future time, this is the time that
      *                                         the broadcast will be scheduled to send.
-     * @param string    $subject               The broadcast email's subject.
      * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
      *                                         (applicable only to public posts).
      * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
@@ -863,14 +863,14 @@ class ConvertKit_API
      * @return false|object
      */
     public function create_broadcast(
+        string $subject = '',
         string $content = '',
         string $description = '',
+        bool $public = false,
+        \DateTime $published_at = null,
+        \DateTime $send_at = null,
         string $email_address = '',
         string $email_layout_template = '',
-        bool $public = false,
-        \DateTime $published_at = '',
-        \DateTime $send_at = '',
-        string $subject = '',
         string $thumbnail_alt = '',
         string $thumbnail_url = ''
     ) {
@@ -881,8 +881,8 @@ class ConvertKit_API
             'email_address'         => $email_address,
             'email_layout_template' => $email_layout_template,
             'public'                => $public,
-            'published_at'          => $published_at->format('Y-m-d H:i:s'),
-            'send_at'               => $send_at->format('Y-m-d H:i:s'),
+            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
             'subject'               => $subject,
             'thumbnail_alt'         => $thumbnail_alt,
             'thumbnail_url'         => $thumbnail_url,
@@ -947,6 +947,7 @@ class ConvertKit_API
      * Updates a broadcast.
      *
      * @param integer   $id                    Broadcast ID.
+     * @param string    $subject               The broadcast email's subject.
      * @param string    $content               The broadcast's email HTML content.
      * @param string    $description           An internal description of this broadcast.
      * @param string    $email_address         Sending email address; leave blank to use your account's
@@ -959,7 +960,6 @@ class ConvertKit_API
      * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
      *                                         a draft broadcast. If set to a future time, this is the time that
      *                                         the broadcast will be scheduled to send.
-     * @param string    $subject               The broadcast email's subject.
      * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
      *                                         (applicable only to public posts).
      * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
@@ -971,14 +971,14 @@ class ConvertKit_API
      */
     public function update_broadcast(
         int $id,
+        string $subject = '',
         string $content = '',
         string $description = '',
+        bool $public = false,
+        \DateTime $published_at = null,
+        \DateTime $send_at = null,
         string $email_address = '',
         string $email_layout_template = '',
-        bool $public = false,
-        \DateTime $published_at = '',
-        \DateTime $send_at = '',
-        string $subject = '',
         string $thumbnail_alt = '',
         string $thumbnail_url = ''
     ) {
@@ -989,8 +989,8 @@ class ConvertKit_API
             'email_address'         => $email_address,
             'email_layout_template' => $email_layout_template,
             'public'                => $public,
-            'published_at'          => $published_at->format('Y-m-d H:i:s'),
-            'send_at'               => $send_at->format('Y-m-d H:i:s'),
+            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
             'subject'               => $subject,
             'thumbnail_alt'         => $thumbnail_alt,
             'thumbnail_url'         => $thumbnail_url,

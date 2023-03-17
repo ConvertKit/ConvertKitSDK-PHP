@@ -1238,6 +1238,85 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that create_broadcast() and destroy_broadcast() works.
+     *
+     * We do both, so we don't end up with unnecessary Broadcasts remaining
+     * on the ConvertKit account when running tests, which might impact
+     * other tests that expect (or do not expect) specific Broadcasts.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateAndDestroyDraftBroadcast()
+    {
+        // Create a broadcast first.
+        $result = $this->api->create_broadcast(
+            'Test Subject',
+            'Test Content',
+            'Test Broadcast from PHP SDK',
+        );
+        $broadcastID = $result->broadcast->id;
+
+        // Confirm the Broadcast saved.
+        $result = get_object_vars($result->broadcast);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertEquals('Test Subject', $result['subject']);
+        $this->assertEquals('Test Content', $result['content']);
+        $this->assertEquals('Test Broadcast from PHP SDK', $result['description']);
+        $this->assertEquals(null, $result['published_at']);
+        $this->assertEquals(null, $result['send_at']);
+        
+        // Destroy the broadcast.
+        $this->api->destroy_broadcast($broadcastID);
+    }
+
+    /**
+     * Test that create_broadcast() and destroy_broadcast() works
+     * when specifying valid published_at and send_at values.
+     *
+     * We do both, so we don't end up with unnecessary Broadcasts remaining
+     * on the ConvertKit account when running tests, which might impact
+     * other tests that expect (or do not expect) specific Broadcasts.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateAndDestroyPublicBroadcastWithValidDates()
+    {
+        // Create DateTime object.
+        $publishedAt = new \DateTime('now');
+        $publishedAt->modify('+7 days');
+        $sendAt = new \DateTime('now');
+        $sendAt->modify('+14 days');
+
+        // Create a broadcast first.
+        $result = $this->api->create_broadcast(
+            'Test Subject',
+            'Test Content',
+            'Test Broadcast from PHP SDK',
+            true,
+            $publishedAt,
+            $sendAt
+        );
+        $broadcastID = $result->broadcast->id;
+
+        // Confirm the Broadcast saved.
+        $result = get_object_vars($result->broadcast);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertEquals('Test Subject', $result['subject']);
+        $this->assertEquals('Test Content', $result['content']);
+        $this->assertEquals('Test Broadcast from PHP SDK', $result['description']);        
+        $this->assertEquals($publishedAt->format('Y-m-d').'T'.$publishedAt->format('H:i:s').'.000Z', $result['published_at']);
+        $this->assertEquals($sendAt->format('Y-m-d').'T'.$sendAt->format('H:i:s').'.000Z', $result['send_at']);
+
+        // Destroy the broadcast.
+        $this->api->destroy_broadcast($broadcastID);
+    }
+
+
+    /**
      * Test that create_webhook() and destroy_webhook() works.
      *
      * We do both, so we don't end up with unnecessary webhooks remaining
