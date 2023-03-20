@@ -42,9 +42,11 @@
         <exclude name="Squiz.Commenting.ClosingDeclarationComment.Missing" />
         <exclude name="Squiz.Commenting.FileComment.IncorrectAuthor" />
         <exclude name="Squiz.Commenting.FileComment.MissingCopyrightTag" />
+        <exclude name="Squiz.Commenting.PostStatementComment" />
 
         <!-- Permit inline if statements -->
         <exclude name="Squiz.PHP.DisallowInlineIf.Found" />
+        <exclude name="Squiz.PHP.DisallowComparisonAssignment" />
 
         <!-- Don't require various newlines and spacing before and after functions -->
         <exclude name="Squiz.WhiteSpace.FunctionSpacing.AfterLast" />
@@ -57,5 +59,8 @@
 
         <!-- Don't require break to align with switch -->
         <exclude name="Squiz.ControlStructures.SwitchDeclaration.BreakIndent" />
+
+        <!-- Allow use of is_null() -->
+        <exclude name="Generic.PHP.ForbiddenFunctions" />
     </rule>
 </ruleset>
