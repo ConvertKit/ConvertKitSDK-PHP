@@ -55,20 +55,6 @@ class ConvertKit_API
     protected $api_url_base = 'https://api.convertkit.com/';
 
     /**
-     * API resources
-     *
-     * @var array<int|string, array<int|string, mixed|\stdClass>>
-     */
-    protected $resources = [];
-
-    /**
-     * Additional markup
-     *
-     * @var array<string, string>
-     */
-    protected $markup = [];
-
-    /**
      * Debug
      *
      * @var boolean
@@ -502,11 +488,6 @@ class ConvertKit_API
      */
     public function get_resources(string $resource)
     {
-        // Return cached resource if it exists.
-        if (array_key_exists($resource, $this->resources)) {
-            return $this->resources[$resource];
-        }
-
         // Assign the resource to the request variable.
         $request = $resource;
 
@@ -610,10 +591,7 @@ class ConvertKit_API
                 throw new \InvalidArgumentException('An unsupported resource was specified.');
         }//end switch
 
-        // Cache resources and return.
-        $this->resources[$resource] = $_resource;
-
-        return $this->resources[$resource];
+        return $_resource;
     }
 
     /**
@@ -773,6 +751,222 @@ class ConvertKit_API
             sprintf('subscribers/%s/tags', $subscriber_id),
             [
                 'api_key' => $this->api_key,
+            ]
+        );
+    }
+
+    /**
+     * Gets a list of broadcasts.
+     *
+     * @see https://developers.convertkit.com/#list-broadcasts
+     *
+     * @return false|array<int,\stdClass>
+     */
+    public function get_broadcasts()
+    {
+        return $this->get(
+            'broadcasts',
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
+     * Creates a broadcast.
+     *
+     * @param string    $subject               The broadcast email's subject.
+     * @param string    $content               The broadcast's email HTML content.
+     * @param string    $description           An internal description of this broadcast.
+     * @param boolean   $public                Specifies whether or not this is a public post.
+     * @param \DateTime $published_at          Specifies the time that this post was published (applicable
+     *                                         only to public posts).
+     * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
+     *                                         a draft broadcast. If set to a future time, this is the time that
+     *                                         the broadcast will be scheduled to send.
+     * @param string    $email_address         Sending email address; leave blank to use your account's
+     *                                         default sending email address.
+     * @param string    $email_layout_template Name of the email template to use; leave blank to use your
+     *                                         account's default email template.
+     * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
+     *                                         (applicable only to public posts).
+     * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
+     *                                         post (applicable only to public posts).
+     *
+     * @see https://developers.convertkit.com/#create-a-broadcast
+     *
+     * @return false|object
+     */
+    public function create_broadcast(
+        string $subject = '',
+        string $content = '',
+        string $description = '',
+        bool $public = false,
+        \DateTime $published_at = null,
+        \DateTime $send_at = null,
+        string $email_address = '',
+        string $email_layout_template = '',
+        string $thumbnail_alt = '',
+        string $thumbnail_url = ''
+    ) {
+        $options = [
+            'api_secret'            => $this->api_secret,
+            'content'               => $content,
+            'description'           => $description,
+            'email_address'         => $email_address,
+            'email_layout_template' => $email_layout_template,
+            'public'                => $public,
+            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
+            'subject'               => $subject,
+            'thumbnail_alt'         => $thumbnail_alt,
+            'thumbnail_url'         => $thumbnail_url,
+        ];
+
+        // Iterate through options, removing blank entries.
+        foreach ($options as $key => $value) {
+            if (is_string($value) && strlen($value) === 0) {
+                unset($options[$key]);
+            }
+        }
+
+        // If the post isn't public, remove some options that don't apply.
+        if (!$public) {
+            unset($options['published_at'], $options['thumbnail_alt'], $options['thumbnail_url']);
+        }
+
+        // Send request.
+        return $this->post('broadcasts', $options);
+    }
+
+    /**
+     * Retrieve a specific broadcast.
+     *
+     * @param integer $id Broadcast ID.
+     *
+     * @see https://developers.convertkit.com/#retrieve-a-specific-broadcast
+     *
+     * @return false|object
+     */
+    public function get_broadcast(int $id)
+    {
+        return $this->get(
+            sprintf('broadcasts/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
+     * Get the statistics (recipient count, open rate, click rate, unsubscribe count,
+     * total clicks, status, and send progress) for a specific broadcast.
+     *
+     * @param integer $id Broadcast ID.
+     *
+     * @see https://developers.convertkit.com/#retrieve-a-specific-broadcast
+     *
+     * @return false|object
+     */
+    public function get_broadcast_stats(int $id)
+    {
+        return $this->get(
+            sprintf('broadcasts/%s/stats', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
+    }
+
+    /**
+     * Updates a broadcast.
+     *
+     * @param integer   $id                    Broadcast ID.
+     * @param string    $subject               The broadcast email's subject.
+     * @param string    $content               The broadcast's email HTML content.
+     * @param string    $description           An internal description of this broadcast.
+     * @param boolean   $public                Specifies whether or not this is a public post.
+     * @param \DateTime $published_at          Specifies the time that this post was published (applicable
+     *                                         only to public posts).
+     * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
+     *                                         a draft broadcast. If set to a future time, this is the time that
+     *                                         the broadcast will be scheduled to send.
+     * @param string    $email_address         Sending email address; leave blank to use your account's
+     *                                         default sending email address.
+     * @param string    $email_layout_template Name of the email template to use; leave blank to use your
+     *                                         account's default email template.
+     * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
+     *                                         (applicable only to public posts).
+     * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
+     *                                         post (applicable only to public posts).
+     *
+     * @see https://developers.convertkit.com/#create-a-broadcast
+     *
+     * @return false|object
+     */
+    public function update_broadcast(
+        int $id,
+        string $subject = '',
+        string $content = '',
+        string $description = '',
+        bool $public = false,
+        \DateTime $published_at = null,
+        \DateTime $send_at = null,
+        string $email_address = '',
+        string $email_layout_template = '',
+        string $thumbnail_alt = '',
+        string $thumbnail_url = ''
+    ) {
+        $options = [
+            'api_secret'            => $this->api_secret,
+            'content'               => $content,
+            'description'           => $description,
+            'email_address'         => $email_address,
+            'email_layout_template' => $email_layout_template,
+            'public'                => $public,
+            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
+            'subject'               => $subject,
+            'thumbnail_alt'         => $thumbnail_alt,
+            'thumbnail_url'         => $thumbnail_url,
+        ];
+
+        // Iterate through options, removing blank entries.
+        foreach ($options as $key => $value) {
+            if (is_string($value) && strlen($value) === 0) {
+                unset($options[$key]);
+            }
+        }
+
+        // If the post isn't public, remove some options that don't apply.
+        if (!$public) {
+            unset($options['published_at'], $options['thumbnail_alt'], $options['thumbnail_url']);
+        }
+
+        // Send request.
+        return $this->put(
+            sprintf('broadcasts/%s', $id),
+            $options
+        );
+    }
+
+    /**
+     * Deletes an existing broadcast.
+     *
+     * @param integer $id Broadcast ID.
+     *
+     * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#destroy-webhook
+     *
+     * @return false|object
+     */
+    public function destroy_broadcast(int $id)
+    {
+        return $this->delete(
+            sprintf('broadcasts/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
             ]
         );
     }
@@ -1059,12 +1253,6 @@ class ConvertKit_API
 
         $this->create_log(sprintf('Getting resource %s', $url));
 
-        // If the resource was already fetched, return the cached version now.
-        if (isset($this->markup[$url])) {
-            $this->create_log('Resource already set');
-            return $this->markup[$url];
-        }
-
         // Fetch the resource.
         $request  = new Request(
             'GET',
@@ -1116,8 +1304,6 @@ class ConvertKit_API
         // LIBXML_HTML_NOIMPLIED to correctly work.
         $resource = $this->strip_html_head_body_tags($resource);
 
-        // Cache and return.
-        $this->markup[$url] = $resource;
         return $resource;
     }
 
@@ -1201,8 +1387,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string                                                         $endpoint API Endpoint.
-     * @param array<string, int|string|array<int|string, int|string>|string> $args     Request arguments.
+     * @param string                                                                  $endpoint API Endpoint.
+     * @param array<string, bool|integer|string|array<int|string, int|string>|string> $args     Request arguments.
      *
      * @return false|mixed
      */
@@ -1218,8 +1404,8 @@ class ConvertKit_API
     /**
      * Performs a PUT request to the API.
      *
-     * @param string                                                     $endpoint API Endpoint.
-     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
+     * @param string                                                              $endpoint API Endpoint.
+     * @param array<string, bool|integer|string|array<string, int|string>|string> $args     Request arguments.
      *
      * @return false|mixed
      */
@@ -1252,9 +1438,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string                                                         $endpoint API Endpoint.
-     * @param string                                                         $method   Request method.
-     * @param array<string, int|string|array<int|string, int|string>|string> $args     Request arguments.
+     * @param string                                                                  $endpoint API Endpoint.
+     * @param string                                                                  $method   Request method.
+     * @param array<string, bool|integer|string|array<int|string, int|string>|string> $args     Request arguments.
      *
      * @throws \Exception If JSON encoding arguments failed.
      *
