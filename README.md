@@ -1,28 +1,38 @@
 # ConvertKit SDK PHP
 
-ConvertKit's official PHP SDK
+The ConvertKit PHP SDK provides convinient access to the ConvertKit API from applications written in the PHP language.
 
-### Installation
+It includes a pre-defined set of methods for interacting with the API.
 
-#### Standard Installation
+## Requirements
 
-1. Download or clone this repository
-2. Run `composer install`
-3. Add `./vendor/autoload.php` to your project
+PHP 7.4 and later.
 
-#### Installation with Package Manager
+## Composer
 
-If your project uses [Composer](https://getcomposer.org/), you can install the ConvertKitSDK-PHP package as a composer package. This allows you to have this project as a dependency without the ConvertKitSDK-PHP files being checked into your source code.
+You can install this PHP SDK via [Composer](http://getcomposer.org/). Run the following command:
 
-```shell
-composer require convertkit/convertkitapi:0.1
+```bash
+composer require convertkit/convertkitapi
 ```
 
-**If you previously use or rely on `dev-master`, please use the `0.1` release to maintain compatibility with no breaking changes.**
+To use the PHP SDK, use Composer's [autoload](https://getcomposer.org/doc/01-basic-usage.md#autoloading):
 
-This package is now versioned, and `1.0` will introduce breaking changes to bring this package up to date with coding standards, PHP versions and third party library versions.
+```php
+require_once 'vendor/autoload.php';
+```
 
-### Usage
+## Dependencies
+
+The PHP SDK require the following extensions in order to work properly:
+
+-   [`curl`](https://secure.php.net/manual/en/book.curl.php), although you can use your own non-cURL client if you prefer
+-   [`json`](https://secure.php.net/manual/en/book.json.php)
+-   [`mbstring`](https://secure.php.net/manual/en/book.mbstring.php) (Multibyte String)
+
+If you use Composer, these dependencies should be handled automatically.
+
+## Getting Started
 
 Get your ConvertKit API Key and API Secret [here](https://app.convertkit.com/account/edit) and set it somewhere in your application.
 
@@ -30,63 +40,6 @@ Get your ConvertKit API Key and API Secret [here](https://app.convertkit.com/acc
 $api = new \ConvertKit_API\ConvertKit_API($api_key, $api_secret);
 ```
 
-### Examples
+## Documentation
 
-**Subscribe to a form**
-
-Add a subscriber to a form. The `$subscribed` response will be an object.
-
-```php
-$tag_id = '99999'; // This tag must be valid for your ConvertKit account.
-
-$options = [
-			'email'      => 'test@test.com',
-			'name'       => 'Full Name',
-			'first_name' => 'First Name',
-			'tags'       => $tag_id,
-			'fields'     => [
-				'phone' => 134567891243,
-				'shirt_size' => 'M',
-				'website_url' => 'testurl.com'
-			]
-		];
-
-$subscribed = $api->form_subscribe($this->test_form_id, $options);
-```
-
-**Get Subscriber ID**
-
-Get the ConvertKit Subscriber ID for a given email address.
-
-```php
-$subscriber_id = $api->get_subscriber_id( $email );
-```
-
-**Get Subscriber**
-
-Get subscriber data for a ConvertKit Subscriber.
-
-```php
-$subscriber = $api->get_subscriber( $subscriber_id );
-```
-
-**Get Subscriber Tags**
-
-Get all tags applied to a Subscriber.
-
-```php
-$subscriber_tags = $api->get_subscriber_tags( $subscriber_id );
-```
-
-**Add Tag to a Subscriber**
-
-Apply a tag to a Subscriber.
-
-```php
-$tag_id = '99999'; // This tag must be valid for your ConvertKit account.
-$api->add_tag(tag_id, [
-			'email' => 'test@test.com'
-		]);
-```
-
-
+See the [PHP SDK docs]()
