@@ -42,4 +42,4 @@ $api = new \ConvertKit_API\ConvertKit_API($api_key, $api_secret);
 
 ## Documentation
 
-See the [PHP SDK docs]()
+See the [PHP SDK docs](DOCUMENTATION.md)
