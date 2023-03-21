@@ -3,7 +3,7 @@
 This document describes how to setup your development environment, so that it is ready to run, develop and test the ConvertKit PHP SDK.
 
 Suggestions are provided for the LAMP/LEMP stack and Git client are for those who prefer the UI over a command line and/or are less familiar with 
-WordPress, PHP, MySQL and Git - but you're free to use your preferred software.
+PHP, MySQL and Git - but you're free to use your preferred software.
 
 ## Setup
 
@@ -127,7 +127,7 @@ is setup successfully.
 ### Running PHPStan
 
 In the Plugin's directory, run the following command to run PHPStan, which will perform static analysis on the code, checking it meets required
-standards, that PHP DocBlocks are valid, WordPress action/filter DocBlocks are valid etc:
+standards, that PHP DocBlocks are valid etc:
 
 ```bash
 vendor/bin/phpstan --memory-limit=1G

@@ -89,4 +89,4 @@ When you're happy with the above, click `Publish Release`.
 
 This will then make the release available to developers, who can include it manually or using composer.
 
-The release will also be available to view on the [Releases](https://github.com/ConvertKit/convertkit-wordpress/releases) section of this GitHub repository.
+The release will also be available to view on the [Releases](https://github.com/ConvertKit/convertkitsdk-php/releases) section of this GitHub repository.
