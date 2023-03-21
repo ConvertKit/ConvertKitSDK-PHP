@@ -2,9 +2,7 @@
 /**
  * ConvertKit API
  *
- * @package    ConvertKit
- * @subpackage ConvertKit_API
- * @author     ConvertKit
+ * @author ConvertKit
  */
 
 namespace ConvertKit_API;

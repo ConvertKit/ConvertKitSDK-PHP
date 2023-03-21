@@ -23,6 +23,11 @@
 
     <!-- Use Squiz -->
     <rule ref="Squiz">
+        <!-- Don't require a package tag -->
+        <exclude name="Squiz.Commenting.FileComment.PackageTagOrder" />
+        <exclude name="Squiz.Commenting.FileComment.MissingPackageTag" />
+        <exclude name="Squiz.Commenting.FileComment.MissingSubpackageTag" />
+
         <!-- Exclude "Class found in ".php" file; use ".inc" extension instead" -->
         <exclude name="Squiz.Files.FileExtension.ClassFound" />
 
