@@ -51,13 +51,13 @@ or `ServerException` (for 5xx errors).
 
 ```php
 try {
-	$forms = $api->add_subscriber_to_form('invalid-form-id');
+    $forms = $api->add_subscriber_to_form('invalid-form-id');
 } catch (GuzzleHttp\Exception\ClientException $e) {
-	// Handle 4xx client errors.
+    // Handle 4xx client errors.
     die($e->getMessage());
 } catch (GuzzleHttp\Exception\ServerException $e) {
-	// Handle 5xx server errors.
-	die($e->getMessage());
+    // Handle 5xx server errors.
+    die($e->getMessage());
 }
 ```
 
@@ -66,16 +66,16 @@ For a more detailed error message, it's possible to fetch the API's response whe
 ```php
 // Errors will be thrown as Guzzle's ClientException or ServerException.
 try {
-	$forms = $api->form_subscribe('invalid-form-id');
+    $forms = $api->form_subscribe('invalid-form-id');
 } catch (GuzzleHttp\Exception\ClientException $e) {
-	// Handle 4xx client errors.
-	// For ClientException, it's possible to inspect the API's JSON response
-	// to output an error or handle it accordingly.
+    // Handle 4xx client errors.
+    // For ClientException, it's possible to inspect the API's JSON response
+    // to output an error or handle it accordingly.
     $error = json_decode($e->getResponse()->getBody()->getContents());
     die($error->message); // e.g. "Entity not found".
 } catch (GuzzleHttp\Exception\ServerException $e) {
-	// Handle 5xx server errors.
-	die($e->getMessage());
+    // Handle 5xx server errors.
+    die($e->getMessage());
 }
 ```
 

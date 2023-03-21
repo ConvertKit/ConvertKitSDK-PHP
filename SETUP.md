@@ -38,7 +38,7 @@ If you're new to this, use [GitHub Desktop](https://desktop.github.com/) or [Tow
 
 ### Configure Testing Environment
 
-Copy the `.env.example` file to `.env` in the root of this repository, changing folder and database credentials as necessary:
+Copy the `.env.example` file to `.env` in the root of this repository, adding your ConvertKit API keys.
 
 ```
 CONVERTKIT_API_KEY_NO_DATA=
@@ -107,8 +107,6 @@ correctly setup your environment:
 vendor/bin/phpunit
 ```
 
-![PHPUnit Test Results](/.github/docs/phpunit.png?raw=true)
-
 Don't worry if you don't understand these commands; if your output looks similar to the above screenshot, and no test is prefixed with `E`, 
 your environment is setup successfully.
 
@@ -117,8 +115,8 @@ your environment is setup successfully.
 In the root directory, run the following commands to run PHP_CodeSniffer, which will check the code meets PHP Coding Standards:
 
 ```bash
-vendor/bin/phpcs
-vendor/bin/phpcs --standard=phpcs.tests.xml
+vendor/bin/phpcs -s -v
+vendor/bin/phpcs -s -v --standard=phpcs.tests.xml
 ```
 
 ![Coding Standards Test Results](/.github/docs/coding-standards.png?raw=true)
