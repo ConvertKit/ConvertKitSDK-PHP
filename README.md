@@ -37,9 +37,48 @@ If you use Composer, these dependencies should be handled automatically.
 Get your ConvertKit API Key and API Secret [here](https://app.convertkit.com/account/edit) and set it somewhere in your application.
 
 ```php
-$api = new \ConvertKit_API\ConvertKit_API($api_key, $api_secret);
+// Require the autoloader (if you're using a PHP framework, this may already be done for you).
+require_once 'vendor/autoload.php';
+
+// Initialize the API class.
+$api = new \ConvertKit_API\ConvertKit_API('<your_public_api_key>', '<your_secret_api_key>');
+```
+
+## Handling Errors
+
+The ConvertKit PHP SDK uses Guzzle for all HTTP API requests.  Errors will be thrown as Guzzle's `ClientException` (for 4xx errors),
+or `ServerException` (for 5xx errors).
+
+```php
+try {
+	$forms = $api->add_subscriber_to_form('invalid-form-id');
+} catch (GuzzleHttp\Exception\ClientException $e) {
+	// Handle 4xx client errors.
+    die($e->getMessage());
+} catch (GuzzleHttp\Exception\ServerException $e) {
+	// Handle 5xx server errors.
+	die($e->getMessage());
+}
+```
+
+For a more detailed error message, it's possible to fetch the API's response when a `ClientException` is thrown:
+
+```php
+// Errors will be thrown as Guzzle's ClientException or ServerException.
+try {
+	$forms = $api->form_subscribe('invalid-form-id');
+} catch (GuzzleHttp\Exception\ClientException $e) {
+	// Handle 4xx client errors.
+	// For ClientException, it's possible to inspect the API's JSON response
+	// to output an error or handle it accordingly.
+    $error = json_decode($e->getResponse()->getBody()->getContents());
+    die($error->message); // e.g. "Entity not found".
+} catch (GuzzleHttp\Exception\ServerException $e) {
+	// Handle 5xx server errors.
+	die($e->getMessage());
+}
 ```
 
 ## Documentation
 
-See the [PHP SDK docs](DOCUMENTATION.md)
+See the [PHP SDK docs](./docs/classes/ConvertKit_API/ConvertKit_API.md) 
