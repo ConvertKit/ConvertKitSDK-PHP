@@ -81,4 +81,10 @@ try {
 
 ## Documentation
 
-See the [PHP SDK docs](./docs/classes/ConvertKit_API/ConvertKit_API.md) 
+See the [PHP SDK docs](./docs/classes/ConvertKit_API/ConvertKit_API.md)
+
+## Contributing
+
+See our [contributor guide](CONTRIBUTING.md) for setting up your development environment, testing and submitting a PR.
+
+For ConvertKit, refer to the [deployment guide](DEPLOYMENT.md) on how to publish a new release.

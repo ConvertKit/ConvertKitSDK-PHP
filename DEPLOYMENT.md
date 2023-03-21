@@ -14,11 +14,22 @@ We follow [Semantic Versioning](https://semver.org/).
 
 - In `src/ConvertKit_API.php`, change the `const VERSION` to the new version number.
 
+## Run phpDocumentor
+
+We use [phpDocumentor](https://www.phpdoc.org/) to automatically generate the [PHP SDK documentation](./docs/classes/ConvertKit_API/ConvertKit_API.md).
+
+In a Terminal window, run the phpDocumentor command to generate documentation in markdown format:
+
+```bash
+phpDocumentor --directory=src --target=docs --template="vendor/saggre/phpdocumentor-markdown/themes/markdown"
+```
+
 ## Commit Changes
 
 Commit the updated files, which should comprise of:
 
 - `src/ConvertKit_API.php`
+- `docs/classes/ConvertKit_API/ConvertKit_API.md`
 
 ## Create a New Release
 

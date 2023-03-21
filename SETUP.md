@@ -79,7 +79,7 @@ parameters:
 
 ### Install Packages
 
-In the Plugin's directory, at the command line, run `composer install`.
+In the root directory, at the command line, run `composer install`.
 
 This will install two types of packages:
 - Packages used by the SDK (e.g. Guzzle and Monolog)
@@ -88,9 +88,17 @@ This will install two types of packages:
 -- PHPUnit
 -- PHP_CodeSniffer
 
-How to use these is covered later on, and in the [Testing Guide](TESTING.md)
+### Install phpDocumentor
 
-### Running the Test Suite
+Download the latest phpDocumentor release.
+
+On Mac / Linux, mark it as executable and move it to your bin folder, so it can be run globally:
+```bash
+chmod +x phpDocumentor.phar
+mv phpDocumentor.phar /usr/local/bin/phpDocumentor
+```
+
+### Running PHPUnit Tests
 
 In a Terminal window, run the tests to make sure there are no errors and that you have 
 correctly setup your environment:
@@ -106,7 +114,7 @@ your environment is setup successfully.
 
 ### Running CodeSniffer
 
-In the Plugin's directory, run the following commands to run PHP_CodeSniffer, which will check the code meets PHP Coding Standards:
+In the root directory, run the following commands to run PHP_CodeSniffer, which will check the code meets PHP Coding Standards:
 
 ```bash
 vendor/bin/phpcs
