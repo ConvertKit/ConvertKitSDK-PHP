@@ -84,6 +84,8 @@ public __construct(string $api_key, string $api_secret, bool $debug = false): mi
 | `$api_secret` | **string** | ConvertKit API Secret. |
 | `$debug` | **bool** | Log requests to debugger. |
 
+
+---
 ### create_log
 
 Add an entry to monologger.
@@ -98,6 +100,8 @@ private create_log(string $message): void
 |-----------|------|-------------|
 | `$message` | **string** | Message. |
 
+
+---
 ### get_account
 
 Gets the current account
@@ -107,6 +111,8 @@ public get_account(): false|mixed
 ```
 
 
+
+---
 ### get_forms
 
 Gets all forms.
@@ -116,6 +122,8 @@ public get_forms(): false|mixed
 ```
 
 
+
+---
 ### get_landing_pages
 
 Gets all landing pages.
@@ -125,6 +133,8 @@ public get_landing_pages(): false|mixed
 ```
 
 
+
+---
 ### form_subscribe
 
 Adds a subscriber to a form.
@@ -141,6 +151,8 @@ public form_subscribe(int $form_id, array<string,string> $options): false|object
 | `$form_id` | **int** | Form ID. |
 | `$options` | **array<string,string>** | Array of user data (email, name). |
 
+
+---
 ### add_subscriber_to_form
 
 Adds a subscriber to a form by email address
@@ -161,7 +173,9 @@ public add_subscriber_to_form(int $form_id, string $email, string $first_name = 
 
 **See Also:**
 
-* https://developers.convertkit.com/#add-subscriber-to-a-form - 
+* https://developers.convertkit.com/#add-subscriber-to-a-form 
+
+---
 ### get_form_subscriptions
 
 List subscriptions to a form
@@ -181,7 +195,9 @@ public get_form_subscriptions(int $form_id, string $sort_order = 'asc', string $
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-subscriptions-to-a-form - 
+* https://developers.convertkit.com/#list-subscriptions-to-a-form 
+
+---
 ### get_sequences
 
 Gets all sequences
@@ -193,7 +209,9 @@ public get_sequences(): false|mixed
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-sequences - 
+* https://developers.convertkit.com/#list-sequences 
+
+---
 ### add_subscriber_to_sequence
 
 Adds a subscriber to a sequence by email address
@@ -214,7 +232,9 @@ public add_subscriber_to_sequence(int $sequence_id, string $email, string $first
 
 **See Also:**
 
-* https://developers.convertkit.com/#add-subscriber-to-a-sequence - 
+* https://developers.convertkit.com/#add-subscriber-to-a-sequence 
+
+---
 ### get_sequence_subscriptions
 
 Gets subscribers to a sequence
@@ -234,7 +254,9 @@ public get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc', 
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-subscriptions-to-a-sequence - 
+* https://developers.convertkit.com/#list-subscriptions-to-a-sequence 
+
+---
 ### get_tags
 
 Gets all tags.
@@ -246,7 +268,9 @@ public get_tags(): false|mixed
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-tags - 
+* https://developers.convertkit.com/#list-tags 
+
+---
 ### create_tag
 
 Creates a tag.
@@ -263,7 +287,9 @@ public create_tag(string $tag): false|mixed
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-tag - 
+* https://developers.convertkit.com/#create-a-tag 
+
+---
 ### tag_subscriber
 
 Tags a subscriber with the given existing Tag.
@@ -283,7 +309,9 @@ public tag_subscriber(int $tag_id, string $email, string $first_name = '', array
 
 **See Also:**
 
-* https://developers.convertkit.com/#tag-a-subscriber - 
+* https://developers.convertkit.com/#tag-a-subscriber 
+
+---
 ### add_tag
 
 Adds a tag to a subscriber.
@@ -302,7 +330,9 @@ public add_tag(int $tag, array<string,mixed> $options): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#tag-a-subscriber - 
+* https://developers.convertkit.com/#tag-a-subscriber 
+
+---
 ### remove_tag_from_subscriber
 
 Removes a tag from a subscriber.
@@ -320,7 +350,9 @@ public remove_tag_from_subscriber(int $tag_id, int $subscriber_id): false|mixed
 
 **See Also:**
 
-* https://developers.convertkit.com/#remove-tag-from-a-subscriber - 
+* https://developers.convertkit.com/#remove-tag-from-a-subscriber 
+
+---
 ### remove_tag_from_subscriber_by_email
 
 Removes a tag from a subscriber by email address.
@@ -338,7 +370,9 @@ public remove_tag_from_subscriber_by_email(int $tag_id, string $email): false|mi
 
 **See Also:**
 
-* https://developers.convertkit.com/#remove-tag-from-a-subscriber-by-email - 
+* https://developers.convertkit.com/#remove-tag-from-a-subscriber-by-email 
+
+---
 ### get_tag_subscriptions
 
 List subscriptions to a tag
@@ -358,7 +392,9 @@ public get_tag_subscriptions(int $tag_id, string $sort_order = 'asc', string $su
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-subscriptions-to-a-tag - 
+* https://developers.convertkit.com/#list-subscriptions-to-a-tag 
+
+---
 ### get_resources
 
 Gets a resource index
@@ -377,6 +413,8 @@ GET /{$resource}/
 
 API response
 
+
+---
 ### get_subscriber_id
 
 Get the ConvertKit subscriber ID associated with email address if it exists.
@@ -391,6 +429,8 @@ Return false if subscriber not found.
 |-----------|------|-------------|
 | `$email_address` | **string** | Email Address. |
 
+
+---
 ### get_subscriber
 
 Get subscriber by id
@@ -407,7 +447,9 @@ public get_subscriber(int $subscriber_id): false|int
 
 **See Also:**
 
-* https://developers.convertkit.com/#view-a-single-subscriber - 
+* https://developers.convertkit.com/#view-a-single-subscriber 
+
+---
 ### update_subscriber
 
 Updates the information for a single subscriber.
@@ -427,7 +469,9 @@ public update_subscriber(int $subscriber_id, string $first_name = '', string $em
 
 **See Also:**
 
-* https://developers.convertkit.com/#update-subscriber - 
+* https://developers.convertkit.com/#update-subscriber 
+
+---
 ### unsubscribe
 
 Unsubscribe an email address from all forms and sequences.
@@ -444,7 +488,9 @@ public unsubscribe(string $email): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#unsubscribe-subscriber - 
+* https://developers.convertkit.com/#unsubscribe-subscriber 
+
+---
 ### form_unsubscribe
 
 Remove subscription from a form
@@ -461,7 +507,9 @@ public form_unsubscribe(array<string,string> $options): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#unsubscribe-subscriber - 
+* https://developers.convertkit.com/#unsubscribe-subscriber 
+
+---
 ### get_subscriber_tags
 
 Get a list of the tags for a subscriber.
@@ -478,7 +526,9 @@ public get_subscriber_tags(int $subscriber_id): false|array&lt;int,\stdClass&gt;
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-tags-for-a-subscriber - 
+* https://developers.convertkit.com/#list-tags-for-a-subscriber 
+
+---
 ### get_broadcasts
 
 Gets a list of broadcasts.
@@ -490,7 +540,9 @@ public get_broadcasts(): false|array&lt;int,\stdClass&gt;
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-broadcasts - 
+* https://developers.convertkit.com/#list-broadcasts 
+
+---
 ### create_broadcast
 
 Creates a broadcast.
@@ -516,7 +568,9 @@ public create_broadcast(string $subject = '', string $content = '', string $desc
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-broadcast - 
+* https://developers.convertkit.com/#create-a-broadcast 
+
+---
 ### get_broadcast
 
 Retrieve a specific broadcast.
@@ -533,7 +587,9 @@ public get_broadcast(int $id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#retrieve-a-specific-broadcast - 
+* https://developers.convertkit.com/#retrieve-a-specific-broadcast 
+
+---
 ### get_broadcast_stats
 
 Get the statistics (recipient count, open rate, click rate, unsubscribe count,
@@ -551,7 +607,9 @@ public get_broadcast_stats(int $id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#retrieve-a-specific-broadcast - 
+* https://developers.convertkit.com/#retrieve-a-specific-broadcast 
+
+---
 ### update_broadcast
 
 Updates a broadcast.
@@ -578,7 +636,9 @@ public update_broadcast(int $id, string $subject = '', string $content = '', str
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-broadcast - 
+* https://developers.convertkit.com/#create-a-broadcast 
+
+---
 ### destroy_broadcast
 
 Deletes an existing broadcast.
@@ -595,7 +655,9 @@ public destroy_broadcast(int $id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#destroy-webhook - 
+* https://developers.convertkit.com/#destroy-webhook 
+
+---
 ### create_webhook
 
 Creates a webhook that will be called based on the chosen event types.
@@ -614,7 +676,9 @@ public create_webhook(string $url, string $event, string $parameter = ''): false
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-webhook - 
+* https://developers.convertkit.com/#create-a-webhook 
+
+---
 ### destroy_webhook
 
 Deletes an existing webhook.
@@ -631,7 +695,9 @@ public destroy_webhook(int $rule_id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#destroy-webhook - 
+* https://developers.convertkit.com/#destroy-webhook 
+
+---
 ### get_custom_fields
 
 List custom fields.
@@ -643,7 +709,9 @@ public get_custom_fields(): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-fields - 
+* https://developers.convertkit.com/#list-fields 
+
+---
 ### create_custom_field
 
 Creates a custom field.
@@ -660,7 +728,9 @@ public create_custom_field(string $label): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-field - 
+* https://developers.convertkit.com/#create-field 
+
+---
 ### create_custom_fields
 
 Creates multiple custom fields.
@@ -677,7 +747,9 @@ public create_custom_fields(string[] $labels): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-field - 
+* https://developers.convertkit.com/#create-field 
+
+---
 ### update_custom_field
 
 Updates an existing custom field.
@@ -695,7 +767,9 @@ public update_custom_field(int $id, string $label): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#update-field - 
+* https://developers.convertkit.com/#update-field 
+
+---
 ### delete_custom_field
 
 Deletes an existing custom field.
@@ -712,7 +786,9 @@ public delete_custom_field(int $id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#destroy-field - 
+* https://developers.convertkit.com/#destroy-field 
+
+---
 ### list_purchases
 
 List purchases.
@@ -729,7 +805,9 @@ public list_purchases(array<string,string> $options): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-purchases - 
+* https://developers.convertkit.com/#list-purchases 
+
+---
 ### get_purchase
 
 Retuns a specific purchase.
@@ -746,7 +824,9 @@ public get_purchase(int $purchase_id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#retrieve-a-specific-purchase - 
+* https://developers.convertkit.com/#retrieve-a-specific-purchase 
+
+---
 ### create_purchase
 
 Creates a purchase.
@@ -763,7 +843,9 @@ public create_purchase(array<string,string> $options): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-purchase - 
+* https://developers.convertkit.com/#create-a-purchase 
+
+---
 ### get_resource
 
 Get markup from ConvertKit for the provided $url.
@@ -780,6 +862,8 @@ the API response when using get_resources().
 |-----------|------|-------------|
 | `$url` | **string** | URL of HTML page. |
 
+
+---
 ### convert_relative_to_absolute_urls
 
 Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
@@ -797,6 +881,8 @@ private convert_relative_to_absolute_urls(\DOMNodeList<\DOMElement> $elements, s
 | `$attribute` | **string** | HTML Attribute. |
 | `$url` | **string** | Absolute URL to prepend to relative URLs. |
 
+
+---
 ### strip_html_head_body_tags
 
 Strips <html>, <head> and <body> opening and closing tags from the given markup,
@@ -815,6 +901,8 @@ private strip_html_head_body_tags(string $markup): string
 
 HTML Markup
 
+
+---
 ### get
 
 Performs a GET request to the API.
@@ -830,6 +918,8 @@ public get(string $endpoint, array<string,int|string|array<string,int|string>> $
 | `$endpoint` | **string** | API Endpoint. |
 | `$args` | **array<string,int|string|array<string,int|string>>** | Request arguments. |
 
+
+---
 ### post
 
 Performs a POST request to the API.
@@ -845,6 +935,8 @@ public post(string $endpoint, array<string,bool|int|string|array<int|string,int|
 | `$endpoint` | **string** | API Endpoint. |
 | `$args` | **array<string,bool|int|string|array<int|string,int|string>>** | Request arguments. |
 
+
+---
 ### put
 
 Performs a PUT request to the API.
@@ -860,6 +952,8 @@ public put(string $endpoint, array<string,bool|int|string|array<string,int|strin
 | `$endpoint` | **string** | API Endpoint. |
 | `$args` | **array<string,bool|int|string|array<string,int|string>>** | Request arguments. |
 
+
+---
 ### delete
 
 Performs a DELETE request to the API.
@@ -875,6 +969,8 @@ public delete(string $endpoint, array<string,int|string|array<string,int|string>
 | `$endpoint` | **string** | API Endpoint. |
 | `$args` | **array<string,int|string|array<string,int|string>>** | Request arguments. |
 
+
+---
 ### make_request
 
 Performs an API request using Guzzle.
@@ -891,5 +987,7 @@ public make_request(string $endpoint, string $method, array<string,bool|int|stri
 | `$method` | **string** | Request method. |
 | `$args` | **array<string,bool|int|string|array<int|string,int|string>>** | Request arguments. |
 
+
+---
 
 
