@@ -274,7 +274,7 @@ public form_subscribe(int $form_id, array<string,string> $options): false|object
 Adds a subscriber to a form by email address
 
 ```php
-public add_subscriber_to_form(int $form_id, string $email, string $first_name = &#039;&#039;, array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
+public add_subscriber_to_form(int $form_id, string $email, string $first_name = '', array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
 ```
 
 
@@ -307,7 +307,7 @@ public add_subscriber_to_form(int $form_id, string $email, string $first_name = 
 List subscriptions to a form
 
 ```php
-public get_form_subscriptions(int $form_id, string $sort_order = &#039;asc&#039;, string $subscriber_state = &#039;active&#039;, int $page = 1): false|mixed
+public get_form_subscriptions(int $form_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
 
 
@@ -362,7 +362,7 @@ public get_sequences(): false|mixed
 Adds a subscriber to a sequence by email address
 
 ```php
-public add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = &#039;&#039;, array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
+public add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = '', array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
 ```
 
 
@@ -395,7 +395,7 @@ public add_subscriber_to_sequence(int $sequence_id, string $email, string $first
 Gets subscribers to a sequence
 
 ```php
-public get_sequence_subscriptions(int $sequence_id, string $sort_order = &#039;asc&#039;, string $subscriber_state = &#039;active&#039;, int $page = 1): false|mixed
+public get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
 
 
@@ -479,7 +479,7 @@ public create_tag(string $tag): false|mixed
 Tags a subscriber with the given existing Tag.
 
 ```php
-public tag_subscriber(int $tag_id, string $email, string $first_name = &#039;&#039;, array<string,string> $fields = []): false|mixed
+public tag_subscriber(int $tag_id, string $email, string $first_name = '', array<string,string> $fields = []): false|mixed
 ```
 
 
@@ -603,7 +603,7 @@ public remove_tag_from_subscriber_by_email(int $tag_id, string $email): false|mi
 List subscriptions to a tag
 
 ```php
-public get_tag_subscriptions(int $tag_id, string $sort_order = &#039;asc&#039;, string $subscriber_state = &#039;active&#039;, int $page = 1): false|mixed
+public get_tag_subscriptions(int $tag_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
 
 
@@ -721,7 +721,7 @@ public get_subscriber(int $subscriber_id): false|int
 Updates the information for a single subscriber.
 
 ```php
-public update_subscriber(int $subscriber_id, string $first_name = &#039;&#039;, string $email_address = &#039;&#039;, array<string,string> $fields = []): false|mixed
+public update_subscriber(int $subscriber_id, string $first_name = '', string $email_address = '', array<string,string> $fields = []): false|mixed
 ```
 
 
@@ -863,7 +863,7 @@ public get_broadcasts(): false|array&lt;int,\stdClass&gt;
 Creates a broadcast.
 
 ```php
-public create_broadcast(string $subject = &#039;&#039;, string $content = &#039;&#039;, string $description = &#039;&#039;, bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = &#039;&#039;, string $email_layout_template = &#039;&#039;, string $thumbnail_alt = &#039;&#039;, string $thumbnail_url = &#039;&#039;): false|object
+public create_broadcast(string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_layout_template = '', string $thumbnail_alt = '', string $thumbnail_url = ''): false|object
 ```
 
 
@@ -960,7 +960,7 @@ public get_broadcast_stats(int $id): false|object
 Updates a broadcast.
 
 ```php
-public update_broadcast(int $id, string $subject = &#039;&#039;, string $content = &#039;&#039;, string $description = &#039;&#039;, bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = &#039;&#039;, string $email_layout_template = &#039;&#039;, string $thumbnail_alt = &#039;&#039;, string $thumbnail_url = &#039;&#039;): false|object
+public update_broadcast(int $id, string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_layout_template = '', string $thumbnail_alt = '', string $thumbnail_url = ''): false|object
 ```
 
 
@@ -1028,7 +1028,7 @@ public destroy_broadcast(int $id): false|object
 Creates a webhook that will be called based on the chosen event types.
 
 ```php
-public create_webhook(string $url, string $event, string $parameter = &#039;&#039;): false|object
+public create_webhook(string $url, string $event, string $parameter = ''): false|object
 ```
 
 

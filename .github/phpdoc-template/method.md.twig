@@ -9,7 +9,7 @@
 {% if method.final %}{{ 'final' ~ ' ' }}{% endif %}{{ method.visibility ~ ' ' }}{%if method.static%}{{ 'static' ~ ' ' }}{% endif %}{{ method.name }}({% for argument in method.arguments %}
 {{- argument.type | raw }} 
 {{- argument.byReference ? '&' }} $
-{{- argument.name | raw }}{{ argument.default ? ' = '~argument.default }}
+{{- argument.name | raw }}{% if argument.default %} = {{ argument.default | raw }}{% endif %}
 {%- if not loop.last %}, {% endif %}
 {%- endfor %})
 {{- method.response.type ? ': ' ~ method.response.type }}
