@@ -122,6 +122,8 @@ class ConvertKit_API
     /**
      * Gets the current account
      *
+     * @see https://developers.convertkit.com/#account
+     *
      * @return false|mixed
      */
     public function get_account()
@@ -139,6 +141,8 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
+     * @see https://developers.convertkit.com/#forms
+     *
      * @return false|mixed
      */
     public function get_forms()
@@ -150,6 +154,8 @@ class ConvertKit_API
      * Gets all landing pages.
      *
      * @since 1.0.0
+     *
+     * @see https://developers.convertkit.com/#forms
      *
      * @return false|mixed
      */
@@ -167,6 +173,8 @@ class ConvertKit_API
      * @deprecated 1.0.0 Use add_subscriber_to_form($form_id, $email, $first_name, $fields, $tag_ids).
      *
      * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
+     * @see https://developers.convertkit.com/#add-subscriber-to-a-form
      *
      * @return false|object
      */
@@ -653,6 +661,8 @@ class ConvertKit_API
      * @param string $email_address Email Address.
      *
      * @throws \InvalidArgumentException If the email address is not a valid email format.
+     *
+     * @see https://developers.convertkit.com/#list-subscribers
      *
      * @return false|integer
      */
