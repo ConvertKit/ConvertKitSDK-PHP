@@ -898,19 +898,19 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that form_subscribe() returns the expected data.
+     * Test that add_subscriber_to_form() returns the expected data.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testFormSubscribe()
+    public function testAddSubscriberToForm()
     {
-        // Subscribe.
         $email = $this->generateEmailAddress();
-        $result = $this->api->form_subscribe((int) $_ENV['CONVERTKIT_API_FORM_ID'], [
-            'email' =>  $email,
-        ]);
+        $result = $this->api->add_subscriber_to_form(
+            (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            $email
+        );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscription', get_object_vars($result));
         $this->assertArrayHasKey('id', get_object_vars($result->subscription));
@@ -921,19 +921,115 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that form_subscribe() throws a ClientException when an invalid
+     * Test that add_subscriber_to_form() throws a ClientException when an invalid
      * form ID is specified.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testFormSubscribeWithInvalidFormID()
+    public function testAddSubscriberToFormWithInvalidFormID()
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->form_subscribe(12345, [
-            'email' =>  $this->generateEmailAddress(),
-        ]);
+        $result = $this->api->add_subscriber_to_form(12345, $this->generateEmailAddress());
+    }
+
+    /**
+     * Test that add_subscriber_to_form() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToFormWithInvalidEmailAddress()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->add_subscriber_to_form($_ENV['CONVERTKIT_API_FORM_ID'], 'not-an-email-address');
+    }
+
+    /**
+     * Test that add_subscriber_to_form() returns the expected data
+     * when a first_name parameter is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToFormWithFirstName()
+    {
+        $emailAddress = $this->generateEmailAddress();
+        $firstName = 'First Name';
+        $result = $this->api->add_subscriber_to_form(
+            $_ENV['CONVERTKIT_API_FORM_ID'],
+            $emailAddress,
+            $firstName
+        );
+
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the first name was saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
+        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
+    }
+
+    /**
+     * Test that add_subscriber_to_form() returns the expected data
+     * when custom field data is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToFormWithCustomFields()
+    {
+        $result = $this->api->add_subscriber_to_form(
+            $_ENV['CONVERTKIT_API_FORM_ID'],
+            $this->generateEmailAddress(),
+            'First Name',
+            [
+                'last_name' => 'Last Name',
+            ]
+        );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the custom fields were saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
+    }
+
+    /**
+     * Test that add_subscriber_to_form() returns the expected data
+     * when custom field data is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToFormWithTagID()
+    {
+        $result = $this->api->add_subscriber_to_form(
+            $_ENV['CONVERTKIT_API_FORM_ID'],
+            $this->generateEmailAddress(),
+            'First Name',
+            [],
+            [
+                (int) $_ENV['CONVERTKIT_API_TAG_ID']
+            ]
+        );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber tags from API to confirm the tag saved.
+        $subscriberTags = $this->api->get_subscriber_tags($result->subscription->subscriber->id);
+        $this->assertEquals($subscriberTags->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
     /**
