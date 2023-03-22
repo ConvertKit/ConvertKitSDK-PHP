@@ -27,7 +27,6 @@ Tests are written in PHP using [PHPUnit](https://phpunit.de/), and the existing 
 [PHPStan](https://phpstan.org) performs static analysis on the Plugin's PHP code.  This ensures:
 
 - DocBlocks declarations are valid and uniform
-- DocBlocks declarations for WordPress `do_action()` and `apply_filters()` calls are valid
 - Typehinting variables and return types declared in DocBlocks are correctly cast
 - Any unused functions are detected
 - Unnecessary checks / code is highlighted for possible removal

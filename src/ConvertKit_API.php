@@ -164,13 +164,67 @@ class ConvertKit_API
      * @param integer               $form_id Form ID.
      * @param array<string, string> $options Array of user data (email, name).
      *
+     * @deprecated 1.0.0 Use add_subscriber_to_form($form_id, $email, $first_name, $fields, $tag_ids).
+     *
+     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
      * @return false|object
      */
     public function form_subscribe(int $form_id, array $options)
     {
+        // This function is deprecated in 1.0, as we prefer functions with structured arguments.
+        trigger_error(
+            'form_subscribe() is deprecated in 1.0.
+            Use add_subscriber_to_form($form_id, $email, $first_name, $fields, $tag_ids) instead.',
+            E_USER_NOTICE
+        );
+
         // Add API Key to array of options.
         $options['api_key'] = $this->api_key;
 
+        return $this->post(
+            sprintf('forms/%s/subscribe', $form_id),
+            $options
+        );
+    }
+
+    /**
+     * Adds a subscriber to a form by email address
+     *
+     * @param integer               $form_id    Form ID.
+     * @param string                $email      Email Address.
+     * @param string                $first_name First Name.
+     * @param array<string, string> $fields     Custom Fields.
+     * @param array<string, int>    $tag_ids    Tag ID(s) to subscribe to.
+     *
+     * @see https://developers.convertkit.com/#add-subscriber-to-a-form
+     *
+     * @return false|mixed
+     */
+    public function add_subscriber_to_form(
+        int $form_id,
+        string $email,
+        string $first_name = '',
+        array $fields = [],
+        array $tag_ids = []
+    ) {
+        // Build parameters.
+        $options = [
+            'api_key' => $this->api_key,
+            'email'   => $email,
+        ];
+
+        if (!empty($first_name)) {
+            $options['first_name'] = $first_name;
+        }
+        if (!empty($fields)) {
+            $options['fields'] = $fields;
+        }
+        if (!empty($tag_ids)) {
+            $options['tags'] = $tag_ids;
+        }
+
+        // Send request.
         return $this->post(
             sprintf('forms/%s/subscribe', $form_id),
             $options
