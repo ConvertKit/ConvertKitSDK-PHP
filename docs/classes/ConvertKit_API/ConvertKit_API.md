@@ -76,6 +76,7 @@ Constructor for ConvertKitAPI instance
 public __construct(string $api_key, string $api_secret, bool $debug = false): mixed
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -93,6 +94,7 @@ Add an entry to monologger.
 ```php
 private create_log(string $message): void
 ```
+
 
 **Parameters:**
 
@@ -144,6 +146,7 @@ public form_subscribe(int $form_id, array<string,string> $options): false|object
 ```
 * **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -160,6 +163,7 @@ Adds a subscriber to a form by email address
 ```php
 public add_subscriber_to_form(int $form_id, string $email, string $first_name = '', array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -183,6 +187,7 @@ List subscriptions to a form
 ```php
 public get_form_subscriptions(int $form_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -220,6 +225,7 @@ Adds a subscriber to a sequence by email address
 public add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = '', array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -242,6 +248,7 @@ Gets subscribers to a sequence
 ```php
 public get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -279,6 +286,7 @@ Creates a tag.
 public create_tag(string $tag): false|mixed
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -297,6 +305,7 @@ Tags a subscriber with the given existing Tag.
 ```php
 public tag_subscriber(int $tag_id, string $email, string $first_name = '', array<string,string> $fields = []): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -321,6 +330,7 @@ public add_tag(int $tag, array<string,mixed> $options): false|object
 ```
 * **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -340,6 +350,7 @@ Removes a tag from a subscriber.
 ```php
 public remove_tag_from_subscriber(int $tag_id, int $subscriber_id): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -361,6 +372,7 @@ Removes a tag from a subscriber by email address.
 public remove_tag_from_subscriber_by_email(int $tag_id, string $email): false|mixed
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -380,6 +392,7 @@ List subscriptions to a tag
 ```php
 public get_tag_subscriptions(int $tag_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -404,11 +417,13 @@ Possible resources: forms, landing_pages, subscription_forms, tags
 public get_resources(string $resource): array<int|string,mixed|\stdClass>
 ```
 GET /{$resource}/
+
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$resource` | **string** | Resource type. |
+
 **Return Value:**
 
 API response
@@ -423,6 +438,7 @@ Get the ConvertKit subscriber ID associated with email address if it exists.
 public get_subscriber_id(string $email_address): false|int
 ```
 Return false if subscriber not found.
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -438,6 +454,7 @@ Get subscriber by id
 ```php
 public get_subscriber(int $subscriber_id): false|int
 ```
+
 
 **Parameters:**
 
@@ -457,6 +474,7 @@ Updates the information for a single subscriber.
 ```php
 public update_subscriber(int $subscriber_id, string $first_name = '', string $email_address = '', array<string,string> $fields = []): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -480,6 +498,7 @@ Unsubscribe an email address from all forms and sequences.
 public unsubscribe(string $email): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -499,6 +518,7 @@ Remove subscription from a form
 public form_unsubscribe(array<string,string> $options): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -517,6 +537,7 @@ Get a list of the tags for a subscriber.
 ```php
 public get_subscriber_tags(int $subscriber_id): false|array<int,\stdClass>
 ```
+
 
 **Parameters:**
 
@@ -551,6 +572,7 @@ Creates a broadcast.
 public create_broadcast(string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_layout_template = '', string $thumbnail_alt = '', string $thumbnail_url = ''): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -579,6 +601,7 @@ Retrieve a specific broadcast.
 public get_broadcast(int $id): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -599,6 +622,7 @@ total clicks, status, and send progress) for a specific broadcast.
 public get_broadcast_stats(int $id): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -617,6 +641,7 @@ Updates a broadcast.
 ```php
 public update_broadcast(int $id, string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_layout_template = '', string $thumbnail_alt = '', string $thumbnail_url = ''): false|object
 ```
+
 
 **Parameters:**
 
@@ -647,6 +672,7 @@ Deletes an existing broadcast.
 public destroy_broadcast(int $id): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -665,6 +691,7 @@ Creates a webhook that will be called based on the chosen event types.
 ```php
 public create_webhook(string $url, string $event, string $parameter = ''): false|object
 ```
+
 
 **Parameters:**
 
@@ -686,6 +713,7 @@ Deletes an existing webhook.
 ```php
 public destroy_webhook(int $rule_id): false|object
 ```
+
 
 **Parameters:**
 
@@ -720,6 +748,7 @@ Creates a custom field.
 public create_custom_field(string $label): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -739,6 +768,7 @@ Creates multiple custom fields.
 public create_custom_fields(string[] $labels): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -757,6 +787,7 @@ Updates an existing custom field.
 ```php
 public update_custom_field(int $id, string $label): false|object
 ```
+
 
 **Parameters:**
 
@@ -778,6 +809,7 @@ Deletes an existing custom field.
 public delete_custom_field(int $id): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -796,6 +828,7 @@ List purchases.
 ```php
 public list_purchases(array<string,string> $options): false|object
 ```
+
 
 **Parameters:**
 
@@ -816,6 +849,7 @@ Retuns a specific purchase.
 public get_purchase(int $purchase_id): false|object
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -834,6 +868,7 @@ Creates a purchase.
 ```php
 public create_purchase(array<string,string> $options): false|object
 ```
+
 
 **Parameters:**
 
@@ -856,6 +891,7 @@ public get_resource(string $url): false|string
 Supports legacy forms and legacy landing pages.
 Forms and Landing Pages should be embedded using the supplied JS embed script in
 the API response when using get_resources().
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -872,6 +908,7 @@ DOM Elements.
 ```php
 private convert_relative_to_absolute_urls(\DOMNodeList<\DOMElement> $elements, string $attribute, string $url): void
 ```
+
 
 **Parameters:**
 
@@ -892,11 +929,13 @@ as well as the Content-Type meta tag we might have added in get_html().
 private strip_html_head_body_tags(string $markup): string
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$markup` | **string** | HTML Markup. |
+
 **Return Value:**
 
 HTML Markup
@@ -910,6 +949,7 @@ Performs a GET request to the API.
 ```php
 public get(string $endpoint, array<string,int|string|array<string,int|string>> $args = []): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -928,6 +968,7 @@ Performs a POST request to the API.
 public post(string $endpoint, array<string,bool|int|string|array<int|string,int|string>> $args = []): false|mixed
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -944,6 +985,7 @@ Performs a PUT request to the API.
 ```php
 public put(string $endpoint, array<string,bool|int|string|array<string,int|string>> $args = []): false|mixed
 ```
+
 
 **Parameters:**
 
@@ -962,6 +1004,7 @@ Performs a DELETE request to the API.
 public delete(string $endpoint, array<string,int|string|array<string,int|string>> $args = []): false|mixed
 ```
 
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -978,6 +1021,7 @@ Performs an API request using Guzzle.
 ```php
 public make_request(string $endpoint, string $method, array<string,bool|int|string|array<int|string,int|string>> $args = []): false|mixed
 ```
+
 
 **Parameters:**
 

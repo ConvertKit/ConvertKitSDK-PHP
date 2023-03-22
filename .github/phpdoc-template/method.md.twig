@@ -19,6 +19,7 @@
 {% endif %}
 
 {% if method.arguments is not empty %}
+
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -28,6 +29,7 @@
 {% endfor %}
 {% endif %}{# method.arguments is not empty #}
 {% if method.response.description and method.response.description is not empty %}
+
 **Return Value:**
 
 {{ method.response.description | raw }}
