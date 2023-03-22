@@ -181,13 +181,6 @@ class ConvertKit_API
             E_USER_NOTICE
         );
 
-        if (!is_int($form_id)) {
-            throw new \InvalidArgumentException();
-        }
-        if (!is_array($options)) {
-            throw new \InvalidArgumentException();
-        }
-
         // Add API Key to array of options.
         $options['api_key'] = $this->api_key;
 
