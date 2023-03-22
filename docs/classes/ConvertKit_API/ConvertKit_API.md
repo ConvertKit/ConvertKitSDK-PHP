@@ -322,7 +322,7 @@ public get_form_subscriptions(int $form_id, string $sort_order = &#039;asc&#039;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$form_id` | **int** | Form ID. |
-| `$sort_order` | **string** | Sort Order (asc&amp;#124;desc). |
+| `$sort_order` | **string** | Sort Order (asc,desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
 
@@ -410,7 +410,7 @@ public get_sequence_subscriptions(int $sequence_id, string $sort_order = &#039;a
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$sequence_id` | **int** | Sequence ID. |
-| `$sort_order` | **string** | Sort Order (asc&amp;#124;desc). |
+| `$sort_order` | **string** | Sort Order (asc,desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
 
@@ -618,7 +618,7 @@ public get_tag_subscriptions(int $tag_id, string $sort_order = &#039;asc&#039;, 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag_id` | **int** | Tag ID. |
-| `$sort_order` | **string** | Sort Order (asc&amp;#124;desc). |
+| `$sort_order` | **string** | Sort Order (asc,desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
 

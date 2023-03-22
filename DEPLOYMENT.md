@@ -16,13 +16,15 @@ We follow [Semantic Versioning](https://semver.org/).
 
 ## Run phpDocumentor
 
-We use [phpDocumentor](https://www.phpdoc.org/) to automatically generate the [PHP SDK documentation](./docs/classes/ConvertKit_API/ConvertKit_API.md).
+We use [phpDocumentor](https://www.phpdoc.org/), with a custom markdown template, to automatically generate the [PHP SDK documentation](./docs/classes/ConvertKit_API/ConvertKit_API.md).
 
 In a Terminal window, run the phpDocumentor command to generate documentation in markdown format:
 
 ```bash
-phpDocumentor --directory=src --target=docs --template="vendor/saggre/phpdocumentor-markdown/themes/markdown"
+phpDocumentor --directory=src --target=docs --template=".github/phpdoc-template"
 ```
+
+Markdown is generated using Twig. Changes can be made to the template files in the `.github/phpdoc-template` folder.
 
 ## Commit Changes
 
