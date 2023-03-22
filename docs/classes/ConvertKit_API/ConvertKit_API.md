@@ -1,18 +1,13 @@
 # ConvertKit_API
 
 ConvertKit API Class
-
-
-
 * Full name: `\ConvertKit_API\ConvertKit_API`
-
 
 ## Constants
 
 | Constant | Visibility | Type | Value |
 |:---------|:-----------|:-----|:------|
 |`VERSION`|public|string|&#039;1.0.0&#039;|
-
 ## Properties
 
 ### api_key
@@ -23,12 +18,6 @@ ConvertKit API Key
 protected string $api_key
 ```
 
-
-
-
-
-
-***
 ### api_secret
 
 ConvertKit API Secret
@@ -37,12 +26,6 @@ ConvertKit API Secret
 protected string $api_secret
 ```
 
-
-
-
-
-
-***
 ### api_version
 
 Version of ConvertKit API
@@ -51,12 +34,6 @@ Version of ConvertKit API
 protected string $api_version
 ```
 
-
-
-
-
-
-***
 ### api_url_base
 
 ConvertKit API URL
@@ -65,12 +42,6 @@ ConvertKit API URL
 protected string $api_url_base
 ```
 
-
-
-
-
-
-***
 ### debug
 
 Debug
@@ -79,12 +50,6 @@ Debug
 protected bool $debug
 ```
 
-
-
-
-
-
-***
 ### debug_logger
 
 Debug
@@ -93,12 +58,6 @@ Debug
 protected \Monolog\Logger $debug_logger
 ```
 
-
-
-
-
-
-***
 ### client
 
 Guzzle Http Client
@@ -106,13 +65,6 @@ Guzzle Http Client
 ```php
 protected \GuzzleHttp\Client $client
 ```
-
-
-
-
-
-
-***
 
 ## Methods
 
@@ -124,13 +76,6 @@ Constructor for ConvertKitAPI instance
 public __construct(string $api_key, string $api_secret, bool $debug = false): mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -138,8 +83,6 @@ public __construct(string $api_key, string $api_secret, bool $debug = false): mi
 | `$api_key` | **string** | ConvertKit API Key. |
 | `$api_secret` | **string** | ConvertKit API Secret. |
 | `$debug` | **bool** | Log requests to debugger. |
-
-
 
 ### create_log
 
@@ -149,20 +92,11 @@ Add an entry to monologger.
 private create_log(string $message): void
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$message` | **string** | Message. |
-
-
 
 ### get_account
 
@@ -171,14 +105,6 @@ Gets the current account
 ```php
 public get_account(): false|mixed
 ```
-
-
-
-
-
-
-
-
 
 
 ### get_forms
@@ -190,14 +116,6 @@ public get_forms(): false|mixed
 ```
 
 
-
-
-
-
-
-
-
-
 ### get_landing_pages
 
 Gets all landing pages.
@@ -207,14 +125,6 @@ public get_landing_pages(): false|mixed
 ```
 
 
-
-
-
-
-
-
-
-
 ### form_subscribe
 
 Adds a subscriber to a form.
@@ -222,15 +132,7 @@ Adds a subscriber to a form.
 ```php
 public form_subscribe(int $form_id, array<string,string> $options): false|object
 ```
-
-
-
-
-
-
 * **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
-
-
 
 **Parameters:**
 
@@ -239,8 +141,6 @@ public form_subscribe(int $form_id, array<string,string> $options): false|object
 | `$form_id` | **int** | Form ID. |
 | `$options` | **array<string,string>** | Array of user data (email, name). |
 
-
-
 ### add_subscriber_to_form
 
 Adds a subscriber to a form by email address
@@ -248,13 +148,6 @@ Adds a subscriber to a form by email address
 ```php
 public add_subscriber_to_form(int $form_id, string $email, string $first_name = '', array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
 ```
-
-
-
-
-
-
-
 
 **Parameters:**
 
@@ -265,8 +158,6 @@ public add_subscriber_to_form(int $form_id, string $email, string $first_name = 
 | `$first_name` | **string** | First Name. |
 | `$fields` | **array<string,string>** | Custom Fields. |
 | `$tag_ids` | **array<string,int>** | Tag ID(s) to subscribe to. |
-
-
 
 **See Also:**
 
@@ -279,13 +170,6 @@ List subscriptions to a form
 public get_form_subscriptions(int $form_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -294,8 +178,6 @@ public get_form_subscriptions(int $form_id, string $sort_order = 'asc', string $
 | `$sort_order` | **string** | Sort Order (asc,desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
-
-
 
 **See Also:**
 
@@ -309,14 +191,6 @@ public get_sequences(): false|mixed
 ```
 
 
-
-
-
-
-
-
-
-
 **See Also:**
 
 * https://developers.convertkit.com/#list-sequences - 
@@ -328,13 +202,6 @@ Adds a subscriber to a sequence by email address
 public add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = '', array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -344,8 +211,6 @@ public add_subscriber_to_sequence(int $sequence_id, string $email, string $first
 | `$first_name` | **string** | First Name. |
 | `$fields` | **array<string,string>** | Custom Fields. |
 | `$tag_ids` | **array<string,int>** | Tag ID(s) to subscribe to. |
-
-
 
 **See Also:**
 
@@ -358,13 +223,6 @@ Gets subscribers to a sequence
 public get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -373,8 +231,6 @@ public get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc', 
 | `$sort_order` | **string** | Sort Order (asc,desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
-
-
 
 **See Also:**
 
@@ -388,14 +244,6 @@ public get_tags(): false|mixed
 ```
 
 
-
-
-
-
-
-
-
-
 **See Also:**
 
 * https://developers.convertkit.com/#list-tags - 
@@ -407,20 +255,11 @@ Creates a tag.
 public create_tag(string $tag): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag` | **string** | Tag Name. |
-
-
 
 **See Also:**
 
@@ -433,13 +272,6 @@ Tags a subscriber with the given existing Tag.
 public tag_subscriber(int $tag_id, string $email, string $first_name = '', array<string,string> $fields = []): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -448,8 +280,6 @@ public tag_subscriber(int $tag_id, string $email, string $first_name = '', array
 | `$email` | **string** | Email Address. |
 | `$first_name` | **string** | First Name. |
 | `$fields` | **array<string,string>** | Custom Fields. |
-
-
 
 **See Also:**
 
@@ -461,15 +291,7 @@ Adds a tag to a subscriber.
 ```php
 public add_tag(int $tag, array<string,mixed> $options): false|object
 ```
-
-
-
-
-
-
 * **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
-
-
 
 **Parameters:**
 
@@ -477,8 +299,6 @@ public add_tag(int $tag, array<string,mixed> $options): false|object
 |-----------|------|-------------|
 | `$tag` | **int** | Tag ID. |
 | `$options` | **array<string,mixed>** | Array of user data. |
-
-
 
 **See Also:**
 
@@ -491,21 +311,12 @@ Removes a tag from a subscriber.
 public remove_tag_from_subscriber(int $tag_id, int $subscriber_id): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag_id` | **int** | Tag ID. |
 | `$subscriber_id` | **int** | Subscriber ID. |
-
-
 
 **See Also:**
 
@@ -518,21 +329,12 @@ Removes a tag from a subscriber by email address.
 public remove_tag_from_subscriber_by_email(int $tag_id, string $email): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag_id` | **int** | Tag ID. |
 | `$email` | **string** | Subscriber email address. |
-
-
 
 **See Also:**
 
@@ -545,13 +347,6 @@ List subscriptions to a tag
 public get_tag_subscriptions(int $tag_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -560,8 +355,6 @@ public get_tag_subscriptions(int $tag_id, string $sort_order = 'asc', string $su
 | `$sort_order` | **string** | Sort Order (asc,desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
-
-
 
 **See Also:**
 
@@ -574,25 +367,15 @@ Possible resources: forms, landing_pages, subscription_forms, tags
 ```php
 public get_resources(string $resource): array&lt;int|string,mixed|\stdClass&gt;
 ```
-
 GET /{$resource}/
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$resource` | **string** | Resource type. |
-
-
 **Return Value:**
 
 API response
-
 
 ### get_subscriber_id
 
@@ -601,21 +384,12 @@ Get the ConvertKit subscriber ID associated with email address if it exists.
 ```php
 public get_subscriber_id(string $email_address): false|int
 ```
-
 Return false if subscriber not found.
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$email_address` | **string** | Email Address. |
-
-
 
 ### get_subscriber
 
@@ -625,20 +399,11 @@ Get subscriber by id
 public get_subscriber(int $subscriber_id): false|int
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$subscriber_id` | **int** | Subscriber ID. |
-
-
 
 **See Also:**
 
@@ -651,13 +416,6 @@ Updates the information for a single subscriber.
 public update_subscriber(int $subscriber_id, string $first_name = '', string $email_address = '', array<string,string> $fields = []): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -666,8 +424,6 @@ public update_subscriber(int $subscriber_id, string $first_name = '', string $em
 | `$first_name` | **string** | New First Name. |
 | `$email_address` | **string** | New Email Address. |
 | `$fields` | **array<string,string>** | Updated Custom Fields. |
-
-
 
 **See Also:**
 
@@ -680,20 +436,11 @@ Unsubscribe an email address from all forms and sequences.
 public unsubscribe(string $email): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$email` | **string** | Email Address. |
-
-
 
 **See Also:**
 
@@ -706,20 +453,11 @@ Remove subscription from a form
 public form_unsubscribe(array<string,string> $options): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$options` | **array<string,string>** | Array of user data (email). |
-
-
 
 **See Also:**
 
@@ -732,20 +470,11 @@ Get a list of the tags for a subscriber.
 public get_subscriber_tags(int $subscriber_id): false|array&lt;int,\stdClass&gt;
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$subscriber_id` | **int** | Subscriber ID. |
-
-
 
 **See Also:**
 
@@ -759,14 +488,6 @@ public get_broadcasts(): false|array&lt;int,\stdClass&gt;
 ```
 
 
-
-
-
-
-
-
-
-
 **See Also:**
 
 * https://developers.convertkit.com/#list-broadcasts - 
@@ -777,13 +498,6 @@ Creates a broadcast.
 ```php
 public create_broadcast(string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_layout_template = '', string $thumbnail_alt = '', string $thumbnail_url = ''): false|object
 ```
-
-
-
-
-
-
-
 
 **Parameters:**
 
@@ -800,8 +514,6 @@ public create_broadcast(string $subject = '', string $content = '', string $desc
 | `$thumbnail_alt` | **string** | Specify the ALT attribute of the public thumbnail image<br />(applicable only to public posts). |
 | `$thumbnail_url` | **string** | Specify the URL of the thumbnail image to accompany the broadcast<br />post (applicable only to public posts). |
 
-
-
 **See Also:**
 
 * https://developers.convertkit.com/#create-a-broadcast - 
@@ -813,20 +525,11 @@ Retrieve a specific broadcast.
 public get_broadcast(int $id): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$id` | **int** | Broadcast ID. |
-
-
 
 **See Also:**
 
@@ -840,20 +543,11 @@ total clicks, status, and send progress) for a specific broadcast.
 public get_broadcast_stats(int $id): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$id` | **int** | Broadcast ID. |
-
-
 
 **See Also:**
 
@@ -865,13 +559,6 @@ Updates a broadcast.
 ```php
 public update_broadcast(int $id, string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_layout_template = '', string $thumbnail_alt = '', string $thumbnail_url = ''): false|object
 ```
-
-
-
-
-
-
-
 
 **Parameters:**
 
@@ -889,8 +576,6 @@ public update_broadcast(int $id, string $subject = '', string $content = '', str
 | `$thumbnail_alt` | **string** | Specify the ALT attribute of the public thumbnail image<br />(applicable only to public posts). |
 | `$thumbnail_url` | **string** | Specify the URL of the thumbnail image to accompany the broadcast<br />post (applicable only to public posts). |
 
-
-
 **See Also:**
 
 * https://developers.convertkit.com/#create-a-broadcast - 
@@ -902,20 +587,11 @@ Deletes an existing broadcast.
 public destroy_broadcast(int $id): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$id` | **int** | Broadcast ID. |
-
-
 
 **See Also:**
 
@@ -928,13 +604,6 @@ Creates a webhook that will be called based on the chosen event types.
 public create_webhook(string $url, string $event, string $parameter = ''): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -942,8 +611,6 @@ public create_webhook(string $url, string $event, string $parameter = ''): false
 | `$url` | **string** | URL to receive event. |
 | `$event` | **string** | Event to subscribe to. |
 | `$parameter` | **string** | Optional parameter depending on the event. |
-
-
 
 **See Also:**
 
@@ -956,20 +623,11 @@ Deletes an existing webhook.
 public destroy_webhook(int $rule_id): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$rule_id` | **int** | Rule ID. |
-
-
 
 **See Also:**
 
@@ -983,14 +641,6 @@ public get_custom_fields(): false|object
 ```
 
 
-
-
-
-
-
-
-
-
 **See Also:**
 
 * https://developers.convertkit.com/#list-fields - 
@@ -1002,20 +652,11 @@ Creates a custom field.
 public create_custom_field(string $label): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$label` | **string** | Custom Field label. |
-
-
 
 **See Also:**
 
@@ -1028,20 +669,11 @@ Creates multiple custom fields.
 public create_custom_fields(string[] $labels): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$labels` | **string[]** | Custom Fields labels. |
-
-
 
 **See Also:**
 
@@ -1054,21 +686,12 @@ Updates an existing custom field.
 public update_custom_field(int $id, string $label): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$id` | **int** | Custom Field ID. |
 | `$label` | **string** | Updated Custom Field label. |
-
-
 
 **See Also:**
 
@@ -1081,20 +704,11 @@ Deletes an existing custom field.
 public delete_custom_field(int $id): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$id` | **int** | Custom Field ID. |
-
-
 
 **See Also:**
 
@@ -1107,20 +721,11 @@ List purchases.
 public list_purchases(array<string,string> $options): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$options` | **array<string,string>** | Request options. |
-
-
 
 **See Also:**
 
@@ -1133,20 +738,11 @@ Retuns a specific purchase.
 public get_purchase(int $purchase_id): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$purchase_id` | **int** | Purchase ID. |
-
-
 
 **See Also:**
 
@@ -1159,20 +755,11 @@ Creates a purchase.
 public create_purchase(array<string,string> $options): false|object
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$options` | **array<string,string>** | Purchase data. |
-
-
 
 **See Also:**
 
@@ -1184,23 +771,14 @@ Get markup from ConvertKit for the provided $url.
 ```php
 public get_resource(string $url): false|string
 ```
-
 Supports legacy forms and legacy landing pages.
 Forms and Landing Pages should be embedded using the supplied JS embed script in
 the API response when using get_resources().
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$url` | **string** | URL of HTML page. |
-
-
 
 ### convert_relative_to_absolute_urls
 
@@ -1211,13 +789,6 @@ DOM Elements.
 private convert_relative_to_absolute_urls(\DOMNodeList<\DOMElement> $elements, string $attribute, string $url): void
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -1225,8 +796,6 @@ private convert_relative_to_absolute_urls(\DOMNodeList<\DOMElement> $elements, s
 | `$elements` | **\DOMNodeList<\DOMElement>** | Elements. |
 | `$attribute` | **string** | HTML Attribute. |
 | `$url` | **string** | Absolute URL to prepend to relative URLs. |
-
-
 
 ### strip_html_head_body_tags
 
@@ -1237,24 +806,14 @@ as well as the Content-Type meta tag we might have added in get_html().
 private strip_html_head_body_tags(string $markup): string
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$markup` | **string** | HTML Markup. |
-
-
 **Return Value:**
 
 HTML Markup
-
 
 ### get
 
@@ -1264,21 +823,12 @@ Performs a GET request to the API.
 public get(string $endpoint, array<string,int|string|array<string,int|string>> $args = []): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
 | `$args` | **array<string,int|string|array<string,int|string>>** | Request arguments. |
-
-
 
 ### post
 
@@ -1288,21 +838,12 @@ Performs a POST request to the API.
 public post(string $endpoint, array<string,bool|int|string|array<int|string,int|string>> $args = []): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
 | `$args` | **array<string,bool|int|string|array<int|string,int|string>>** | Request arguments. |
-
-
 
 ### put
 
@@ -1312,21 +853,12 @@ Performs a PUT request to the API.
 public put(string $endpoint, array<string,bool|int|string|array<string,int|string>> $args = []): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
 | `$args` | **array<string,bool|int|string|array<string,int|string>>** | Request arguments. |
-
-
 
 ### delete
 
@@ -1336,21 +868,12 @@ Performs a DELETE request to the API.
 public delete(string $endpoint, array<string,int|string|array<string,int|string>> $args = []): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
 | `$args` | **array<string,int|string|array<string,int|string>>** | Request arguments. |
-
-
 
 ### make_request
 
@@ -1360,13 +883,6 @@ Performs an API request using Guzzle.
 public make_request(string $endpoint, string $method, array<string,bool|int|string|array<int|string,int|string>> $args = []): false|mixed
 ```
 
-
-
-
-
-
-
-
 **Parameters:**
 
 | Parameter | Type | Description |
@@ -1374,8 +890,6 @@ public make_request(string $endpoint, string $method, array<string,bool|int|stri
 | `$endpoint` | **string** | API Endpoint. |
 | `$method` | **string** | Request method. |
 | `$args` | **array<string,bool|int|string|array<int|string,int|string>>** | Request arguments. |
-
-
 
 
 

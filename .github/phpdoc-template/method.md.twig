@@ -12,19 +12,12 @@
 {%- endfor %})
 {{- method.response.type ? ': ' ~ method.response.type }}
 ```
-
-{{ method.description | raw }}
-
+{% if method.description %}{{ method.description | raw }}{% endif %}
 {% if method.static %}* This method is **static**.{% endif %}
-
 {% if method.abstract %}* This method is **abstract**.{% endif %}
-
 {% if method.final %}* This method is **final**.{% endif %}
-
 {% if method.deprecated %}* **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
-
 {% endif %}
-
 
 {% if method.arguments is not empty %}
 **Parameters:**
@@ -34,14 +27,11 @@
 {% for argument in method.arguments %}
 | `{{ '$' ~ argument.name }}` | **{{ argument.type ? argument.type | default(' ') | raw }}** | {{ argument.description | replace({'|': ','}) | nl2br | replace({"\n": "", "\r": "", "\t": ""}) | raw }} |
 {% endfor %}
-
 {% endif %}{# method.arguments is not empty #}
-
 {% if method.response.description and method.response.description is not empty %}
 **Return Value:**
 
 {{ method.response.description | raw }}
-
 {% endif %}
 
 {% if method.tags.see is not empty or method.tags.link is not empty %}

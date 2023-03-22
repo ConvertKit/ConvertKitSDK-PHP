@@ -1,9 +1,8 @@
 {% block content %}
 # {{ node.name }}
 
-{{ node.summary|raw }}
-
-{{ node.description|raw }}
+{% if node.summary %}{{ node.summary|raw }}{% endif %}
+{% if node.description %}{{ node.description|raw }}{% endif %}
 
 * Full name: `{{ node.FullyQualifiedStructuralElementName }}`
 {% if node.parent and node.parent is not empty %}* Parent class: {{ macros.mdClassLink(node.parent, macros.mdClassPath(node), node.parent.FullyQualifiedStructuralElementName) }}
@@ -36,8 +35,6 @@
 {% endfor %}
 
 {% endif %}{# node.tags.see || node.tags.link #}
-
-{# Check constants #}
 {% if node.constants | length > 0 %}
 ## Constants
 
@@ -47,7 +44,6 @@
 |`{{constant.name}}`|{{ constant.visibility | default('*default*') }}|{{constant.type | default(' ')}}|{{constant.value}}|
 {% endfor %}
 {% endif %}
-
 {% if node.properties | length > 0 %}
 ## Properties
 
@@ -55,8 +51,6 @@
 {% include 'property.md.twig' %}
 {% endfor %}
 {% endif %}
-
-{# Check methods #}
 {% if node.methods|length > 0 %}
 ## Methods
 
@@ -65,9 +59,7 @@
 {% endfor %}
 {% endif %}{# if methods #}
 
-{# Check inherited methods #}
 {% if node.InheritedMethods|length > 0 %}
-
 ## Inherited methods
 
 {% for method in node.InheritedMethods %}
