@@ -245,7 +245,36 @@ public get_landing_pages(): false|mixed
 Adds a subscriber to a form.
 
 ```php
-public form_subscribe(int $form_id, array&lt;string,string&gt; $options): false|object
+public form_subscribe(int $form_id, array<string,string> $options): false|object
+```
+
+
+
+
+
+
+* **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
+
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$form_id` | **int** | Form ID. |
+| `$options` | **array<string,string>** | Array of user data (email, name). |
+
+
+
+
+***
+
+### add_subscriber_to_form
+
+Adds a subscriber to a form by email address
+
+```php
+public add_subscriber_to_form(int $form_id, string $email, string $first_name = &#039;&#039;, array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
 ```
 
 
@@ -260,10 +289,16 @@ public form_subscribe(int $form_id, array&lt;string,string&gt; $options): false|
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$form_id` | **int** | Form ID. |
-| `$options` | **array<string,string>** | Array of user data (email, name). |
+| `$email` | **string** | Email Address. |
+| `$first_name` | **string** | First Name. |
+| `$fields` | **array<string,string>** | Custom Fields. |
+| `$tag_ids` | **array<string,int>** | Tag ID(s) to subscribe to. |
 
 
 
+**See Also:**
+
+* https://developers.convertkit.com/#add-subscriber-to-a-form - 
 
 ***
 
@@ -327,7 +362,7 @@ public get_sequences(): false|mixed
 Adds a subscriber to a sequence by email address
 
 ```php
-public add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = &#039;&#039;, array&lt;string,string&gt; $fields = [], array&lt;string,int&gt; $tag_ids = []): false|mixed
+public add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = &#039;&#039;, array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
 ```
 
 
@@ -444,7 +479,7 @@ public create_tag(string $tag): false|mixed
 Tags a subscriber with the given existing Tag.
 
 ```php
-public tag_subscriber(int $tag_id, string $email, string $first_name = &#039;&#039;, array&lt;string,string&gt; $fields = []): false|mixed
+public tag_subscriber(int $tag_id, string $email, string $first_name = &#039;&#039;, array<string,string> $fields = []): false|mixed
 ```
 
 
@@ -476,7 +511,7 @@ public tag_subscriber(int $tag_id, string $email, string $first_name = &#039;&#0
 Adds a tag to a subscriber.
 
 ```php
-public add_tag(int $tag, array&lt;string,mixed&gt; $options): false|object
+public add_tag(int $tag, array<string,mixed> $options): false|object
 ```
 
 
@@ -686,7 +721,7 @@ public get_subscriber(int $subscriber_id): false|int
 Updates the information for a single subscriber.
 
 ```php
-public update_subscriber(int $subscriber_id, string $first_name = &#039;&#039;, string $email_address = &#039;&#039;, array&lt;string,string&gt; $fields = []): false|mixed
+public update_subscriber(int $subscriber_id, string $first_name = &#039;&#039;, string $email_address = &#039;&#039;, array<string,string> $fields = []): false|mixed
 ```
 
 
@@ -747,7 +782,7 @@ public unsubscribe(string $email): false|object
 Remove subscription from a form
 
 ```php
-public form_unsubscribe(array&lt;string,string&gt; $options): false|object
+public form_unsubscribe(array<string,string> $options): false|object
 ```
 
 
@@ -1193,7 +1228,7 @@ public delete_custom_field(int $id): false|object
 List purchases.
 
 ```php
-public list_purchases(array&lt;string,string&gt; $options): false|object
+public list_purchases(array<string,string> $options): false|object
 ```
 
 
@@ -1251,7 +1286,7 @@ public get_purchase(int $purchase_id): false|object
 Creates a purchase.
 
 ```php
-public create_purchase(array&lt;string,string&gt; $options): false|object
+public create_purchase(array<string,string> $options): false|object
 ```
 
 
@@ -1309,7 +1344,7 @@ Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the giv
 DOM Elements.
 
 ```php
-private convert_relative_to_absolute_urls(\DOMNodeList&lt;\DOMElement&gt; $elements, string $attribute, string $url): void
+private convert_relative_to_absolute_urls(\DOMNodeList<\DOMElement> $elements, string $attribute, string $url): void
 ```
 
 
@@ -1368,7 +1403,7 @@ HTML Markup
 Performs a GET request to the API.
 
 ```php
-public get(string $endpoint, array&lt;string,int|string|array&lt;string,int|string&gt;&gt; $args = []): false|mixed
+public get(string $endpoint, array<string,int|string|array<string,int|string>> $args = []): false|mixed
 ```
 
 
@@ -1395,7 +1430,7 @@ public get(string $endpoint, array&lt;string,int|string|array&lt;string,int|stri
 Performs a POST request to the API.
 
 ```php
-public post(string $endpoint, array&lt;string,bool|int|string|array&lt;int|string,int|string&gt;&gt; $args = []): false|mixed
+public post(string $endpoint, array<string,bool|int|string|array<int|string,int|string>> $args = []): false|mixed
 ```
 
 
@@ -1422,7 +1457,7 @@ public post(string $endpoint, array&lt;string,bool|int|string|array&lt;int|strin
 Performs a PUT request to the API.
 
 ```php
-public put(string $endpoint, array&lt;string,bool|int|string|array&lt;string,int|string&gt;&gt; $args = []): false|mixed
+public put(string $endpoint, array<string,bool|int|string|array<string,int|string>> $args = []): false|mixed
 ```
 
 
@@ -1449,7 +1484,7 @@ public put(string $endpoint, array&lt;string,bool|int|string|array&lt;string,int
 Performs a DELETE request to the API.
 
 ```php
-public delete(string $endpoint, array&lt;string,int|string|array&lt;string,int|string&gt;&gt; $args = []): false|mixed
+public delete(string $endpoint, array<string,int|string|array<string,int|string>> $args = []): false|mixed
 ```
 
 
@@ -1476,7 +1511,7 @@ public delete(string $endpoint, array&lt;string,int|string|array&lt;string,int|s
 Performs an API request using Guzzle.
 
 ```php
-public make_request(string $endpoint, string $method, array&lt;string,bool|int|string|array&lt;int|string,int|string&gt;&gt; $args = []): false|mixed
+public make_request(string $endpoint, string $method, array<string,bool|int|string|array<int|string,int|string>> $args = []): false|mixed
 ```
 
 
@@ -1500,5 +1535,3 @@ public make_request(string $endpoint, string $method, array&lt;string,bool|int|s
 ***
 
 
-***
-> Automatically generated from source code comments on 2023-03-21 using [phpDocumentor](http://www.phpdoc.org/) and [saggre/phpdocumentor-markdown](https://github.com/Saggre/phpDocumentor-markdown)
