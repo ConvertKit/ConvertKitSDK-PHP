@@ -1,8 +1,4 @@
-{% import 'include/macros.twig' as macros %}
 {% block content %}
-***
-{% include 'config/header.md.twig' %}
-
 # {{ node.name }}
 
 {{ node.summary|raw }}
@@ -48,7 +44,7 @@
 | Constant | Visibility | Type | Value |
 |:---------|:-----------|:-----|:------|
 {% for constant in node.constants %}
-|`{{constant.name}}`|{{ constant.visibility | default('*default*') }}|{{macros.mdEsc(constant.type) | default(' ')}}|{{constant.value}}|
+|`{{constant.name}}`|{{ constant.visibility | default('*default*') }}|{{constant.type | default(' ')}}|{{constant.value}}|
 {% endfor %}
 {% endif %}
 
@@ -80,5 +76,4 @@
 
 {% endif %}{# if InheritedMethods #}
 
-{% include 'config/footer.md.twig' %}
 {% endblock %}
