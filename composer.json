@@ -31,5 +31,8 @@
     }
   },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "scripts": {
+    "create-docs": "phpDocumentor --directory=src --target=docs --template='vendor/saggre/phpdocumentor-markdown/themes/markdown'"
+  }
 }
