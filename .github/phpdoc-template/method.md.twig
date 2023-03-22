@@ -9,8 +9,7 @@
 {{- argument.byReference ? '&' }} $
 {{- argument.name | raw }}{% if argument.default %} = {{ argument.default | raw }}{% endif %}
 {%- if not loop.last %}, {% endif %}
-{%- endfor %})
-{{- method.response.type ? ': ' ~ method.response.type }}
+{%- endfor %}): {{ method.response.type | raw }}
 ```
 {% if method.description %}{{ method.description | raw }}{% endif %}
 {% if method.static %}* This method is **static**.{% endif %}

@@ -401,7 +401,7 @@ Gets a resource index
 Possible resources: forms, landing_pages, subscription_forms, tags
 
 ```php
-public get_resources(string $resource): array&lt;int|string,mixed|\stdClass&gt;
+public get_resources(string $resource): array<int|string,mixed|\stdClass>
 ```
 GET /{$resource}/
 **Parameters:**
@@ -515,7 +515,7 @@ public form_unsubscribe(array<string,string> $options): false|object
 Get a list of the tags for a subscriber.
 
 ```php
-public get_subscriber_tags(int $subscriber_id): false|array&lt;int,\stdClass&gt;
+public get_subscriber_tags(int $subscriber_id): false|array<int,\stdClass>
 ```
 
 **Parameters:**
@@ -534,7 +534,7 @@ public get_subscriber_tags(int $subscriber_id): false|array&lt;int,\stdClass&gt;
 Gets a list of broadcasts.
 
 ```php
-public get_broadcasts(): false|array&lt;int,\stdClass&gt;
+public get_broadcasts(): false|array<int,\stdClass>
 ```
 
 
