@@ -3,6 +3,7 @@
 .env
 .env.testing
 .phpunit.result.cache
+ast.dump
 composer.lock
 phpstan.neon
 src/logs
