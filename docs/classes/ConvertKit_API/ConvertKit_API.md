@@ -194,7 +194,7 @@ public get_form_subscriptions(int $form_id, string $sort_order = 'asc', string $
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$form_id` | **int** | Form ID. |
-| `$sort_order` | **string** | Sort Order (asc|desc). |
+| `$sort_order` | **string** | Sort Order (asc\|desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
 
@@ -255,7 +255,7 @@ public get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc', 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$sequence_id` | **int** | Sequence ID. |
-| `$sort_order` | **string** | Sort Order (asc|desc). |
+| `$sort_order` | **string** | Sort Order (asc\|desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
 
@@ -399,7 +399,7 @@ public get_tag_subscriptions(int $tag_id, string $sort_order = 'asc', string $su
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag_id` | **int** | Tag ID. |
-| `$sort_order` | **string** | Sort Order (asc|desc). |
+| `$sort_order` | **string** | Sort Order (asc\|desc). |
 | `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
 | `$page` | **int** | Page. |
 
@@ -956,7 +956,7 @@ public get(string $endpoint, array<string,int|string|array<string,int|string>> $
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
-| `$args` | **array<string,int|string|array<string,int|string>>** | Request arguments. |
+| `$args` | **array<string,int\|string\|array<string,int\|string>>** | Request arguments. |
 
 
 ---
@@ -974,7 +974,7 @@ public post(string $endpoint, array<string,bool|int|string|array<int|string,int|
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
-| `$args` | **array<string,bool|int|string|array<int|string,int|string>>** | Request arguments. |
+| `$args` | **array<string,bool\|int\|string\|array<int\|string,int\|string>>** | Request arguments. |
 
 
 ---
@@ -992,7 +992,7 @@ public put(string $endpoint, array<string,bool|int|string|array<string,int|strin
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
-| `$args` | **array<string,bool|int|string|array<string,int|string>>** | Request arguments. |
+| `$args` | **array<string,bool\|int\|string\|array<string,int\|string>>** | Request arguments. |
 
 
 ---
@@ -1010,7 +1010,7 @@ public delete(string $endpoint, array<string,int|string|array<string,int|string>
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
-| `$args` | **array<string,int|string|array<string,int|string>>** | Request arguments. |
+| `$args` | **array<string,int\|string\|array<string,int\|string>>** | Request arguments. |
 
 
 ---
@@ -1029,7 +1029,7 @@ public make_request(string $endpoint, string $method, array<string,bool|int|stri
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
 | `$method` | **string** | Request method. |
-| `$args` | **array<string,bool|int|string|array<int|string,int|string>>** | Request arguments. |
+| `$args` | **array<string,bool\|int\|string\|array<int\|string,int\|string>>** | Request arguments. |
 
 
 ---
