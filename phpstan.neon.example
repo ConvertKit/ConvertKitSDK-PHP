@@ -1,0 +1,14 @@
+# Parameters
+parameters:
+    # Paths to scan
+    paths:
+        - src/
+
+    # Should not need to edit anything below here
+    # Rule Level: https://phpstan.org/user-guide/rule-levels
+    level: 8
+
+    # Ignore the following errors, as PHPStan either does not have registered symbols for them yet,
+    # or the symbols are inaccurate.
+    ignoreErrors:
+        - '#\$headers of class GuzzleHttp\\Psr7\\Request constructor expects#'

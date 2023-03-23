@@ -1,0 +1,77 @@
+name: Run Tests
+
+# When to run tests.
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    # Name.
+    name: PHP ${{ matrix.php-versions }}
+
+    # Virtual Environment to use.
+    # @see: https://github.com/actions/virtual-environments
+    runs-on: ubuntu-latest
+
+    # Defines PHP Versions matrix to run tests on
+    strategy:
+      matrix:
+        php-versions: [ '7.4', '8.0', '8.1', '8.2' ]
+
+    # Steps to install, configure and run tests
+    steps:
+      # Checkout (copy) this repository's Plugin to this VM.
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Install PHP version
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          coverage: none
+
+      # Write any secrets, such as API keys, to the .env.dist.testing file now.
+      # Make sure your committed .env.dist.testing file ends with a newline.
+      # The formatting of the contents to include a blank newline is deliberate.
+      - name: Define GitHub Secrets in .env.dist.testing
+        uses: DamianReeves/write-file-action@v1.1
+        with:
+          path: .env.dist.testing
+          contents: |
+
+            CONVERTKIT_API_KEY=${{ secrets.CONVERTKIT_API_KEY }}
+            CONVERTKIT_API_SECRET=${{ secrets.CONVERTKIT_API_SECRET }}
+            CONVERTKIT_API_KEY_NO_DATA=${{ secrets.CONVERTKIT_API_KEY_NO_DATA }}
+            CONVERTKIT_API_SECRET_NO_DATA=${{ secrets.CONVERTKIT_API_SECRET_NO_DATA }}
+          write-mode: append
+
+      # Rename .env.dist.testing to .env, so PHPUnit reads it for tests.
+      - name: Rename .env.dist.testing to .env 
+        run: mv .env.dist.testing .env
+
+      # Installs PHPUnit, PHP CodeSniffer and anything else needed to run tests.
+      - name: Run Composer
+        run: composer update
+
+      # Generate autoloader
+      - name: Build PHP Autoloader
+        run: composer dump-autoload
+
+      # Run Coding Standards.
+      - name: Run Coding Standards
+        run: php vendor/bin/phpcs --standard=phpcs.xml
+
+      # Run Coding Standards on Tests.
+      - name: Run Coding Standards on Tests
+        run: php vendor/bin/phpcs --standard=phpcs.tests.xml
+
+      # Run PHPUnit Tests.
+      - name: Run PHPUnit Tests
+        run: vendor/bin/phpunit --verbose --stop-on-failure

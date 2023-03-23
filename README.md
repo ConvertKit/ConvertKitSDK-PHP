@@ -1,92 +1,90 @@
 # ConvertKit SDK PHP
 
-ConvertKit's official PHP SDK
+The ConvertKit PHP SDK provides convinient access to the ConvertKit API from applications written in the PHP language.
 
-### Installation
+It includes a pre-defined set of methods for interacting with the API.
 
-#### Standard Installation
+## Requirements
 
-1. Download or clone this repository
-2. Run `composer install`
-3. Add `./vendor/autoload.php` to your project
+PHP 7.4 and later.
 
-#### Installation with Package Manager
+## Composer
 
-If your project uses [Composer](https://getcomposer.org/), you can install the ConvertKitSDK-PHP package as a composer package. This allows you to have this project as a dependency without the ConvertKitSDK-PHP files being checked into your source code.
+You can install this PHP SDK via [Composer](http://getcomposer.org/). Run the following command:
 
-```shell
-composer require convertkit/convertkitapi:0.1
+```bash
+composer require convertkit/convertkitapi
 ```
 
-**If you previously use or rely on `dev-master`, please use the `0.1` release to maintain compatibility with no breaking changes.**
+To use the PHP SDK, use Composer's [autoload](https://getcomposer.org/doc/01-basic-usage.md#autoloading):
 
-This package is now versioned, and `1.0` will introduce breaking changes to bring this package up to date with coding standards, PHP versions and third party library versions.
+```php
+require_once 'vendor/autoload.php';
+```
 
-### Usage
+## Dependencies
+
+The PHP SDK require the following extensions in order to work properly:
+
+-   [`curl`](https://secure.php.net/manual/en/book.curl.php), although you can use your own non-cURL client if you prefer
+-   [`json`](https://secure.php.net/manual/en/book.json.php)
+-   [`mbstring`](https://secure.php.net/manual/en/book.mbstring.php) (Multibyte String)
+
+If you use Composer, these dependencies should be handled automatically.
+
+## Getting Started
 
 Get your ConvertKit API Key and API Secret [here](https://app.convertkit.com/account/edit) and set it somewhere in your application.
 
 ```php
-$api = new \ConvertKit_API\ConvertKit_API($api_key, $api_secret);
+// Require the autoloader (if you're using a PHP framework, this may already be done for you).
+require_once 'vendor/autoload.php';
+
+// Initialize the API class.
+$api = new \ConvertKit_API\ConvertKit_API('<your_public_api_key>', '<your_secret_api_key>');
 ```
 
-### Examples
+## Handling Errors
 
-**Subscribe to a form**
-
-Add a subscriber to a form. The `$subscribed` response will be an object.
+The ConvertKit PHP SDK uses Guzzle for all HTTP API requests.  Errors will be thrown as Guzzle's `ClientException` (for 4xx errors),
+or `ServerException` (for 5xx errors).
 
 ```php
-$tag_id = '99999'; // This tag must be valid for your ConvertKit account.
-
-$options = [
-			'email'      => 'test@test.com',
-			'name'       => 'Full Name',
-			'first_name' => 'First Name',
-			'tags'       => $tag_id,
-			'fields'     => [
-				'phone' => 134567891243,
-				'shirt_size' => 'M',
-				'website_url' => 'testurl.com'
-			]
-		];
-
-$subscribed = $api->form_subscribe($this->test_form_id, $options);
+try {
+    $forms = $api->add_subscriber_to_form('invalid-form-id');
+} catch (GuzzleHttp\Exception\ClientException $e) {
+    // Handle 4xx client errors.
+    die($e->getMessage());
+} catch (GuzzleHttp\Exception\ServerException $e) {
+    // Handle 5xx server errors.
+    die($e->getMessage());
+}
 ```
 
-**Get Subscriber ID**
-
-Get the ConvertKit Subscriber ID for a given email address.
+For a more detailed error message, it's possible to fetch the API's response when a `ClientException` is thrown:
 
 ```php
-$subscriber_id = $api->get_subscriber_id( $email );
+// Errors will be thrown as Guzzle's ClientException or ServerException.
+try {
+    $forms = $api->form_subscribe('invalid-form-id');
+} catch (GuzzleHttp\Exception\ClientException $e) {
+    // Handle 4xx client errors.
+    // For ClientException, it's possible to inspect the API's JSON response
+    // to output an error or handle it accordingly.
+    $error = json_decode($e->getResponse()->getBody()->getContents());
+    die($error->message); // e.g. "Entity not found".
+} catch (GuzzleHttp\Exception\ServerException $e) {
+    // Handle 5xx server errors.
+    die($e->getMessage());
+}
 ```
 
-**Get Subscriber**
+## Documentation
 
-Get subscriber data for a ConvertKit Subscriber.
+See the [PHP SDK docs](./docs/classes/ConvertKit_API/ConvertKit_API.md)
 
-```php
-$subscriber = $api->get_subscriber( $subscriber_id );
-```
+## Contributing
 
-**Get Subscriber Tags**
+See our [contributor guide](CONTRIBUTING.md) for setting up your development environment, testing and submitting a PR.
 
-Get all tags applied to a Subscriber.
-
-```php
-$subscriber_tags = $api->get_subscriber_tags( $subscriber_id );
-```
-
-**Add Tag to a Subscriber**
-
-Apply a tag to a Subscriber.
-
-```php
-$tag_id = '99999'; // This tag must be valid for your ConvertKit account.
-$api->add_tag($tag_id, [
-			'email' => 'test@test.com'
-		]);
-```
-
-
+For ConvertKit, refer to the [deployment guide](DEPLOYMENT.md) on how to publish a new release.

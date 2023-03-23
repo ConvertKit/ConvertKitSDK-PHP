@@ -1,0 +1,50 @@
+### {{ method.name }}
+
+{{ method.summary | raw }}
+
+{# Method signature #}
+```php
+{% if method.final %}{{ 'final' ~ ' ' }}{% endif %}{{ method.visibility ~ ' ' }}{%if method.static%}{{ 'static' ~ ' ' }}{% endif %}{{ method.name }}({% for argument in method.arguments %}
+{{- argument.type | raw }} 
+{{- argument.byReference ? '&' }} $
+{{- argument.name | raw }}{% if argument.default %} = {{ argument.default | raw }}{% endif %}
+{%- if not loop.last %}, {% endif %}
+{%- endfor %}): {{ method.response.type | raw }}
+```
+{% if method.description %}{{ method.description | raw }}{% endif %}
+{% if method.static %}* This method is **static**.{% endif %}
+{% if method.abstract %}* This method is **abstract**.{% endif %}
+{% if method.final %}* This method is **final**.{% endif %}
+{% if method.deprecated %}* **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
+{% endif %}
+
+{% if method.arguments is not empty %}
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+{% for argument in method.arguments %}
+| `{{ '$' ~ argument.name }}` | **{{ argument.type ? argument.type | default(' ') | replace({'|': '\\|'}) | raw }}** | {{ argument.description | replace({'|': '\\|'}) | nl2br | replace({"\n": "", "\r": "", "\t": ""}) | raw }} |
+{% endfor %}
+{% endif %}{# method.arguments is not empty #}
+{% if method.response.description and method.response.description is not empty %}
+
+**Return Value:**
+
+{{ method.response.description | raw }}
+{% endif %}
+
+{% if method.tags.see is not empty or method.tags.link is not empty %}
+**See Also:**
+
+{% for see in method.tags.see %}
+* {{ see.reference }} {% if see.description is not empty %}- {{ see.description | raw }}{% endif %}
+{% endfor %}
+{% for link in method.tags.link %}
+* {{ link.link }} {% if link.description and link.description != link.link %}- {{ link.description | raw }}{% endif %}
+{% endfor %}
+
+{% endif %}{# method.tags.see || method.tags.link #}
+
+---
