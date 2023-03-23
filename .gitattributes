@@ -1,0 +1,16 @@
+/.github/ export-ignore
+/docs/ export-ignore
+/tests/ export-ignore
+.env.dist.testing export-ignore
+.env.example export-ignore
+.gitignore export-ignore
+/CONTRIBUTING.md export-ignore
+/DEPLOYMENT.md export-ignore
+/DEVELOPMENT.md export-ignore
+/phpcs.tests.xml export-ignore
+/phpcs.xml export-ignore
+/phpstan.neon.dist export-ignore
+/phpstan.neon.example export-ignore
+/phpunit.xml export-ignore
+/SETUP.md export-ignore
+/TESTING.md export-ignore
