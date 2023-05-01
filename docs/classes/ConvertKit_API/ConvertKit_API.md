@@ -7,7 +7,7 @@ ConvertKit API Class
 
 | Constant | Visibility | Type | Value |
 |:---------|:-----------|:-----|:------|
-|`VERSION`|public|string|&#039;1.0.0&#039;|
+|`VERSION`|public|string|&#039;1.1.0&#039;|
 ## Properties
 
 ### api_key
@@ -113,6 +113,9 @@ public get_account(): false|mixed
 ```
 
 
+**See Also:**
+
+* https://developers.convertkit.com/#account 
 
 ---
 ### get_forms
@@ -124,6 +127,9 @@ public get_forms(): false|mixed
 ```
 
 
+**See Also:**
+
+* https://developers.convertkit.com/#forms 
 
 ---
 ### get_landing_pages
@@ -135,6 +141,9 @@ public get_landing_pages(): false|mixed
 ```
 
 
+**See Also:**
+
+* https://developers.convertkit.com/#forms 
 
 ---
 ### form_subscribe
@@ -154,6 +163,9 @@ public form_subscribe(int $form_id, array<string,string> $options): false|object
 | `$form_id` | **int** | Form ID. |
 | `$options` | **array<string,string>** | Array of user data (email, name). |
 
+**See Also:**
+
+* https://developers.convertkit.com/#add-subscriber-to-a-form 
 
 ---
 ### add_subscriber_to_form
@@ -292,6 +304,26 @@ public create_tag(string $tag): false|mixed
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag` | **string** | Tag Name. |
+
+**See Also:**
+
+* https://developers.convertkit.com/#create-a-tag 
+
+---
+### create_tags
+
+Creates multiple tags.
+
+```php
+public create_tags(array<int,string> $tags): false|mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$tags` | **array<int,string>** | Tag Names. |
 
 **See Also:**
 
@@ -445,6 +477,9 @@ Return false if subscriber not found.
 |-----------|------|-------------|
 | `$email_address` | **string** | Email Address. |
 
+**See Also:**
+
+* https://developers.convertkit.com/#list-subscribers 
 
 ---
 ### get_subscriber
@@ -965,7 +1000,7 @@ public get(string $endpoint, array<string,int|string|array<string,int|string>> $
 Performs a POST request to the API.
 
 ```php
-public post(string $endpoint, array<string,bool|int|string|array<int|string,int|string>> $args = []): false|mixed
+public post(string $endpoint, array<string,bool|int|string|array<int|string,int|string|(string)[]>> $args = []): false|mixed
 ```
 
 
@@ -974,7 +1009,7 @@ public post(string $endpoint, array<string,bool|int|string|array<int|string,int|
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
-| `$args` | **array<string,bool\|int\|string\|array<int\|string,int\|string>>** | Request arguments. |
+| `$args` | **array<string,bool\|int\|string\|array<int\|string,int\|string\|(string)[]>>** | Request arguments. |
 
 
 ---
@@ -1019,7 +1054,7 @@ public delete(string $endpoint, array<string,int|string|array<string,int|string>
 Performs an API request using Guzzle.
 
 ```php
-public make_request(string $endpoint, string $method, array<string,bool|int|string|array<int|string,int|string>> $args = []): false|mixed
+public make_request(string $endpoint, string $method, array<string,bool|int|string|array<int|string,int|string|(string)[]>> $args = []): false|mixed
 ```
 
 
@@ -1029,7 +1064,7 @@ public make_request(string $endpoint, string $method, array<string,bool|int|stri
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
 | `$method` | **string** | Request method. |
-| `$args` | **array<string,bool\|int\|string\|array<int\|string,int\|string>>** | Request arguments. |
+| `$args` | **array<string,bool\|int\|string\|array<int\|string,int\|string\|(string)[]>>** | Request arguments. |
 
 
 ---
