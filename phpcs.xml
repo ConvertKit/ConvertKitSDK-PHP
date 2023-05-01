@@ -68,4 +68,12 @@
         <!-- Allow use of is_null() -->
         <exclude name="Generic.PHP.ForbiddenFunctions" />
     </rule>
+
+    <!-- Permit slightly longer line lengths -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="130"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+    </rule>
 </ruleset>

@@ -22,7 +22,7 @@ class ConvertKit_API
      *
      * @var string
      */
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.1.0';
 
     /**
      * ConvertKit API Key
@@ -389,6 +389,36 @@ class ConvertKit_API
             [
                 'api_key' => $this->api_key,
                 'tag'     => ['name' => $tag],
+            ]
+        );
+    }
+
+    /**
+     * Creates multiple tags.
+     *
+     * @param array<int,string> $tags Tag Names.
+     *
+     * @since 1.1.0
+     *
+     * @see https://developers.convertkit.com/#create-a-tag
+     *
+     * @return false|mixed
+     */
+    public function create_tags(array $tags)
+    {
+        // Build API compatible array of tags.
+        $apiTags = [];
+        foreach ($tags as $i => $tag) {
+            $apiTags[] = [
+                'name' => (string) $tag,
+            ];
+        }
+
+        return $this->post(
+            'tags',
+            [
+                'api_key' => $this->api_key,
+                'tag'     => $apiTags,
             ]
         );
     }
@@ -1449,8 +1479,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string                                                                  $endpoint API Endpoint.
-     * @param array<string, bool|integer|string|array<int|string, int|string>|string> $args     Request arguments.
+     * @param string                                                                                $endpoint API Endpoint.
+     * @param array<string, bool|integer|string|array<int|string, int|string|array<string|string>>> $args     Request arguments.
      *
      * @return false|mixed
      */
@@ -1500,9 +1530,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string                                                                  $endpoint API Endpoint.
-     * @param string                                                                  $method   Request method.
-     * @param array<string, bool|integer|string|array<int|string, int|string>|string> $args     Request arguments.
+     * @param string                                                                                $endpoint API Endpoint.
+     * @param string                                                                                $method   Request method.
+     * @param array<string, bool|integer|string|array<int|string, int|string|array<string|string>>> $args     Request arguments.
      *
      * @throws \Exception If JSON encoding arguments failed.
      *
