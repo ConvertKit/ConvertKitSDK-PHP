@@ -530,6 +530,66 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that create_tags() returns the expected data.
+     *
+     * @since   1.1.0
+     *
+     * @return void
+     */
+    public function testCreateTags()
+    {
+        $tagNames = [
+            'Tag Test ' . mt_rand(),
+            'Tag Test ' . mt_rand(),
+        ];
+        $result = $this->api->create_tags($tagNames);
+
+        // Iterate through the results to confirm the tags were created.
+        foreach ($result as $i => $tag) {
+            // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+            $tag = get_object_vars($tag);
+            $this->assertArrayHasKey('id', $tag);
+            $this->assertArrayHasKey('name', $tag);
+            $this->assertArrayHasKey('created_at', $tag);
+            $this->assertEquals($tag['name'], $tagNames[$i]);
+        }
+    }
+
+    /**
+     * Test that create_tags() throws a ClientException when creating
+     * blank tags.
+     *
+     * @since   1.1.0
+     *
+     * @return void
+     */
+    public function testCreateTagsBlank()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->create_tags([
+            '',
+            '',
+        ]);
+    }
+
+    /**
+     * Test that create_tags() throws a ClientException when creating
+     * tags that already exists.
+     *
+     * @since   1.1.0
+     *
+     * @return void
+     */
+    public function testCreateTagsThatExist()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $result = $this->api->create_tags([
+            $_ENV['CONVERTKIT_API_TAG_NAME'],
+            $_ENV['CONVERTKIT_API_TAG_NAME_2'],
+        ]);
+    }
+
+    /**
      * Test that tag_subscriber() returns the expected data.
      *
      * @since   1.0.0
