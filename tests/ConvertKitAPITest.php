@@ -16,9 +16,9 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Location of the monologger log file.
-     * 
+     *
      * @since   1.2.0
-     * 
+     *
      * @var     string
      */
     protected $logFile = '';
@@ -38,7 +38,7 @@ class ConvertKitAPITest extends TestCase
         $dotenv->load();
 
         // Set location where API class will create/write the log file.
-        $this->logFile = dirname(dirname(__FILE__)).'/src/logs/debug.log';
+        $this->logFile = dirname(dirname(__FILE__)) . '/src/logs/debug.log';
 
         // Delete any existing debug log file.
         $this->deleteLogFile();
@@ -49,9 +49,9 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that debug logging works when enabled and an API call is made.
-     * 
+     *
      * @since   1.2.0
-     * 
+     *
      * @return  void
      */
     public function testDebugEnabled()
@@ -67,15 +67,15 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that debug logging is not performed when disabled and an API call is made.
-     * 
+     *
      * @since   1.2.0
-     * 
+     *
      * @return  void
      */
     public function testDebugDisabled()
     {
         $result = $this->api->get_account();
-        
+
         // Confirm that the log is empty / doesn't exist.
         $this->assertEmpty($this->getLogFileContents());
     }
@@ -2085,29 +2085,29 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Deletes the src/logs/debug.log file, if it remains following a previous test.
-     * 
+     *
      * @since   1.2.0
-     * 
+     *
      * @return  void
      */
     private function deleteLogFile()
     {
-        if(file_exists($this->logFile)) {
+        if (file_exists($this->logFile)) {
             unlink($this->logFile);
         }
     }
 
     /**
      * Returns the contents of the src/logs/debug.log file.
-     * 
+     *
      * @since   1.2.0
-     * 
+     *
      * @return  string
      */
     private function getLogFileContents()
     {
         // Return blank string if no log file.
-        if(!file_exists($this->logFile)) {
+        if (!file_exists($this->logFile)) {
             return '';
         }
 
