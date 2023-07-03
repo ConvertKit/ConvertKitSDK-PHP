@@ -15,6 +15,15 @@ class ConvertKitAPITest extends TestCase
     protected $api;
 
     /**
+     * Location of the monologger log file.
+     * 
+     * @since   1.2.0
+     * 
+     * @var     string
+     */
+    protected $logFile = '';
+
+    /**
      * Load .env configuration into $_ENV superglobal, and initialize the API
      * class before each test.
      *
@@ -28,8 +37,47 @@ class ConvertKitAPITest extends TestCase
         $dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__FILE__)));
         $dotenv->load();
 
+        // Set location where API class will create/write the log file.
+        $this->logFile = dirname(dirname(__FILE__)).'/src/logs/debug.log';
+
+        // Delete any existing debug log file.
+        $this->deleteLogFile();
+
         // Setup API.
         $this->api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET']);
+    }
+
+    /**
+     * Test that debug logging works when enabled and an API call is made.
+     * 
+     * @since   1.2.0
+     * 
+     * @return  void
+     */
+    public function testDebugEnabled()
+    {
+        // Setup API with debugging enabled.
+        $api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true);
+        $result = $api->get_account();
+
+        // Confirm that the log includes expected data.
+        $this->assertStringContainsString('ck-debug.INFO: GET account', $this->getLogFileContents());
+        $this->assertStringContainsString('ck-debug.INFO: Finish request successfully', $this->getLogFileContents());
+    }
+
+    /**
+     * Test that debug logging is not performed when disabled and an API call is made.
+     * 
+     * @since   1.2.0
+     * 
+     * @return  void
+     */
+    public function testDebugDisabled()
+    {
+        $result = $this->api->get_account();
+        
+        // Confirm that the log is empty / doesn't exist.
+        $this->assertEmpty($this->getLogFileContents());
     }
 
     /**
@@ -2033,6 +2081,38 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
         $markup = $this->api->get_resource('https://convertkit.com/a/url/that/does/not/exist');
+    }
+
+    /**
+     * Deletes the src/logs/debug.log file, if it remains following a previous test.
+     * 
+     * @since   1.2.0
+     * 
+     * @return  void
+     */
+    private function deleteLogFile()
+    {
+        if(file_exists($this->logFile)) {
+            unlink($this->logFile);
+        }
+    }
+
+    /**
+     * Returns the contents of the src/logs/debug.log file.
+     * 
+     * @since   1.2.0
+     * 
+     * @return  string
+     */
+    private function getLogFileContents()
+    {
+        // Return blank string if no log file.
+        if(!file_exists($this->logFile)) {
+            return '';
+        }
+
+        // Return log file contents.
+        return file_get_contents($this->logFile);
     }
 
     /**
