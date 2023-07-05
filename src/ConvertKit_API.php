@@ -8,10 +8,10 @@
 namespace ConvertKit_API;
 
 use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-
+use GuzzleHttp\ClientInterface;
+use Monolog\Handler\StreamHandler;
 /**
  * ConvertKit API Class
  */
@@ -69,7 +69,7 @@ class ConvertKit_API
     /**
      * Guzzle Http Client
      *
-     * @var \GuzzleHttp\Client
+     * @var \GuzzleHttp\ClientInterface
      */
     protected $client;
 
@@ -103,6 +103,18 @@ class ConvertKit_API
                 $stream_handler // phpcs:ignore Squiz.Objects.ObjectInstantiation.NotAssigned
             );
         }
+    }
+
+    /**
+     * Set the Guzzle client implementation to use.
+     *
+     * @param ClientInterface $client Guzzle client implementation.
+     *
+     * @return void
+     */
+    public function set_http_client(ClientInterface $client)
+    {
+        $this->client = $client;
     }
 
     /**
