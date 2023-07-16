@@ -112,7 +112,7 @@ class ConvertKit_API
      *
      * @return void
      */
-    private function create_log(string $message)
+    protected function create_log(string $message)
     {
         if ($this->debug) {
             $this->debug_logger->info($message);
