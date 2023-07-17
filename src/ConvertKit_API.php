@@ -77,11 +77,12 @@ class ConvertKit_API
     /**
      * Constructor for ConvertKitAPI instance
      *
-     * @param string  $api_key    ConvertKit API Key.
-     * @param string  $api_secret ConvertKit API Secret.
-     * @param boolean $debug      Log requests to debugger.
+     * @param string  $api_key              ConvertKit API Key.
+     * @param string  $api_secret           ConvertKit API Secret.
+     * @param boolean $debug                Log requests to debugger.
+     * @param string  $debugLogFileLocation Path and filename of debug file to write to.
      */
-    public function __construct(string $api_key, string $api_secret, bool $debug = false)
+    public function __construct(string $api_key, string $api_secret, bool $debug = false, string $debugLogFileLocation = '')
     {
         $this->api_key    = $api_key;
         $this->api_secret = $api_secret;
@@ -97,8 +98,13 @@ class ConvertKit_API
         );
 
         if ($debug) {
+            // If no debug log file location specified, define a default.
+            if (empty($debugLogFileLocation)) {
+                $debugLogFileLocation = __DIR__ . '/logs/debug.log';
+            }
+
             $this->debug_logger = new Logger('ck-debug');
-            $stream_handler     = new StreamHandler(__DIR__ . '/logs/debug.log', Logger::DEBUG);
+            $stream_handler     = new StreamHandler($debugLogFileLocation, Logger::DEBUG);
             $this->debug_logger->pushHandler(
                 $stream_handler // phpcs:ignore Squiz.Objects.ObjectInstantiation.NotAssigned
             );
@@ -114,9 +120,25 @@ class ConvertKit_API
      */
     private function create_log(string $message)
     {
-        if ($this->debug) {
-            $this->debug_logger->info($message);
+        // Don't log anything if debugging isn't enabled.
+        if (!$this->debug) {
+            return;
         }
+
+        // Mask the API Key and Secret.
+        $message = str_replace(
+            $this->api_key,
+            str_repeat('*', (strlen($this->api_key) - 4)) . substr($this->api_key, - 4),
+            $message
+        );
+        $message = str_replace(
+            $this->api_secret,
+            str_repeat('*', (strlen($this->api_secret) - 4)) . substr($this->api_secret, - 4),
+            $message
+        );
+
+        // Add to log.
+        $this->debug_logger->info($message);
     }
 
     /**
