@@ -1,6 +1,12 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * ConvertKit API class tests.
@@ -45,6 +51,42 @@ class ConvertKitAPITest extends TestCase
 
         // Setup API.
         $this->api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET']);
+    }
+
+    /**
+     * Test that a ClientInterface can be injected.
+     *
+     * @since   1.3.0
+     *
+     * @return  void
+     */
+    public function testClientInterfaceInjection()
+    {
+        // Setup API with a mock Guzzle client.
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(
+                [
+                    'name' => 'Test Account for Guzzle Mock',
+                    'plan_type' => 'free',
+                    'primary_email_address' => 'mock@guzzle.mock',
+                ]
+            )),
+        ]);
+
+        // Define client with mock handler.
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
+
+        // Assign the client to the API class.
+        $this->api->set_http_client($client);
+
+        // Perform an API request.
+        $result = $this->api->get_account();
+
+        // Confirm mocked data was returned.
+        $this->assertSame('Test Account for Guzzle Mock', $result->name);
+        $this->assertSame('free', $result->plan_type);
+        $this->assertSame('mock@guzzle.mock', $result->primary_email_address);
     }
 
     /**
