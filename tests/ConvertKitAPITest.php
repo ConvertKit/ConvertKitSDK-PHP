@@ -108,6 +108,75 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that debug logging works when enabled, a custom debug log file and path is specified
+     * and an API call is made.
+     *
+     * @since   1.3.0
+     *
+     * @return  void
+     */
+    public function testDebugEnabledWithCustomLogFile()
+    {
+        // Define custom log file location.
+        $this->logFile = dirname(dirname(__FILE__)) . '/src/logs/debug-custom.log';
+
+        // Setup API with debugging enabled.
+        $api = new \ConvertKit_API\ConvertKit_API(
+            $_ENV['CONVERTKIT_API_KEY'],
+            $_ENV['CONVERTKIT_API_SECRET'],
+            true,
+            $this->logFile
+        );
+        $result = $api->get_account();
+
+        // Confirm log file exists.
+        $this->assertFileExists($this->logFile);
+
+        // Confirm that the log includes expected data.
+        $this->assertStringContainsString('ck-debug.INFO: GET account', $this->getLogFileContents());
+        $this->assertStringContainsString('ck-debug.INFO: Finish request successfully', $this->getLogFileContents());
+    }
+
+    /**
+     * Test that debug logging works when enabled and an API call is made, with the API Key and Secret
+     * masked in the log file.
+     *
+     * @since   1.3.0
+     *
+     * @return  void
+     */
+    public function testDebugAPIKeyAndSecretAreMasked()
+    {
+        // Setup API with debugging enabled.
+        $api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true);
+
+        // Make requests that utilizes both the API Key and Secret.
+        $api->get_forms(); // API Key.
+        $api->get_account(); // API Secret.
+
+        // Define masked versions of API Key and Secret that we expect to see in the log file.
+        $maskedAPIKey = str_replace(
+            $_ENV['CONVERTKIT_API_KEY'],
+            str_repeat('*', strlen($_ENV['CONVERTKIT_API_KEY']) - 4) . substr($_ENV['CONVERTKIT_API_KEY'], - 4),
+            $_ENV['CONVERTKIT_API_KEY']
+        );
+        $maskedAPISecret = str_replace(
+            $_ENV['CONVERTKIT_API_SECRET'],
+            str_repeat('*', strlen($_ENV['CONVERTKIT_API_SECRET']) - 4) . substr($_ENV['CONVERTKIT_API_SECRET'], - 4),
+            $_ENV['CONVERTKIT_API_SECRET']
+        );
+
+
+        // Confirm that the log includes the masked API Key and Secret.
+        $this->assertStringContainsString($maskedAPIKey, $this->getLogFileContents());
+        $this->assertStringContainsString($maskedAPISecret, $this->getLogFileContents());
+
+        // Confirm that the log does not include the unmasked API Key and Secret.
+        $this->assertStringNotContainsString($_ENV['CONVERTKIT_API_KEY'], $this->getLogFileContents());
+        $this->assertStringNotContainsString($_ENV['CONVERTKIT_API_SECRET'], $this->getLogFileContents());
+    }
+
+    /**
      * Test that debug logging is not performed when disabled and an API call is made.
      *
      * @since   1.2.0
