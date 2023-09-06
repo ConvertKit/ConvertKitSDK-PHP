@@ -28,7 +28,7 @@ jobs:
     steps:
       # Checkout (copy) this repository's Plugin to this VM.
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Install PHP version
       - name: Install PHP
