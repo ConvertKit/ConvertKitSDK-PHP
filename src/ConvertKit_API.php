@@ -23,28 +23,59 @@ class ConvertKit_API
      *
      * @var string
      */
-    public const VERSION = '1.1.0';
+    public const VERSION = '2.0.0';
 
     /**
-     * ConvertKit API Key
+     * ConvertKit OAuth Application Client ID
+     *
+     * @since   2.0.0
+     *
+     * @var bool|string.
+     */
+    protected $client_id = false;
+
+    /**
+     * ConvertKit OAuth Application Client Secret
+     *
+     * @since   2.0.0
+     *
+     * @var bool|string.
+     */
+    protected $client_secret = false;
+
+    /**
+     * Access Token
+     *
+     * @since   2.0.0
+     *
+     * @var bool|string
+     */
+    protected $access_token = '';
+
+    /**
+     * OAuth Authorization URL
+     *
+     * @since   2.0.0
      *
      * @var string
      */
-    protected $api_key;
+    protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
 
     /**
-     * ConvertKit API Secret
+     * OAuth Token URL
+     *
+     * @since   2.0.0
      *
      * @var string
      */
-    protected $api_secret;
+    protected $oauth_token_url = 'https://api.convertkit.com/oauth/token';
 
     /**
      * Version of ConvertKit API
      *
      * @var string
      */
-    protected $api_version = 'v3';
+    protected $api_version = 'v4';
 
     /**
      * ConvertKit API URL
@@ -74,26 +105,24 @@ class ConvertKit_API
      */
     protected $client;
 
-
     /**
      * Constructor for ConvertKitAPI instance
      *
-     * @param string  $api_key              ConvertKit API Key.
-     * @param string  $api_secret           ConvertKit API Secret.
      * @param boolean $debug                Log requests to debugger.
      * @param string  $debugLogFileLocation Path and filename of debug file to write to.
      */
-    public function __construct(string $api_key, string $api_secret, bool $debug = false, string $debugLogFileLocation = '')
+    public function __construct(string $clientID, string $clientSecret, string $accessToken = '', bool $debug = false, string $debugLogFileLocation = '')
     {
-        $this->api_key    = $api_key;
-        $this->api_secret = $api_secret;
+        $this->client_id = $clientID;
+        $this->client_secret = $clientSecret;
+        $this->access_token = $accessToken;
         $this->debug      = $debug;
 
         // Set the Guzzle client.
         $this->client = new Client(
             [
                 'headers' => [
-                    'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                    'User-Agent'    => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
                 ],
             ]
         );
@@ -140,20 +169,118 @@ class ConvertKit_API
             return;
         }
 
-        // Mask the API Key and Secret.
+        // Mask credentials.
         $message = str_replace(
-            $this->api_key,
-            str_repeat('*', (strlen($this->api_key) - 4)) . substr($this->api_key, - 4),
+            $this->client_id,
+            str_repeat('*', (strlen($this->client_id) - 4)) . substr($this->client_id, - 4),
             $message
         );
         $message = str_replace(
-            $this->api_secret,
-            str_repeat('*', (strlen($this->api_secret) - 4)) . substr($this->api_secret, - 4),
+            $this->client_secret,
+            str_repeat('*', (strlen($this->client_secret) - 4)) . substr($this->client_secret, - 4),
+            $message
+        );
+        $message = str_replace(
+            $this->access_token,
+            str_repeat('*', (strlen($this->access_token) - 4)) . substr($this->access_token, - 4),
             $message
         );
 
         // Add to log.
         $this->debug_logger->info($message);
+    }
+
+    /**
+     * Returns the OAuth URL to begin the OAuth process.
+     * 
+     * @since   2.0.0
+     * 
+     * @param   string  $redirectURI    Redirect URI.
+     * @return  string
+     */
+    public function get_oauth_url(string $redirectURI)
+    {
+        return $this->oauth_authorize_url . '?' . http_build_query([
+            'client_id' => $this->client_id,
+            'redirect_uri' => $redirectURI,
+            'response_type' => 'code',
+        ]);
+    }
+
+    /**
+     * Exchanges the given authorization code for an access token and refresh token.
+     *
+     * @since   2.0.0
+     *
+     * @param   string $authCode     Authorization Code, returned from get_oauth_url() flow.
+     * @param   string  $redirectURI Redirect URI.
+     */
+    public function get_access_token(string $authCode, string $redirectURI)
+    {
+        // Build request.
+        $request = new Request(
+           'GET',
+            $this->oauth_token_url,
+            [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ],
+                'form_params' => [
+                    'code'          => $authCode,
+                    'client_id'     => $this->client_id,
+                    'client_secret' => $this->client_secret,
+                    'grant_type'    => 'authorization_code',
+                    'redirect_uri'  => $redirectURI
+                ]
+            ]
+        );
+
+        // Send request.
+        $response = $this->client->send(
+            $request,
+            ['exceptions' => false]
+        );
+
+        var_dump($response);
+        die();
+    }
+
+    /**
+     * Fetches a new access token using the supplied refresh token.
+     *
+     * @since   2.0.0
+     *
+     * @param   string  $refreshToken Refresh Token.
+     * @param   string  $redirectURI  Redirect URI.
+     */
+    public function refresh_token(string $refreshToken, string $redirectURI)
+    {
+        // Build request.
+        $request = new Request(
+           'GET',
+            $this->oauth_token_url,
+            [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ],
+                'form_params' => [
+                    'refresh_token' => $refreshToken,
+                    'client_id'     => $this->client_id,
+                    'client_secret' => $this->client_secret,
+                    'grant_type'    => 'refresh_token',
+                    'redirect_uri'  => $redirectURI,
+                ]
+            ]
+        );
+
+        // Send request.
+        $response = $this->client->send(
+            $request,
+            ['exceptions' => false]
+        );
+
+        var_dump($response);
+        die();
     }
 
     /**
@@ -165,12 +292,7 @@ class ConvertKit_API
      */
     public function get_account()
     {
-        return $this->get(
-            'account',
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->get('account');
     }
 
     /**
@@ -255,7 +377,6 @@ class ConvertKit_API
     ) {
         // Build parameters.
         $options = [
-            'api_key' => $this->api_key,
             'email'   => $email,
         ];
 
@@ -297,7 +418,6 @@ class ConvertKit_API
         return $this->get(
             sprintf('forms/%s/subscriptions', $form_id),
             [
-                'api_secret'       => $this->api_secret,
                 'sort_order'       => $sort_order,
                 'subscriber_state' => $subscriber_state,
                 'page'             => $page,
@@ -314,12 +434,7 @@ class ConvertKit_API
      */
     public function get_sequences()
     {
-        return $this->get(
-            'sequences',
-            [
-                'api_key' => $this->api_key,
-            ]
-        );
+        return $this->get('sequences');
     }
 
     /**
@@ -344,7 +459,6 @@ class ConvertKit_API
     ) {
         // Build parameters.
         $options = [
-            'api_key' => $this->api_key,
             'email'   => $email,
         ];
 
@@ -386,7 +500,6 @@ class ConvertKit_API
         return $this->get(
             sprintf('sequences/%s/subscriptions', $sequence_id),
             [
-                'api_secret'       => $this->api_secret,
                 'sort_order'       => $sort_order,
                 'subscriber_state' => $subscriber_state,
                 'page'             => $page,
@@ -424,7 +537,6 @@ class ConvertKit_API
         return $this->post(
             'tags',
             [
-                'api_key' => $this->api_key,
                 'tag'     => ['name' => $tag],
             ]
         );
@@ -454,7 +566,6 @@ class ConvertKit_API
         return $this->post(
             'tags',
             [
-                'api_key' => $this->api_key,
                 'tag'     => $apiTags,
             ]
         );
@@ -480,7 +591,6 @@ class ConvertKit_API
     ) {
         // Build parameters.
         $options = [
-            'api_secret' => $this->api_secret,
             'email'      => $email,
         ];
 
@@ -518,9 +628,6 @@ class ConvertKit_API
             E_USER_NOTICE
         );
 
-        // Add API Key to array of options.
-        $options['api_key'] = $this->api_key;
-
         return $this->post(
             sprintf('tags/%s/subscribe', $tag),
             $options
@@ -541,12 +648,7 @@ class ConvertKit_API
      */
     public function remove_tag_from_subscriber(int $tag_id, int $subscriber_id)
     {
-        return $this->delete(
-            sprintf('subscribers/%s/tags/%s', $subscriber_id, $tag_id),
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->delete(sprintf('subscribers/%s/tags/%s', $subscriber_id, $tag_id));
     }
 
     /**
@@ -566,7 +668,6 @@ class ConvertKit_API
         return $this->post(
             sprintf('tags/%s/unsubscribe', $tag_id),
             [
-                'api_secret' => $this->api_secret,
                 'email'      => $email,
             ]
         );
@@ -593,7 +694,6 @@ class ConvertKit_API
         return $this->get(
             sprintf('tags/%s/subscriptions', $tag_id),
             [
-                'api_secret'       => $this->api_secret,
                 'sort_order'       => $sort_order,
                 'subscriber_state' => $subscriber_state,
                 'page'             => $page,
@@ -624,12 +724,7 @@ class ConvertKit_API
         }
 
         // Fetch resources.
-        $resources = $this->get(
-            $request,
-            [
-                'api_key' => $this->api_key,
-            ]
-        );
+        $resources = $this->get($request);
 
         $this->create_log(sprintf('%s response %s', $resource, json_encode($resources)));
 
@@ -742,7 +837,6 @@ class ConvertKit_API
         $subscribers = $this->get(
             'subscribers',
             [
-                'api_secret'    => $this->api_secret,
                 'email_address' => $email_address,
             ]
         );
@@ -772,12 +866,7 @@ class ConvertKit_API
      */
     public function get_subscriber(int $subscriber_id)
     {
-        return $this->get(
-            sprintf('subscribers/%s', $subscriber_id),
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->get(sprintf('subscribers/%s', $subscriber_id));
     }
 
     /**
@@ -799,9 +888,7 @@ class ConvertKit_API
         array $fields = []
     ) {
         // Build parameters.
-        $options = [
-            'api_secret' => $this->api_secret,
-        ];
+        $options = [];
 
         if (!empty($first_name)) {
             $options['first_name'] = $first_name;
@@ -834,7 +921,6 @@ class ConvertKit_API
         return $this->put(
             'unsubscribe',
             [
-                'api_secret' => $this->api_secret,
                 'email'      => $email,
             ]
         );
@@ -859,9 +945,6 @@ class ConvertKit_API
             E_USER_NOTICE
         );
 
-        // Add API Secret to array of options.
-        $options['api_secret'] = $this->api_secret;
-
         return $this->put('unsubscribe', $options);
     }
 
@@ -876,12 +959,7 @@ class ConvertKit_API
      */
     public function get_subscriber_tags(int $subscriber_id)
     {
-        return $this->get(
-            sprintf('subscribers/%s/tags', $subscriber_id),
-            [
-                'api_key' => $this->api_key,
-            ]
-        );
+        return $this->get(sprintf('subscribers/%s/tags', $subscriber_id));
     }
 
     /**
@@ -893,12 +971,7 @@ class ConvertKit_API
      */
     public function get_broadcasts()
     {
-        return $this->get(
-            'broadcasts',
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->get('broadcasts');
     }
 
     /**
@@ -939,7 +1012,6 @@ class ConvertKit_API
         string $thumbnail_url = ''
     ) {
         $options = [
-            'api_secret'            => $this->api_secret,
             'content'               => $content,
             'description'           => $description,
             'email_address'         => $email_address,
@@ -979,12 +1051,7 @@ class ConvertKit_API
      */
     public function get_broadcast(int $id)
     {
-        return $this->get(
-            sprintf('broadcasts/%s', $id),
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->get(sprintf('broadcasts/%s', $id));
     }
 
     /**
@@ -999,12 +1066,7 @@ class ConvertKit_API
      */
     public function get_broadcast_stats(int $id)
     {
-        return $this->get(
-            sprintf('broadcasts/%s/stats', $id),
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->get(sprintf('broadcasts/%s/stats', $id));
     }
 
     /**
@@ -1047,7 +1109,6 @@ class ConvertKit_API
         string $thumbnail_url = ''
     ) {
         $options = [
-            'api_secret'            => $this->api_secret,
             'content'               => $content,
             'description'           => $description,
             'email_address'         => $email_address,
@@ -1092,12 +1153,7 @@ class ConvertKit_API
      */
     public function destroy_broadcast(int $id)
     {
-        return $this->delete(
-            sprintf('broadcasts/%s', $id),
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->delete(sprintf('broadcasts/%s', $id));
     }
 
     /**
@@ -1170,7 +1226,6 @@ class ConvertKit_API
         return $this->post(
             'automations/hooks',
             [
-                'api_secret' => $this->api_secret,
                 'target_url' => $url,
                 'event'      => $eventData,
             ]
@@ -1190,12 +1245,7 @@ class ConvertKit_API
      */
     public function destroy_webhook(int $rule_id)
     {
-        return $this->delete(
-            sprintf('automations/hooks/%s', $rule_id),
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->delete(sprintf('automations/hooks/%s', $rule_id));
     }
 
     /**
@@ -1209,12 +1259,7 @@ class ConvertKit_API
      */
     public function get_custom_fields()
     {
-        return $this->get(
-            'custom_fields',
-            [
-                'api_key' => $this->api_key,
-            ]
-        );
+        return $this->get('custom_fields');
     }
 
     /**
@@ -1233,7 +1278,6 @@ class ConvertKit_API
         return $this->post(
             'custom_fields',
             [
-                'api_secret' => $this->api_secret,
                 'label'      => [$label],
             ]
         );
@@ -1255,7 +1299,6 @@ class ConvertKit_API
         return $this->post(
             'custom_fields',
             [
-                'api_secret' => $this->api_secret,
                 'label'      => $labels,
             ]
         );
@@ -1278,7 +1321,6 @@ class ConvertKit_API
         return $this->put(
             sprintf('custom_fields/%s', $id),
             [
-                'api_secret' => $this->api_secret,
                 'label'      => $label,
             ]
         );
@@ -1297,12 +1339,7 @@ class ConvertKit_API
      */
     public function delete_custom_field(int $id)
     {
-        return $this->delete(
-            sprintf('custom_fields/%s', $id),
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->delete(sprintf('custom_fields/%s', $id));
     }
 
     /**
@@ -1316,9 +1353,6 @@ class ConvertKit_API
      */
     public function list_purchases(array $options)
     {
-        // Add API Secret to array of options.
-        $options['api_secret'] = $this->api_secret;
-
         return $this->get('purchases', $options);
     }
 
@@ -1333,12 +1367,7 @@ class ConvertKit_API
      */
     public function get_purchase(int $purchase_id)
     {
-        return $this->get(
-            sprintf('purchases/%s', $purchase_id),
-            [
-                'api_secret' => $this->api_secret,
-            ]
-        );
+        return $this->get(sprintf('purchases/%s', $purchase_id));
     }
 
     /**
@@ -1352,9 +1381,6 @@ class ConvertKit_API
      */
     public function create_purchase(array $options)
     {
-        // Add API Secret to array of options.
-        $options['api_secret'] = $this->api_secret;
-
         return $this->post('purchases', $options);
     }
 
