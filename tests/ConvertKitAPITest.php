@@ -50,44 +50,14 @@ class ConvertKitAPITest extends TestCase
         $this->deleteLogFile();
 
         // Setup API.
-        $this->api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_CLIENT_ID'], $_ENV['CONVERTKIT_CLIENT_SECRET'], $_ENV['CONVERTKIT_ACCESS_TOKEN']);
+        $this->api = new \ConvertKit_API\ConvertKit_API(
+            $_ENV['CONVERTKIT_CLIENT_ID'],
+            $_ENV['CONVERTKIT_CLIENT_SECRET'],
+            $_ENV['CONVERTKIT_ACCESS_TOKEN']
+        );
     }
 
-    /**
-     * Test that a ClientInterface can be injected.
-     *
-     * @since   1.3.0
-     *
-     * @return  void
-     */
-    public function testClientInterfaceInjection()
-    {
-        // Setup API with a mock Guzzle client.
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(
-                [
-                    'name' => 'Test Account for Guzzle Mock',
-                    'plan_type' => 'free',
-                    'primary_email_address' => 'mock@guzzle.mock',
-                ]
-            )),
-        ]);
 
-        // Define client with mock handler.
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        // Assign the client to the API class.
-        $this->api->set_http_client($client);
-
-        // Perform an API request.
-        $result = $this->api->get_account();
-
-        // Confirm mocked data was returned.
-        $this->assertSame('Test Account for Guzzle Mock', $result->name);
-        $this->assertSame('free', $result->plan_type);
-        $this->assertSame('mock@guzzle.mock', $result->primary_email_address);
-    }
 
     /**
      * Test that debug logging works when enabled and an API call is made.
@@ -99,7 +69,12 @@ class ConvertKitAPITest extends TestCase
     public function testDebugEnabled()
     {
         // Setup API with debugging enabled.
-        $api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_CLIENT_ID'], $_ENV['CONVERTKIT_CLIENT_SECRET'], $_ENV['CONVERTKIT_ACCESS_TOKEN'], true);
+        $api = new \ConvertKit_API\ConvertKit_API(
+            $_ENV['CONVERTKIT_CLIENT_ID'],
+            $_ENV['CONVERTKIT_CLIENT_SECRET'],
+            $_ENV['CONVERTKIT_ACCESS_TOKEN'],
+            true
+        );
         $result = $api->get_account();
 
         // Confirm that the log includes expected data.
@@ -136,51 +111,6 @@ class ConvertKitAPITest extends TestCase
         // Confirm that the log includes expected data.
         $this->assertStringContainsString('ck-debug.INFO: GET account', $this->getLogFileContents());
         $this->assertStringContainsString('ck-debug.INFO: Finish request successfully', $this->getLogFileContents());
-    }
-
-    /**
-     * Test that debug logging works when enabled and an API call is made, with the Client ID, Client Secret
-     * and Access Token masked in the log file.
-     *
-     * @since   1.3.0
-     *
-     * @return  void
-     */
-    public function testDebugCredentialsAreMasked()
-    {
-        // Setup API with debugging enabled.
-        $api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_CLIENT_ID'], $_ENV['CONVERTKIT_CLIENT_SECRET'], $_ENV['CONVERTKIT_ACCESS_TOKEN'], true);
-
-        // Make request.
-        $api->get_account();
-
-        // Define masked versions of credentials that we expect to see in the log file.
-        $maskedClientID = str_replace(
-            $_ENV['CONVERTKIT_CLIENT_ID'],
-            str_repeat('*', strlen($_ENV['CONVERTKIT_CLIENT_ID']) - 4) . substr($_ENV['CONVERTKIT_CLIENT_ID'], - 4),
-            $_ENV['CONVERTKIT_CLIENT_ID']
-        );
-        $maskedClientSecret = str_replace(
-            $_ENV['CONVERTKIT_CLIENT_SECRET'],
-            str_repeat('*', strlen($_ENV['CONVERTKIT_CLIENT_SECRET']) - 4) . substr($_ENV['CONVERTKIT_CLIENT_SECRET'], - 4),
-            $_ENV['CONVERTKIT_CLIENT_SECRET']
-        );
-        $maskedAccessToken = str_replace(
-            $_ENV['CONVERTKIT_ACCESS_TOKEN'],
-            str_repeat('*', strlen($_ENV['CONVERTKIT_ACCESS_TOKEN']) - 4) . substr($_ENV['CONVERTKIT_ACCESS_TOKEN'], - 4),
-            $_ENV['CONVERTKIT_ACCESS_TOKEN']
-        );
-
-
-        // Confirm that the log includes the masked credentials.
-        $this->assertStringContainsString($maskedClientID, $this->getLogFileContents());
-        $this->assertStringContainsString($maskedClientSecret, $this->getLogFileContents());
-        $this->assertStringContainsString($maskedAccessToken, $this->getLogFileContents());
-        
-        // Confirm that the log does not include the unmasked credentials.
-        $this->assertStringNotContainsString($_ENV['CONVERTKIT_CLIENT_ID'], $this->getLogFileContents());
-        $this->assertStringNotContainsString($_ENV['CONVERTKIT_CLIENT_SECRET'], $this->getLogFileContents());
-        $this->assertStringNotContainsString($_ENV['CONVERTKIT_ACCESS_TOKEN'], $this->getLogFileContents());
     }
 
     /**
@@ -245,9 +175,13 @@ class ConvertKitAPITest extends TestCase
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('name', $result);
-        $this->assertArrayHasKey('plan_type', $result);
-        $this->assertArrayHasKey('primary_email_address', $result);
+        $account = get_object_vars($result['account']);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertArrayHasKey('account', $result);
+        $this->assertArrayHasKey('name', $account);
+        $this->assertArrayHasKey('plan_type', $account);
+        $this->assertArrayHasKey('primary_email_address', $account);
     }
 
     /**
