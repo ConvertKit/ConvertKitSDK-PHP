@@ -28,34 +28,26 @@ class ConvertKit_API
     /**
      * ConvertKit OAuth Application Client ID
      *
-     * @since   2.0.0
-     *
-     * @var bool|string.
+     * @var boolean|string
      */
     protected $client_id = false;
 
     /**
      * ConvertKit OAuth Application Client Secret
      *
-     * @since   2.0.0
-     *
-     * @var bool|string.
+     * @var boolean|string
      */
     protected $client_secret = false;
 
     /**
      * Access Token
      *
-     * @since   2.0.0
-     *
-     * @var bool|string
+     * @var boolean|string
      */
     protected $access_token = '';
 
     /**
      * OAuth Authorization URL
-     *
-     * @since   2.0.0
      *
      * @var string
      */
@@ -63,8 +55,6 @@ class ConvertKit_API
 
     /**
      * OAuth Token URL
-     *
-     * @since   2.0.0
      *
      * @var string
      */
@@ -105,25 +95,40 @@ class ConvertKit_API
      */
     protected $client;
 
+
     /**
      * Constructor for ConvertKitAPI instance
      *
+     * @param string  $clientID             OAuth Client ID.
+     * @param string  $clientSecret         OAuth Client Secret.
+     * @param string  $accessToken          OAuth Access Token.
      * @param boolean $debug                Log requests to debugger.
      * @param string  $debugLogFileLocation Path and filename of debug file to write to.
      */
-    public function __construct(string $clientID, string $clientSecret, string $accessToken = '', bool $debug = false, string $debugLogFileLocation = '')
-    {
-        $this->client_id = $clientID;
+    public function __construct(
+        string $clientID,
+        string $clientSecret,
+        string $accessToken = '',
+        bool $debug = false,
+        string $debugLogFileLocation = ''
+    ) {
+        $this->client_id     = $clientID;
         $this->client_secret = $clientSecret;
-        $this->access_token = $accessToken;
-        $this->debug      = $debug;
+        $this->access_token  = $accessToken;
+        $this->debug         = $debug;
+
+        // Set headers.
+        $headers = [
+            'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+        ];
+        if (!empty($this->access_token)) {
+            $headers['Authorization'] = 'Bearer ' . $this->access_token;
+        }
 
         // Set the Guzzle client.
         $this->client = new Client(
             [
-                'headers' => [
-                    'User-Agent'    => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
-                ],
+                'headers' => $headers,
             ]
         );
 
@@ -192,46 +197,45 @@ class ConvertKit_API
 
     /**
      * Returns the OAuth URL to begin the OAuth process.
-     * 
-     * @since   2.0.0
-     * 
-     * @param   string  $redirectURI    Redirect URI.
-     * @return  string
+     *
+     * @param string $redirectURI Redirect URI.
+     *
+     * @return string
      */
     public function get_oauth_url(string $redirectURI)
     {
-        return $this->oauth_authorize_url . '?' . http_build_query([
-            'client_id' => $this->client_id,
-            'redirect_uri' => $redirectURI,
-            'response_type' => 'code',
-        ]);
+        return $this->oauth_authorize_url . '?' . http_build_query(
+            [
+                'client_id'     => $this->client_id,
+                'redirect_uri'  => $redirectURI,
+                'response_type' => 'code',
+            ]
+        );
     }
 
     /**
      * Exchanges the given authorization code for an access token and refresh token.
      *
-     * @since   2.0.0
+     * @param string $authCode    Authorization Code, returned from get_oauth_url() flow.
+     * @param string $redirectURI Redirect URI.
      *
-     * @param   string $authCode     Authorization Code, returned from get_oauth_url() flow.
-     * @param   string  $redirectURI Redirect URI.
+     * @return array
      */
     public function get_access_token(string $authCode, string $redirectURI)
     {
         // Build request.
         $request = new Request(
-           'GET',
+            'GET',
             $this->oauth_token_url,
             [
-                'headers' => [
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                ],
+                'headers'     => ['Content-Type' => 'application/x-www-form-urlencoded'],
                 'form_params' => [
                     'code'          => $authCode,
                     'client_id'     => $this->client_id,
                     'client_secret' => $this->client_secret,
                     'grant_type'    => 'authorization_code',
-                    'redirect_uri'  => $redirectURI
-                ]
+                    'redirect_uri'  => $redirectURI,
+                ],
             ]
         );
 
@@ -248,28 +252,26 @@ class ConvertKit_API
     /**
      * Fetches a new access token using the supplied refresh token.
      *
-     * @since   2.0.0
+     * @param string $refreshToken Refresh Token.
+     * @param string $redirectURI  Redirect URI.
      *
-     * @param   string  $refreshToken Refresh Token.
-     * @param   string  $redirectURI  Redirect URI.
+     * @return array
      */
     public function refresh_token(string $refreshToken, string $redirectURI)
     {
         // Build request.
         $request = new Request(
-           'GET',
+            'GET',
             $this->oauth_token_url,
             [
-                'headers' => [
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                ],
+                'headers'     => ['Content-Type' => 'application/x-www-form-urlencoded'],
                 'form_params' => [
                     'refresh_token' => $refreshToken,
                     'client_id'     => $this->client_id,
                     'client_secret' => $this->client_secret,
                     'grant_type'    => 'refresh_token',
                     'redirect_uri'  => $redirectURI,
-                ]
+                ],
             ]
         );
 
@@ -376,9 +378,7 @@ class ConvertKit_API
         array $tag_ids = []
     ) {
         // Build parameters.
-        $options = [
-            'email'   => $email,
-        ];
+        $options = ['email' => $email];
 
         if (!empty($first_name)) {
             $options['first_name'] = $first_name;
@@ -458,9 +458,7 @@ class ConvertKit_API
         array $tag_ids = []
     ) {
         // Build parameters.
-        $options = [
-            'email'   => $email,
-        ];
+        $options = ['email' => $email];
 
         if (!empty($first_name)) {
             $options['first_name'] = $first_name;
@@ -537,7 +535,7 @@ class ConvertKit_API
         return $this->post(
             'tags',
             [
-                'tag'     => ['name' => $tag],
+                'tag' => ['name' => $tag],
             ]
         );
     }
@@ -565,9 +563,7 @@ class ConvertKit_API
 
         return $this->post(
             'tags',
-            [
-                'tag'     => $apiTags,
-            ]
+            ['tag' => $apiTags]
         );
     }
 
@@ -590,9 +586,7 @@ class ConvertKit_API
         array $fields = []
     ) {
         // Build parameters.
-        $options = [
-            'email'      => $email,
-        ];
+        $options = ['email' => $email];
 
         if (!empty($first_name)) {
             $options['first_name'] = $first_name;
@@ -667,9 +661,7 @@ class ConvertKit_API
     {
         return $this->post(
             sprintf('tags/%s/unsubscribe', $tag_id),
-            [
-                'email'      => $email,
-            ]
+            ['email' => $email]
         );
     }
 
@@ -836,9 +828,7 @@ class ConvertKit_API
 
         $subscribers = $this->get(
             'subscribers',
-            [
-                'email_address' => $email_address,
-            ]
+            ['email_address' => $email_address]
         );
 
         if (!$subscribers) {
@@ -920,9 +910,7 @@ class ConvertKit_API
     {
         return $this->put(
             'unsubscribe',
-            [
-                'email'      => $email,
-            ]
+            ['email' => $email]
         );
     }
 
@@ -1278,7 +1266,7 @@ class ConvertKit_API
         return $this->post(
             'custom_fields',
             [
-                'label'      => [$label],
+                'label' => [$label],
             ]
         );
     }
@@ -1298,9 +1286,7 @@ class ConvertKit_API
     {
         return $this->post(
             'custom_fields',
-            [
-                'label'      => $labels,
-            ]
+            ['label' => $labels]
         );
     }
 
@@ -1320,9 +1306,7 @@ class ConvertKit_API
     {
         return $this->put(
             sprintf('custom_fields/%s', $id),
-            [
-                'label'      => $label,
-            ]
+            ['label' => $label]
         );
     }
 
@@ -1618,22 +1602,40 @@ class ConvertKit_API
             throw new \Exception('Error encoding arguments');
         }
 
-        if ($method === 'GET') {
-            if ($args) {
-                $url .= '?' . http_build_query($args);
-            }
+        // Build request.
+        switch ($method) {
+            case 'GET':
+                if ($args) {
+                    $url .= '?' . http_build_query($args);
+                }
 
-            $request = new Request($method, $url);
-        } else {
-            $request = new Request(
-                $method,
-                $url,
-                [
-                    'Content-Type'   => 'application/json',
-                    'Content-Length' => strlen($request_body),
-                ],
-                $request_body
-            );
+                $request = new Request(
+                    $method,
+                    $url,
+                    [
+                        'headers' => [
+                            'Accept'        => 'application/json',
+                            'Content-Type'  => 'application/json',
+                            'Content-Length' => strlen($request_body),
+                        ],
+                    ],
+                );
+                break;
+
+            default:
+                $request = new Request(
+                    $method,
+                    $url,
+                    [
+                        'headers' => [
+                            'Accept'        => 'application/json',
+                            'Content-Type'  => 'application/json',
+                            'Content-Length' => strlen($request_body),
+                        ],
+                    ],
+                    $request_body
+                );
+                break;
         }
 
         // Send request.
