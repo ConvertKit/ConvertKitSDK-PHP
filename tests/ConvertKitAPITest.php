@@ -57,7 +57,41 @@ class ConvertKitAPITest extends TestCase
         );
     }
 
+    /**
+     * Test that a ClientInterface can be injected.
+     *
+     * @since   1.3.0
+     *
+     * @return  void
+     */
+    public function testClientInterfaceInjection()
+    {
+        // Setup API with a mock Guzzle client.
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(
+                [
+                    'name' => 'Test Account for Guzzle Mock',
+                    'plan_type' => 'free',
+                    'primary_email_address' => 'mock@guzzle.mock',
+                ]
+            )),
+        ]);
 
+        // Define client with mock handler.
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
+
+        // Assign the client to the API class.
+        $this->api->set_http_client($client);
+
+        // Perform an API request.
+        $result = $this->api->get_account();
+
+        // Confirm mocked data was returned.
+        $this->assertSame('Test Account for Guzzle Mock', $result->name);
+        $this->assertSame('free', $result->plan_type);
+        $this->assertSame('mock@guzzle.mock', $result->primary_email_address);
+    }
 
     /**
      * Test that debug logging works when enabled and an API call is made.
@@ -252,39 +286,6 @@ class ConvertKitAPITest extends TestCase
         $this->assertArrayHasKey('total_pages', $result);
         $this->assertArrayHasKey('subscriptions', $result);
         $this->assertIsArray($result['subscriptions']);
-
-        // Assert sort order is ascending.
-        $this->assertGreaterThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
-        );
-    }
-
-    /**
-     * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified and the sort order is descending.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetFormSubscriptionsWithDescSortOrder()
-    {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'desc');
-
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
-
-        // Assert sort order.
-        $this->assertLessThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
-        );
     }
 
     /**
@@ -298,7 +299,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithCancelledSubscriberState()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'cancelled');
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'cancelled');
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
@@ -320,7 +321,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithPage()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'active', 2);
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'active', 2);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
