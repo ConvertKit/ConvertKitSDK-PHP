@@ -277,15 +277,48 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptions()
     {
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID']
-        );
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID']);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('pagination', $result);
-        $this->assertArrayHasKey('subscribers', $result);
-        $this->assertIsArray($result['subscribers']);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order is ascending.
+        $this->assertGreaterThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the sort order is descending.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithDescSortOrder()
+    {
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'desc');
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order.
+        $this->assertLessThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
     }
 
     /**
@@ -299,16 +332,16 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithCancelledSubscriberState()
     {
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            subscriber_state: 'cancelled'
-        );
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'cancelled');
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('pagination', $result);
-        $this->assertEquals($result['subscribers'], 0);
-        $this->assertIsArray($result['subscribers']);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertEquals($result['total_subscriptions'], 0);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
     }
 
     /**
@@ -319,7 +352,7 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testGetFormSubscriptionsPagination()
+    public function testGetFormSubscriptionsWithPage()
     {
         $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'active', 2);
 

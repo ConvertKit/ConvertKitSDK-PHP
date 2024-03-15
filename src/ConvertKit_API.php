@@ -401,8 +401,8 @@ class ConvertKit_API
      * List subscriptions to a form
      *
      * @param integer $form_id          Form ID.
+     * @param string  $sort_order       Sort Order (asc|desc).
      * @param string  $subscriber_state Subscriber State (active,cancelled).
-     * @param string  $before           
      * @param integer $page             Page.
      *
      * @see https://developers.convertkit.com/#list-subscriptions-to-a-form
@@ -411,18 +411,17 @@ class ConvertKit_API
      */
     public function get_form_subscriptions(
         int $form_id,
+        string $sort_order = 'asc',
         string $subscriber_state = 'active',
-        int $per_page = 50,
-        string $before = '',
-        string $after = '',
+        int $page = 1
     ) {
         return $this->get(
-            sprintf('forms/%s/subscribers', $form_id),
+            sprintf('forms/%s/subscriptions', $form_id),
             [
-                'status'    => $subscriber_state,
-                'per_page'  => $per_page,
-                'before'    => $before,
-                'after'     => $after,
+                'api_secret'       => $this->api_secret,
+                'sort_order'       => $sort_order,
+                'subscriber_state' => $subscriber_state,
+                'page'             => $page,
             ]
         );
     }
