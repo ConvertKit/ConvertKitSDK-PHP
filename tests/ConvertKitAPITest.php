@@ -1442,7 +1442,7 @@ class ConvertKitAPITest extends TestCase
         // Update subscriber's email address.
         $newEmail = $this->generateEmailAddress();
         $result = $this->api->update_subscriber(
-            sequence_id: $subscriberID,
+            subscriber_id: $subscriberID,
             email_address: $newEmail
         );
 
@@ -1478,7 +1478,7 @@ class ConvertKitAPITest extends TestCase
 
         // Update subscriber's email address.
         $result = $this->api->update_subscriber(
-            sequence_id: $subscriberID,
+            subscriber_id: $subscriberID,
             fields: [
                 'last_name' => 'Last Name',
             ]
@@ -1797,7 +1797,7 @@ class ConvertKitAPITest extends TestCase
     {
         // Create a webhook first.
         $result = $this->api->create_webhook(
-            url: 'https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d',
+            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
             event: 'subscriber.subscriber_activate',
         );
         $ruleID = $result->rule->id;
@@ -1821,7 +1821,7 @@ class ConvertKitAPITest extends TestCase
     {
         // Create a webhook first.
         $result = $this->api->create_webhook(
-            url: 'https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d',
+            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
             event: 'subscriber.form_subscribe',
             parameter: $_ENV['CONVERTKIT_API_FORM_ID']
         );
@@ -1844,7 +1844,7 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->api->create_webhook(
-            url: 'https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d',
+            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
             event: 'invalid.event'
         );
     }
