@@ -277,15 +277,15 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptions()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID']);
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID']
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        $this->assertArrayHasKey('pagination', $result);
+        $this->assertArrayHasKey('subscribers', $result);
+        $this->assertIsArray($result['subscribers']);
     }
 
     /**
@@ -299,16 +299,16 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithCancelledSubscriberState()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'cancelled');
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            subscriber_state: 'cancelled'
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertEquals($result['total_subscriptions'], 0);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        $this->assertArrayHasKey('pagination', $result);
+        $this->assertEquals($result['subscribers'], 0);
+        $this->assertIsArray($result['subscribers']);
     }
 
     /**
@@ -319,9 +319,9 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testGetFormSubscriptionsWithPage()
+    public function testGetFormSubscriptionsPagination()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'active', 2);
+        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'active', 2);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
