@@ -119,6 +119,7 @@ class ConvertKit_API
 
         // Set headers.
         $headers = [
+            'Accept'     => 'application/json',
             'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
         ];
         if (!empty($this->access_token)) {
@@ -225,18 +226,15 @@ class ConvertKit_API
     {
         // Build request.
         $request = new Request(
-            'GET',
-            $this->oauth_token_url,
-            [
-                'headers'     => ['Content-Type' => 'application/x-www-form-urlencoded'],
-                'form_params' => [
-                    'code'          => $authCode,
-                    'client_id'     => $this->client_id,
-                    'client_secret' => $this->client_secret,
-                    'grant_type'    => 'authorization_code',
-                    'redirect_uri'  => $redirectURI,
-                ],
-            ]
+            method: 'POST',
+            uri:    $this->oauth_token_url,
+            body:   http_build_query([
+                'code'          => $authCode,
+                'client_id'     => $this->client_id,
+                'client_secret' => $this->client_secret,
+                'grant_type'    => 'authorization_code',
+                'redirect_uri'  => $redirectURI,
+            ], '', '&')
         );
 
         // Send request.
@@ -245,8 +243,8 @@ class ConvertKit_API
             ['exceptions' => false]
         );
 
-        var_dump($response);
-        die();
+        // Return response body.
+        return json_decode($response->getBody()->getContents());
     }
 
     /**
@@ -261,18 +259,15 @@ class ConvertKit_API
     {
         // Build request.
         $request = new Request(
-            'GET',
-            $this->oauth_token_url,
-            [
-                'headers'     => ['Content-Type' => 'application/x-www-form-urlencoded'],
-                'form_params' => [
-                    'refresh_token' => $refreshToken,
-                    'client_id'     => $this->client_id,
-                    'client_secret' => $this->client_secret,
-                    'grant_type'    => 'refresh_token',
-                    'redirect_uri'  => $redirectURI,
-                ],
-            ]
+            method: 'POST',
+            uri: $this->oauth_token_url,
+            body: http_build_query([
+                'refresh_token' => $refreshToken,
+                'client_id'     => $this->client_id,
+                'client_secret' => $this->client_secret,
+                'grant_type'    => 'refresh_token',
+                'redirect_uri'  => $redirectURI,
+            ], '', '&')
         );
 
         // Send request.
@@ -281,8 +276,8 @@ class ConvertKit_API
             ['exceptions' => false]
         );
 
-        var_dump($response);
-        die();
+        // Return response body.
+        return json_decode($response->getBody()->getContents());
     }
 
     /**
@@ -1615,7 +1610,6 @@ class ConvertKit_API
                     $url,
                     [
                         'headers' => [
-                            'Accept'        => 'application/json',
                             'Content-Type'  => 'application/json',
                             'Content-Length' => strlen($request_body),
                         ],
@@ -1629,7 +1623,6 @@ class ConvertKit_API
                     $url,
                     [
                         'headers' => [
-                            'Accept'        => 'application/json',
                             'Content-Type'  => 'application/json',
                             'Content-Length' => strlen($request_body),
                         ],

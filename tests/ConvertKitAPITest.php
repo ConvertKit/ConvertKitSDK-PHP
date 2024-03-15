@@ -7,6 +7,8 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Exception\RequestException;
+use Dotenv\Dotenv;
+use ConvertKit_API\ConvertKit_API;
 
 /**
  * ConvertKit API class tests.
@@ -19,6 +21,13 @@ class ConvertKitAPITest extends TestCase
      * @var object
      */
     protected $api;
+
+    /**
+     * A valid OAuth Redirect URI
+     * 
+     * @var    string
+     */
+    protected $redirectUri = 'https://convertkit-github.local/wp-admin/options-general.php?page=_wp_convertkit_settings';
 
     /**
      * Location of the monologger log file.
@@ -40,7 +49,7 @@ class ConvertKitAPITest extends TestCase
     protected function setUp(): void
     {
         // Load environment credentials from root folder.
-        $dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__FILE__)));
+        $dotenv = Dotenv::createImmutable(dirname(dirname(__FILE__)));
         $dotenv->load();
 
         // Set location where API class will create/write the log file.
@@ -50,7 +59,7 @@ class ConvertKitAPITest extends TestCase
         $this->deleteLogFile();
 
         // Setup API.
-        $this->api = new \ConvertKit_API\ConvertKit_API(
+        $this->api = new ConvertKit_API(
             $_ENV['CONVERTKIT_CLIENT_ID'],
             $_ENV['CONVERTKIT_CLIENT_SECRET'],
             $_ENV['CONVERTKIT_ACCESS_TOKEN']
@@ -103,7 +112,7 @@ class ConvertKitAPITest extends TestCase
     public function testDebugEnabled()
     {
         // Setup API with debugging enabled.
-        $api = new \ConvertKit_API\ConvertKit_API(
+        $api = new ConvertKit_API(
             $_ENV['CONVERTKIT_CLIENT_ID'],
             $_ENV['CONVERTKIT_CLIENT_SECRET'],
             $_ENV['CONVERTKIT_ACCESS_TOKEN'],
@@ -130,7 +139,7 @@ class ConvertKitAPITest extends TestCase
         $this->logFile = dirname(dirname(__FILE__)) . '/src/logs/debug-custom.log';
 
         // Setup API with debugging enabled.
-        $api = new \ConvertKit_API\ConvertKit_API(
+        $api = new ConvertKit_API(
             $_ENV['CONVERTKIT_CLIENT_ID'],
             $_ENV['CONVERTKIT_CLIENT_SECRET'],
             $_ENV['CONVERTKIT_ACCESS_TOKEN'],
@@ -171,13 +180,110 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetOAuthURL()
     {
-        // Define an example redirect URI.
-        $redirectURI = 'https://convertkit-github.local/wp-admin/options-general.php?page=_wp_convertkit_settings';
-
         // Confirm the OAuth URL returned is correct.
         $this->assertEquals(
-            $this->api->get_oauth_url($redirectURI),
-            'https://app.convertkit.com/oauth/authorize?client_id='.$_ENV['CONVERTKIT_CLIENT_ID'].'&redirect_uri='.rawurlencode($redirectURI).'&response_type=code'
+            $this->api->get_oauth_url($this->redirectUri),
+            'https://app.convertkit.com/oauth/authorize?client_id='.$_ENV['CONVERTKIT_CLIENT_ID'].'&redirect_uri='.rawurlencode($this->redirectUri).'&response_type=code'
+        );
+    }
+
+    /**
+     * Helper method to mock an API response.
+     * 
+     * @since   2.0.0
+     */
+    private function mockResponse(ConvertKit_API $api, $responseBody = null, int $httpCode = 200)
+    {
+        // Setup API with a mock Guzzle client, returning the data
+        // as if we successfully swapped an auth code for an access token.
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(
+                [
+                    'access_token' => 'example-access-token',
+                    'refresh_token' => 'example-refresh-token',
+                    'created_at' => strtotime('now'),
+                    'expires_in' => strtotime('+3 days'),
+                ]
+            )),
+        ]);
+
+        // Define client with mock handler.
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
+
+        // Set Client to use for the API.
+        $api->set_http_client($client);
+
+        // Return API object.
+        return $api;
+    }
+
+    /**
+     * Test that get_access_token() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetAccessToken()
+    {
+        // Initialize API.
+        $api = new ConvertKit_API(
+            $_ENV['CONVERTKIT_CLIENT_ID'],
+            $_ENV['CONVERTKIT_CLIENT_SECRET']
+        );
+
+        // Define response parameters.
+        $params = [
+            'access_token'  => 'example-access-token',
+            'refresh_token' => 'example-refresh-token',
+            'created_at'    => strtotime('now'),
+            'expires_in'    => strtotime('+3 days'),
+        ];
+
+        // Add mock handler for this API request.
+        $api = $this->mockResponse(
+            api: $api,
+            responseBody: $params,
+        );
+
+        // Send request.
+        $result = $api->get_access_token(
+            authCode: 'auth-code',
+            redirectURI: $this->redirectUri,
+        );
+
+        // Inspect response.
+        $result = get_object_vars($result);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('access_token', $result);
+        $this->assertArrayHasKey('refresh_token', $result);
+        $this->assertArrayHasKey('created_at', $result);
+        $this->assertArrayHasKey('expires_in', $result);
+        $this->assertEquals($result['access_token'], $params['access_token']);
+        $this->assertEquals($result['refresh_token'], $params['refresh_token']);
+        $this->assertEquals($result['created_at'], $params['created_at']);
+        $this->assertEquals($result['expires_in'], $params['expires_in']);
+    }
+
+    /**
+     * Test that a ClientException is thrown when an invalid auth code is supplied
+     * when fetching an access token.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetAccessTokenWithInvalidAuthCode()
+    {
+        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $api = new ConvertKit_API(
+            $_ENV['CONVERTKIT_CLIENT_ID'],
+            $_ENV['CONVERTKIT_CLIENT_SECRET']
+        );
+        $result = $api->get_access_token(
+            authCode: 'not-a-real-auth-code',
+            redirectURI: $this->redirectUri,
         );
     }
 
@@ -191,7 +297,7 @@ class ConvertKitAPITest extends TestCase
     public function testInvalidAPICredentials()
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $api = new \ConvertKit_API\ConvertKit_API('fakeClientID', 'fakeClientSecret', 'fakeAccessToken');
+        $api = new ConvertKit_API('fakeClientID', 'fakeClientSecret', 'fakeAccessToken');
         $result = $api->get_account();
     }
 
