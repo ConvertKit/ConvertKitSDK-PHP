@@ -173,23 +173,6 @@ class ConvertKit_API
             return;
         }
 
-        // Mask credentials.
-        $message = str_replace(
-            $this->client_id,
-            str_repeat('*', (strlen($this->client_id) - 4)) . substr($this->client_id, - 4),
-            $message
-        );
-        $message = str_replace(
-            $this->client_secret,
-            str_repeat('*', (strlen($this->client_secret) - 4)) . substr($this->client_secret, - 4),
-            $message
-        );
-        $message = str_replace(
-            $this->access_token,
-            str_repeat('*', (strlen($this->access_token) - 4)) . substr($this->access_token, - 4),
-            $message
-        );
-
         // Add to log.
         $this->debug_logger->info($message);
     }
@@ -348,9 +331,6 @@ class ConvertKit_API
             Use add_subscriber_to_form($form_id, $email, $first_name, $fields, $tag_ids) instead.',
             E_USER_NOTICE
         );
-
-        // Add API Key to array of options.
-        $options['api_key'] = $this->api_key;
 
         return $this->post(
             sprintf('forms/%s/subscribe', $form_id),

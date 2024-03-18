@@ -47,10 +47,12 @@ jobs:
           path: .env.dist.testing
           contents: |
 
-            CONVERTKIT_API_KEY=${{ secrets.CONVERTKIT_API_KEY }}
-            CONVERTKIT_API_SECRET=${{ secrets.CONVERTKIT_API_SECRET }}
-            CONVERTKIT_API_KEY_NO_DATA=${{ secrets.CONVERTKIT_API_KEY_NO_DATA }}
-            CONVERTKIT_API_SECRET_NO_DATA=${{ secrets.CONVERTKIT_API_SECRET_NO_DATA }}
+            CONVERTKIT_OAUTH_ACCESS_TOKEN=${{ secrets.CONVERTKIT_OAUTH_ACCESS_TOKEN }}
+            CONVERTKIT_OAUTH_REFRESH_TOKEN=${{ secrets.CONVERTKIT_OAUTH_REFRESH_TOKEN }}
+            CONVERTKIT_OAUTH_ACCESS_TOKEN_NO_DATA=${{ secrets.CONVERTKIT_OAUTH_ACCESS_TOKEN_NO_DATA }}
+            CONVERTKIT_OAUTH_REFRESH_TOKEN_NO_DATA=${{ secrets.CONVERTKIT_OAUTH_REFRESH_TOKEN_NO_DATA }}
+            CONVERTKIT_OAUTH_CLIENT_ID=${{ secrets.CONVERTKIT_OAUTH_CLIENT_ID }}
+            CONVERTKIT_OAUTH_CLIENT_SECRET=${{ secrets.CONVERTKIT_OAUTH_CLIENT_SECRET }}
           write-mode: append
 
       # Rename .env.dist.testing to .env, so PHPUnit reads it for tests.
