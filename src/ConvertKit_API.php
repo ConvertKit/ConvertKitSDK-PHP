@@ -286,11 +286,30 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/v4.html#list-colors
      *
-     * @return false|mixed
+     * @return array
      */
     public function get_account_colors()
     {
         return $this->get('account/colors');
+    }
+
+    /**
+     * Gets the account's colors
+     *
+     * @see https://developers.convertkit.com/v4.html#list-colors
+     * 
+     * @param array<string, string> $colors Hex colors.
+     *
+     * @return array
+     */
+    public function update_account_colors(array $colors)
+    {
+        return $this->put(
+            endpoint: 'account/colors',
+            args: [
+                'colors' => $colors,
+            ]
+        );
     }
 
     /**
@@ -1596,38 +1615,11 @@ class ConvertKit_API
         }
 
         // Build request.
-        switch ($method) {
-            case 'GET':
-                if ($args) {
-                    $url .= '?' . http_build_query($args);
-                }
-
-                $request = new Request(
-                    $method,
-                    $url,
-                    [
-                        'headers' => [
-                            'Content-Type'   => 'application/json',
-                            'Content-Length' => strlen($request_body),
-                        ],
-                    ],
-                );
-                break;
-
-            default:
-                $request = new Request(
-                    $method,
-                    $url,
-                    [
-                        'headers' => [
-                            'Content-Type'   => 'application/json',
-                            'Content-Length' => strlen($request_body),
-                        ],
-                    ],
-                    $request_body
-                );
-                break;
-        }//end switch
+        $request = new Request(
+            method: $method,
+            uri:    $url,
+            body:   $request_body
+        );
 
         // Send request.
         $response = $this->client->send(
