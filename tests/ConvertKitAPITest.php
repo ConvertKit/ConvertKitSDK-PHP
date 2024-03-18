@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
 use Dotenv\Dotenv;
 use ConvertKit_API\ConvertKit_API;
 
@@ -202,8 +203,10 @@ class ConvertKitAPITest extends TestCase
         $params = [
             'access_token'  => 'example-access-token',
             'refresh_token' => 'example-refresh-token',
+            'token_type'    => 'Bearer',
             'created_at'    => strtotime('now'),
             'expires_in'    => strtotime('+3 days'),
+            'scope'         => 'public',
         ];
 
         // Add mock handler for this API request.
@@ -223,8 +226,10 @@ class ConvertKitAPITest extends TestCase
         $this->assertIsArray($result);
         $this->assertArrayHasKey('access_token', $result);
         $this->assertArrayHasKey('refresh_token', $result);
+        $this->assertArrayHasKey('token_type', $result);
         $this->assertArrayHasKey('created_at', $result);
         $this->assertArrayHasKey('expires_in', $result);
+        $this->assertArrayHasKey('scope', $result);
         $this->assertEquals($result['access_token'], $params['access_token']);
         $this->assertEquals($result['refresh_token'], $params['refresh_token']);
         $this->assertEquals($result['created_at'], $params['created_at']);
@@ -248,6 +253,79 @@ class ConvertKitAPITest extends TestCase
         );
         $result = $api->get_access_token(
             authCode: 'not-a-real-auth-code',
+            redirectURI: $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+        );
+    }
+
+    /**
+     * Test that refresh_token() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testRefreshToken()
+    {
+        // Initialize API.
+        $api = new ConvertKit_API(
+            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']
+        );
+
+        // Define response parameters.
+        $params = [
+            'access_token'  => 'new-example-access-token',
+            'refresh_token' => 'new-example-refresh-token',
+            'token_type'    => 'Bearer',
+            'created_at'    => strtotime('now'),
+            'expires_in'    => strtotime('+3 days'),
+            'scope'         => 'public',
+        ];
+
+        // Add mock handler for this API request.
+        $api = $this->mockResponse(
+            api: $api,
+            responseBody: $params,
+        );
+
+        // Send request.
+        $result = $api->refresh_token(
+            refreshToken: 'refresh-token',
+            redirectURI: $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+        );
+
+        // Inspect response.
+        $result = get_object_vars($result);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('access_token', $result);
+        $this->assertArrayHasKey('refresh_token', $result);
+        $this->assertArrayHasKey('token_type', $result);
+        $this->assertArrayHasKey('created_at', $result);
+        $this->assertArrayHasKey('expires_in', $result);
+        $this->assertArrayHasKey('scope', $result);
+        $this->assertEquals($result['access_token'], $params['access_token']);
+        $this->assertEquals($result['refresh_token'], $params['refresh_token']);
+        $this->assertEquals($result['created_at'], $params['created_at']);
+        $this->assertEquals($result['expires_in'], $params['expires_in']);
+    }
+
+    /**
+     * Test that a ServerException is thrown when an invalid refresh token is supplied
+     * when refreshing an access token.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testRefreshTokenWithInvalidToken()
+    {
+        $this->expectException(ServerException::class);
+        $api = new ConvertKit_API(
+            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']
+        );
+        $result = $api->refresh_token(
+            refreshToken: 'not-a-real-refresh-token',
             redirectURI: $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
         );
     }
