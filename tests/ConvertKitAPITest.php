@@ -2382,9 +2382,10 @@ class ConvertKitAPITest extends TestCase
         // Setup API with a mock Guzzle client, returning the data
         // as if we successfully swapped an auth code for an access token.
         $mock = new MockHandler([
-            new Response(200, [], json_encode(
-                $responseBody
-            )),
+            new Response(
+                status: $httpCode,
+                body: json_encode($responseBody)
+            ),
         ]);
 
         // Define client with mock handler.
