@@ -201,7 +201,7 @@ class ConvertKit_API
      * @param string $authCode    Authorization Code, returned from get_oauth_url() flow.
      * @param string $redirectURI Redirect URI.
      *
-     * @return array
+     * @return array<string, int|string> API response
      */
     public function get_access_token(string $authCode, string $redirectURI)
     {
@@ -238,7 +238,7 @@ class ConvertKit_API
      * @param string $refreshToken Refresh Token.
      * @param string $redirectURI  Redirect URI.
      *
-     * @return array
+     * @return array<string, int|string> API response
      */
     public function refresh_token(string $refreshToken, string $redirectURI)
     {
