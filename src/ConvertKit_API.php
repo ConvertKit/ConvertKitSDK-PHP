@@ -128,9 +128,7 @@ class ConvertKit_API
 
         // Set the Guzzle client.
         $this->client = new Client(
-            [
-                'headers' => $headers,
-            ]
+            ['headers' => $headers]
         );
 
         if ($debug) {
@@ -228,13 +226,17 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri:    $this->oauth_token_url,
-            body:   http_build_query([
-                'code'          => $authCode,
-                'client_id'     => $this->client_id,
-                'client_secret' => $this->client_secret,
-                'grant_type'    => 'authorization_code',
-                'redirect_uri'  => $redirectURI,
-            ], '', '&')
+            body:   http_build_query(
+                [
+                    'code'          => $authCode,
+                    'client_id'     => $this->client_id,
+                    'client_secret' => $this->client_secret,
+                    'grant_type'    => 'authorization_code',
+                    'redirect_uri'  => $redirectURI,
+                ],
+                '',
+                '&'
+            )
         );
 
         // Send request.
@@ -261,13 +263,17 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri: $this->oauth_token_url,
-            body: http_build_query([
-                'refresh_token' => $refreshToken,
-                'client_id'     => $this->client_id,
-                'client_secret' => $this->client_secret,
-                'grant_type'    => 'refresh_token',
-                'redirect_uri'  => $redirectURI,
-            ], '', '&')
+            body: http_build_query(
+                [
+                    'refresh_token' => $refreshToken,
+                    'client_id'     => $this->client_id,
+                    'client_secret' => $this->client_secret,
+                    'grant_type'    => 'refresh_token',
+                    'redirect_uri'  => $redirectURI,
+                ],
+                '',
+                '&'
+            )
         );
 
         // Send request.
@@ -413,7 +419,6 @@ class ConvertKit_API
         return $this->get(
             sprintf('forms/%s/subscriptions', $form_id),
             [
-                'api_secret'       => $this->api_secret,
                 'sort_order'       => $sort_order,
                 'subscriber_state' => $subscriber_state,
                 'page'             => $page,
@@ -1610,7 +1615,7 @@ class ConvertKit_API
                     $url,
                     [
                         'headers' => [
-                            'Content-Type'  => 'application/json',
+                            'Content-Type'   => 'application/json',
                             'Content-Length' => strlen($request_body),
                         ],
                     ],
@@ -1623,14 +1628,14 @@ class ConvertKit_API
                     $url,
                     [
                         'headers' => [
-                            'Content-Type'  => 'application/json',
+                            'Content-Type'   => 'application/json',
                             'Content-Length' => strlen($request_body),
                         ],
                     ],
                     $request_body
                 );
                 break;
-        }
+        }//end switch
 
         // Send request.
         $response = $this->client->send(
