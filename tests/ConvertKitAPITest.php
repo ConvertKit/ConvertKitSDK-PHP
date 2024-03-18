@@ -283,7 +283,9 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptions()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID']);
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID']
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
@@ -310,7 +312,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithDescSortOrder()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'desc');
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            sort_order: 'desc'
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
@@ -338,7 +343,11 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithCancelledSubscriberState()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'cancelled');
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            sort_order: 'asc',
+            subscriber_state: 'cancelled'
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
@@ -360,7 +369,12 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithPage()
     {
-        $result = $this->api->get_form_subscriptions((int) $_ENV['CONVERTKIT_API_FORM_ID'], 'asc', 'active', 2);
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            sort_order: 'asc',
+            subscriber_state: 'active',
+            page: 2
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
@@ -417,8 +431,8 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToSequence()
     {
         $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $this->generateEmailAddress()
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $this->generateEmailAddress()
         );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscription', get_object_vars($result));
@@ -435,7 +449,10 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToSequenceWithInvalidSequenceID()
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->add_subscriber_to_sequence(12345, $this->generateEmailAddress());
+        $result = $this->api->add_subscriber_to_sequence(
+            sequence_id: 12345,
+            email: $this->generateEmailAddress()
+        );
     }
 
     /**
@@ -449,7 +466,10 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToSequenceWithInvalidEmailAddress()
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->add_subscriber_to_sequence($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'not-an-email-address');
+        $result = $this->api->add_subscriber_to_sequence(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: 'not-an-email-address'
+        );
     }
 
     /**
@@ -465,9 +485,9 @@ class ConvertKitAPITest extends TestCase
         $emailAddress = $this->generateEmailAddress();
         $firstName = 'First Name';
         $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $emailAddress,
-            $firstName
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $emailAddress,
+            first_name: $firstName
         );
 
         $this->assertInstanceOf('stdClass', $result);
@@ -490,10 +510,10 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToSequenceWithCustomFields()
     {
         $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $this->generateEmailAddress(),
-            'First Name',
-            [
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            fields: [
                 'last_name' => 'Last Name',
             ]
         );
@@ -518,11 +538,10 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToSequenceWithTagID()
     {
         $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $this->generateEmailAddress(),
-            'First Name',
-            [],
-            [
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            tag_ids: [
                 (int) $_ENV['CONVERTKIT_API_TAG_ID']
             ]
         );
@@ -574,7 +593,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequenceSubscriptionsWithDescSortOrder()
     {
-        $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'desc');
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            sort_order: 'desc'
+        );
         $this->assertInstanceOf('stdClass', $result);
 
         $result = get_object_vars($result);
@@ -604,7 +626,10 @@ class ConvertKitAPITest extends TestCase
     public function testGetSequenceSubscriptionsWithInvalidSortOrder()
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'invalidSortOrder');
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            sort_order: 'invalidSortOrder'
+        );
     }
 
     /**
@@ -758,8 +783,8 @@ class ConvertKitAPITest extends TestCase
     public function testTagSubscriber()
     {
         $result = $this->api->tag_subscriber(
-            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            $this->generateEmailAddress()
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $this->generateEmailAddress()
         );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscription', get_object_vars($result));
@@ -778,9 +803,9 @@ class ConvertKitAPITest extends TestCase
         $emailAddress = $this->generateEmailAddress();
         $firstName = 'First Name';
         $result = $this->api->tag_subscriber(
-            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            $emailAddress,
-            $firstName
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $emailAddress,
+            first_name: $firstName
         );
 
         $this->assertInstanceOf('stdClass', $result);
@@ -803,10 +828,10 @@ class ConvertKitAPITest extends TestCase
     public function testTagSubscriberWithCustomFields()
     {
         $result = $this->api->tag_subscriber(
-            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            $this->generateEmailAddress(),
-            'First Name',
-            [
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            fields: [
                 'last_name' => 'Last Name',
             ]
         );
@@ -831,8 +856,8 @@ class ConvertKitAPITest extends TestCase
     {
         // Tag the subscriber first.
         $result = $this->api->tag_subscriber(
-            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            $this->generateEmailAddress()
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $this->generateEmailAddress()
         );
 
         // Get subscriber ID.
@@ -840,8 +865,8 @@ class ConvertKitAPITest extends TestCase
 
         // Remove tag from subscriber.
         $result = $this->api->remove_tag_from_subscriber(
-            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            $subscriberID
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            subscriber_id: $subscriberID
         );
 
         // Confirm that the subscriber no longer has the tag.
@@ -862,8 +887,8 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
-            12345,
-            $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+            tag_id: 12345,
+            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
         );
     }
 
@@ -879,8 +904,8 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
-            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            12345
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            subscriber_id: 12345
         );
     }
 
@@ -896,8 +921,8 @@ class ConvertKitAPITest extends TestCase
         // Tag the subscriber first.
         $email = $this->generateEmailAddress();
         $result = $this->api->tag_subscriber(
-            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            $email
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $email
         );
 
         // Get subscriber ID.
@@ -905,8 +930,8 @@ class ConvertKitAPITest extends TestCase
 
         // Remove tag from subscriber.
         $result = $this->api->remove_tag_from_subscriber_by_email(
-            (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            $email
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $email
         );
 
         // Confirm that the subscriber no longer has the tag.
@@ -927,8 +952,8 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
         $result = $this->api->remove_tag_from_subscriber_by_email(
-            12345,
-            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            tag_id: 12345,
+            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
         );
     }
 
@@ -969,7 +994,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithDescSortOrder()
     {
-        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'desc');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            sort_order: 'desc'
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
@@ -997,7 +1025,11 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithCancelledSubscriberState()
     {
-        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'asc', 'cancelled');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            sort_order: 'asc',
+            subscriber_state: 'cancelled'
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
@@ -1019,7 +1051,12 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithPage()
     {
-        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID'], 'asc', 'active', 2);
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            sort_order: 'asc',
+            subscriber_state: 'active',
+            page: 2
+        );
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
@@ -1127,8 +1164,8 @@ class ConvertKitAPITest extends TestCase
     {
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_form(
-            (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            $email
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            email: $email
         );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscription', get_object_vars($result));
@@ -1150,7 +1187,10 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToFormWithInvalidFormID()
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->add_subscriber_to_form(12345, $this->generateEmailAddress());
+        $result = $this->api->add_subscriber_to_form(
+            form_id: 12345,
+            email: $this->generateEmailAddress()
+        );
     }
 
     /**
@@ -1164,7 +1204,10 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToFormWithInvalidEmailAddress()
     {
         $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $result = $this->api->add_subscriber_to_form($_ENV['CONVERTKIT_API_FORM_ID'], 'not-an-email-address');
+        $result = $this->api->add_subscriber_to_form(
+            form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
+            email: 'not-an-email-address'
+        );
     }
 
     /**
@@ -1180,9 +1223,9 @@ class ConvertKitAPITest extends TestCase
         $emailAddress = $this->generateEmailAddress();
         $firstName = 'First Name';
         $result = $this->api->add_subscriber_to_form(
-            $_ENV['CONVERTKIT_API_FORM_ID'],
-            $emailAddress,
-            $firstName
+            form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
+            email: $emailAddress,
+            first_name: $firstName
         );
 
         $this->assertInstanceOf('stdClass', $result);
@@ -1205,10 +1248,10 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToFormWithCustomFields()
     {
         $result = $this->api->add_subscriber_to_form(
-            $_ENV['CONVERTKIT_API_FORM_ID'],
-            $this->generateEmailAddress(),
-            'First Name',
-            [
+            form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            fields: [
                 'last_name' => 'Last Name',
             ]
         );
@@ -1233,11 +1276,10 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToFormWithTagID()
     {
         $result = $this->api->add_subscriber_to_form(
-            $_ENV['CONVERTKIT_API_FORM_ID'],
-            $this->generateEmailAddress(),
-            'First Name',
-            [],
-            [
+            form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            tag_ids: [
                 (int) $_ENV['CONVERTKIT_API_TAG_ID']
             ]
         );
@@ -1354,8 +1396,8 @@ class ConvertKitAPITest extends TestCase
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $email
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $email
         );
 
         // Get subscriber ID.
@@ -1363,8 +1405,8 @@ class ConvertKitAPITest extends TestCase
 
         // Update subscriber's first name.
         $result = $this->api->update_subscriber(
-            $subscriberID,
-            'First Name'
+            subscriber_id: $subscriberID,
+            first_name: 'First Name'
         );
 
         // Confirm the change is reflected in the subscriber.
@@ -1390,8 +1432,8 @@ class ConvertKitAPITest extends TestCase
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $email
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $email
         );
 
         // Get subscriber ID.
@@ -1400,9 +1442,8 @@ class ConvertKitAPITest extends TestCase
         // Update subscriber's email address.
         $newEmail = $this->generateEmailAddress();
         $result = $this->api->update_subscriber(
-            $subscriberID,
-            '',
-            $newEmail
+            subscriber_id: $subscriberID,
+            email_address: $newEmail
         );
 
         // Confirm the change is reflected in the subscriber.
@@ -1428,8 +1469,8 @@ class ConvertKitAPITest extends TestCase
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $email
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $email
         );
 
         // Get subscriber ID.
@@ -1437,10 +1478,8 @@ class ConvertKitAPITest extends TestCase
 
         // Update subscriber's email address.
         $result = $this->api->update_subscriber(
-            $subscriberID,
-            '',
-            '',
-            [
+            subscriber_id: $subscriberID,
+            fields: [
                 'last_name' => 'Last Name',
             ]
         );
@@ -1482,8 +1521,8 @@ class ConvertKitAPITest extends TestCase
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
-            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            $email
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $email
         );
 
         // Unsubscribe.
@@ -1568,9 +1607,9 @@ class ConvertKitAPITest extends TestCase
     {
         // Create a broadcast first.
         $result = $this->api->create_broadcast(
-            'Test Subject',
-            'Test Content',
-            'Test Broadcast from PHP SDK',
+            subject: 'Test Subject',
+            content: 'Test Content',
+            description: 'Test Broadcast from PHP SDK',
         );
         $broadcastID = $result->broadcast->id;
 
@@ -1585,10 +1624,10 @@ class ConvertKitAPITest extends TestCase
 
         // Update the existing broadcast.
         $result = $this->api->update_broadcast(
-            $broadcastID,
-            'New Test Subject',
-            'New Test Content',
-            'New Test Broadcast from PHP SDK'
+            id: $broadcastID,
+            subject: 'New Test Subject',
+            content: 'New Test Content',
+            description: 'New Test Broadcast from PHP SDK'
         );
 
         // Confirm the changes saved.
@@ -1626,12 +1665,12 @@ class ConvertKitAPITest extends TestCase
 
         // Create a broadcast first.
         $result = $this->api->create_broadcast(
-            'Test Subject',
-            'Test Content',
-            'Test Broadcast from PHP SDK',
-            true,
-            $publishedAt,
-            $sendAt
+            subject: 'Test Subject',
+            content: 'Test Content',
+            description: 'Test Broadcast from PHP SDK',
+            public: true,
+            published_at: $publishedAt,
+            send_at: $sendAt
         );
         $broadcastID = $result->broadcast->id;
 
@@ -1758,8 +1797,8 @@ class ConvertKitAPITest extends TestCase
     {
         // Create a webhook first.
         $result = $this->api->create_webhook(
-            'https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d',
-            'subscriber.subscriber_activate',
+            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
+            event: 'subscriber.subscriber_activate',
         );
         $ruleID = $result->rule->id;
 
@@ -1782,9 +1821,9 @@ class ConvertKitAPITest extends TestCase
     {
         // Create a webhook first.
         $result = $this->api->create_webhook(
-            'https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d',
-            'subscriber.form_subscribe',
-            $_ENV['CONVERTKIT_API_FORM_ID']
+            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
+            event: 'subscriber.form_subscribe',
+            parameter: $_ENV['CONVERTKIT_API_FORM_ID']
         );
         $ruleID = $result->rule->id;
 
@@ -1804,7 +1843,10 @@ class ConvertKitAPITest extends TestCase
     public function testCreateWebhookWithInvalidEvent()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->api->create_webhook('https://webhook.site/2705fef6-34ef-4252-9c78-d511c540b58d', 'invalid.event');
+        $this->api->create_webhook(
+            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
+            event: 'invalid.event'
+        );
     }
 
     /**
