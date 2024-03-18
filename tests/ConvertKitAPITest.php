@@ -7,6 +7,9 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ClientException;
+use Dotenv\Dotenv;
+use ConvertKit_API\ConvertKit_API;
 
 /**
  * ConvertKit API class tests.
@@ -40,7 +43,7 @@ class ConvertKitAPITest extends TestCase
     protected function setUp(): void
     {
         // Load environment credentials from root folder.
-        $dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__FILE__)));
+        $dotenv = Dotenv::createImmutable(dirname(dirname(__FILE__)));
         $dotenv->load();
 
         // Set location where API class will create/write the log file.
@@ -50,7 +53,7 @@ class ConvertKitAPITest extends TestCase
         $this->deleteLogFile();
 
         // Setup API.
-        $this->api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET']);
+        $this->api = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET']);
     }
 
     /**
@@ -99,7 +102,7 @@ class ConvertKitAPITest extends TestCase
     public function testDebugEnabled()
     {
         // Setup API with debugging enabled.
-        $api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true);
+        $api = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true);
         $result = $api->get_account();
 
         // Confirm that the log includes expected data.
@@ -121,7 +124,7 @@ class ConvertKitAPITest extends TestCase
         $this->logFile = dirname(dirname(__FILE__)) . '/src/logs/debug-custom.log';
 
         // Setup API with debugging enabled.
-        $api = new \ConvertKit_API\ConvertKit_API(
+        $api = new ConvertKit_API(
             $_ENV['CONVERTKIT_API_KEY'],
             $_ENV['CONVERTKIT_API_SECRET'],
             true,
@@ -148,7 +151,7 @@ class ConvertKitAPITest extends TestCase
     public function testDebugAPIKeyAndSecretAreMasked()
     {
         // Setup API with debugging enabled.
-        $api = new \ConvertKit_API\ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true);
+        $api = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true);
 
         // Make requests that utilizes both the API Key and Secret.
         $api->get_forms(); // API Key.
@@ -200,8 +203,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testInvalidAPICredentials()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
-        $api = new \ConvertKit_API\ConvertKit_API('fakeApiKey', 'fakeApiSecret');
+        $this->expectException(ClientException::class);
+        $api = new ConvertKit_API('fakeApiKey', 'fakeApiSecret');
         $result = $api->get_account();
     }
 
@@ -396,7 +399,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithInvalidFormID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->get_form_subscriptions(12345);
     }
 
@@ -448,7 +451,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithInvalidSequenceID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: 12345,
             email: $this->generateEmailAddress()
@@ -465,7 +468,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithInvalidEmailAddress()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
             email: 'not-an-email-address'
@@ -625,7 +628,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequenceSubscriptionsWithInvalidSortOrder()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->get_sequence_subscriptions(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
             sort_order: 'invalidSortOrder'
@@ -642,7 +645,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequenceSubscriptionsWithInvalidSequenceID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->get_sequence_subscriptions(12345);
     }
 
@@ -695,7 +698,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagBlank()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->create_tag('');
     }
 
@@ -709,7 +712,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagThatExists()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->create_tag($_ENV['CONVERTKIT_API_TAG_NAME']);
     }
 
@@ -749,7 +752,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsBlank()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             '',
             '',
@@ -766,7 +769,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsThatExist()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             $_ENV['CONVERTKIT_API_TAG_NAME'],
             $_ENV['CONVERTKIT_API_TAG_NAME_2'],
@@ -885,7 +888,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidTagID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: 12345,
             subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
@@ -902,7 +905,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidSubscriberID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             subscriber_id: 12345
@@ -950,7 +953,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmailWithInvalidTagID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber_by_email(
             tag_id: 12345,
             email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
@@ -1078,7 +1081,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithInvalidFormID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->get_tag_subscriptions(12345);
     }
 
@@ -1148,7 +1151,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourcesInvalidResourceType()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->get_resources('invalid-resource-type');
         $this->assertIsArray($result);
     }
@@ -1186,7 +1189,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormWithInvalidFormID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_form(
             form_id: 12345,
             email: $this->generateEmailAddress()
@@ -1203,7 +1206,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormWithInvalidEmailAddress()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_form(
             form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
             email: 'not-an-email-address'
@@ -1317,7 +1320,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberIDWithInvalidEmailAddress()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $result = $this->api->get_subscriber_id('not-an-email-address');
     }
 
@@ -1364,7 +1367,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberWithInvalidSubscriberID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $subscriber = $this->api->get_subscriber(12345);
     }
 
@@ -1505,7 +1508,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberWithInvalidSubscriberID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $subscriber = $this->api->update_subscriber(12345);
     }
 
@@ -1545,7 +1548,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUnsubscribeWithNotSubscribedEmailAddress()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $subscriber = $this->api->unsubscribe('not-subscribed@convertkit.com');
     }
 
@@ -1559,7 +1562,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUnsubscribeWithInvalidEmailAddress()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $subscriber = $this->api->unsubscribe('invalid-email');
     }
 
@@ -1587,7 +1590,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberTagsWithInvalidSubscriberID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $subscriber = $this->api->get_subscriber_tags(12345);
     }
 
@@ -1658,9 +1661,9 @@ class ConvertKitAPITest extends TestCase
     public function testCreateAndDestroyPublicBroadcastWithValidDates()
     {
         // Create DateTime object.
-        $publishedAt = new \DateTime('now');
+        $publishedAt = new DateTime('now');
         $publishedAt->modify('+7 days');
-        $sendAt = new \DateTime('now');
+        $sendAt = new DateTime('now');
         $sendAt->modify('+14 days');
 
         // Create a broadcast first.
@@ -1717,7 +1720,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcastWithInvalidBroadcastID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->get_broadcast(12345);
     }
 
@@ -1751,7 +1754,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcastStatsWithInvalidBroadcastID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->get_broadcast_stats(12345);
     }
 
@@ -1765,7 +1768,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateBroadcastWithInvalidBroadcastID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->update_broadcast(12345);
     }
 
@@ -1779,7 +1782,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDestroyBroadcastWithInvalidBroadcastID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->destroy_broadcast(12345);
     }
 
@@ -1842,7 +1845,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateWebhookWithInvalidEvent()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->api->create_webhook(
             url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
             event: 'invalid.event'
@@ -1859,7 +1862,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDestroyWebhookWithInvalidRuleID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->destroy_webhook(12345);
     }
 
@@ -1917,7 +1920,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFieldWithBlankLabel()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->create_custom_field('');
     }
 
@@ -1994,7 +1997,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomFieldWithInvalidID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->update_custom_field(12345, 'Something');
     }
 
@@ -2032,7 +2035,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomFieldWithInvalidID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->delete_custom_field(12345);
     }
 
@@ -2086,7 +2089,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetPurchaseWithInvalidID()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->get_purchase(12345);
     }
 
@@ -2146,7 +2149,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreatePurchaseWithMissingData()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $this->api->create_purchase([
             'invalid-key' => [
                 'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
@@ -2218,7 +2221,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInvalidURL()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $markup = $this->api->get_resource('not-a-url');
     }
 
@@ -2232,7 +2235,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInaccessibleURL()
     {
-        $this->expectException(GuzzleHttp\Exception\ClientException::class);
+        $this->expectException(ClientException::class);
         $markup = $this->api->get_resource('https://convertkit.com/a/url/that/does/not/exist');
     }
 
