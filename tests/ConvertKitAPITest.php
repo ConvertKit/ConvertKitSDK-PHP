@@ -386,6 +386,24 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_account_colors() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetAccountColors()
+    {
+        $result = $this->api->get_account_colors();
+        $this->assertInstanceOf('stdClass', $result);
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('colors', $result);
+        $this->assertIsArray($result['colors']);
+    }
+
+    /**
      * Test that get_forms() returns the expected data.
      *
      * @since   1.0.0

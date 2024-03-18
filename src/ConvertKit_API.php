@@ -272,13 +272,25 @@ class ConvertKit_API
     /**
      * Gets the current account
      *
-     * @see https://developers.convertkit.com/#account
+     * @see https://developers.convertkit.com/v4.html#get-current-account
      *
      * @return false|mixed
      */
     public function get_account()
     {
         return $this->get('account');
+    }
+
+    /**
+     * Gets the account's colors
+     *
+     * @see https://developers.convertkit.com/v4.html#list-colors
+     *
+     * @return false|mixed
+     */
+    public function get_account_colors()
+    {
+        return $this->get('account/colors');
     }
 
     /**
