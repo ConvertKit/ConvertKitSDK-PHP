@@ -342,7 +342,21 @@ class ConvertKitAPITest extends TestCase
         $this->expectException(ClientException::class);
         $api = new ConvertKit_API(
             clientID: 'fakeClientID',
+            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
+            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
+        );
+        $result = $api->get_account();
+
+        $api = new ConvertKit_API(
+            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
             clientSecret: 'fakeClientSecret',
+            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
+        );
+        $result = $api->get_account();
+
+        $api = new ConvertKit_API(
+            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
             accessToken: 'fakeAccessToken'
         );
         $result = $api->get_account();
@@ -430,6 +444,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptions()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID']
         );
@@ -459,6 +475,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithDescSortOrder()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
             sort_order: 'desc'
@@ -490,6 +508,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithCancelledSubscriberState()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
             sort_order: 'asc',
@@ -516,6 +536,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithPage()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
             sort_order: 'asc',
@@ -543,6 +565,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithInvalidFormID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->get_form_subscriptions(12345);
     }
@@ -556,6 +580,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequences()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_sequences();
         $this->assertInstanceOf('stdClass', $result);
 
@@ -577,6 +603,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequence()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
             email: $this->generateEmailAddress()
@@ -595,6 +623,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithInvalidSequenceID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: 12345,
@@ -612,6 +642,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithInvalidEmailAddress()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
@@ -629,6 +661,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithFirstName()
     {
+        $this->markTestIncomplete();
+
         $emailAddress = $this->generateEmailAddress();
         $firstName = 'First Name';
         $result = $this->api->add_subscriber_to_sequence(
@@ -656,6 +690,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithCustomFields()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
             email: $this->generateEmailAddress(),
@@ -684,6 +720,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithTagID()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
             email: $this->generateEmailAddress(),
@@ -711,6 +749,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequenceSubscriptions()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID']);
         $this->assertInstanceOf('stdClass', $result);
 
@@ -740,6 +780,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequenceSubscriptionsWithDescSortOrder()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_sequence_subscriptions(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
             sort_order: 'desc'
@@ -772,6 +814,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequenceSubscriptionsWithInvalidSortOrder()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->get_sequence_subscriptions(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
@@ -802,6 +846,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTags()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_tags();
         $this->assertIsArray($result);
 
@@ -821,6 +867,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTag()
     {
+        $this->markTestIncomplete();
+
         $tagName = 'Tag Test ' . mt_rand();
         $result = $this->api->create_tag($tagName);
 
@@ -842,6 +890,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagBlank()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->create_tag('');
     }
@@ -856,6 +906,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagThatExists()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->create_tag($_ENV['CONVERTKIT_API_TAG_NAME']);
     }
@@ -869,6 +921,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTags()
     {
+        $this->markTestIncomplete();
+
         $tagNames = [
             'Tag Test ' . mt_rand(),
             'Tag Test ' . mt_rand(),
@@ -896,6 +950,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsBlank()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             '',
@@ -913,6 +969,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsThatExist()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             $_ENV['CONVERTKIT_API_TAG_NAME'],
@@ -929,6 +987,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriber()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             email: $this->generateEmailAddress()
@@ -947,6 +1007,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriberWithFirstName()
     {
+        $this->markTestIncomplete();
+
         $emailAddress = $this->generateEmailAddress();
         $firstName = 'First Name';
         $result = $this->api->tag_subscriber(
@@ -974,6 +1036,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriberWithCustomFields()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             email: $this->generateEmailAddress(),
@@ -1001,6 +1065,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriber()
     {
+        $this->markTestIncomplete();
+
         // Tag the subscriber first.
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
@@ -1032,6 +1098,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidTagID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: 12345,
@@ -1049,6 +1117,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidSubscriberID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
@@ -1065,6 +1135,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmail()
     {
+        $this->markTestIncomplete();
+
         // Tag the subscriber first.
         $email = $this->generateEmailAddress();
         $result = $this->api->tag_subscriber(
@@ -1097,6 +1169,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmailWithInvalidTagID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber_by_email(
             tag_id: 12345,
@@ -1114,6 +1188,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptions()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID']);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
@@ -1141,6 +1217,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithDescSortOrder()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             sort_order: 'desc'
@@ -1172,6 +1250,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithCancelledSubscriberState()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             sort_order: 'asc',
@@ -1198,6 +1278,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithPage()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             sort_order: 'asc',
@@ -1225,13 +1307,11 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithInvalidFormID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->get_tag_subscriptions(12345);
     }
-
-
-
-    ///
 
     /**
      * Test that get_resources() for Forms returns the expected data.
@@ -1268,6 +1348,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourcesSubscriptionForms()
     {
+        $this->markTestIncomplete();
         $result = $this->api->get_resources('subscription_forms');
         $this->assertIsArray($result);
     }
@@ -1309,6 +1390,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToForm()
     {
+        $this->markTestIncomplete();
+
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_form(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
@@ -1333,6 +1416,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormWithInvalidFormID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_form(
             form_id: 12345,
@@ -1350,6 +1435,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormWithInvalidEmailAddress()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_form(
             form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
@@ -1367,6 +1454,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormWithFirstName()
     {
+        $this->markTestIncomplete();
+
         $emailAddress = $this->generateEmailAddress();
         $firstName = 'First Name';
         $result = $this->api->add_subscriber_to_form(
@@ -1394,6 +1483,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormWithCustomFields()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->add_subscriber_to_form(
             form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
             email: $this->generateEmailAddress(),
@@ -1422,6 +1513,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormWithTagID()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->add_subscriber_to_form(
             form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
             email: $this->generateEmailAddress(),
@@ -1449,6 +1542,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberID()
     {
+        $this->markTestIncomplete();
+
         $subscriber_id = $this->api->get_subscriber_id($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
         $this->assertIsInt($subscriber_id);
         $this->assertEquals($subscriber_id, (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
@@ -1464,6 +1559,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberIDWithInvalidEmailAddress()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(InvalidArgumentException::class);
         $result = $this->api->get_subscriber_id('not-an-email-address');
     }
@@ -1478,6 +1575,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberIDWithNotSubscribedEmailAddress()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_subscriber_id('not-a-subscriber@test.com');
         $this->assertFalse($result);
     }
@@ -1491,6 +1590,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriber()
     {
+        $this->markTestIncomplete();
+
         $subscriber = $this->api->get_subscriber((int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
         $this->assertInstanceOf('stdClass', $subscriber);
         $this->assertArrayHasKey('subscriber', get_object_vars($subscriber));
@@ -1511,6 +1612,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberWithInvalidSubscriberID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $subscriber = $this->api->get_subscriber(12345);
     }
@@ -1524,6 +1627,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberWithNoChanges()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->update_subscriber($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscriber', get_object_vars($result));
@@ -1540,6 +1645,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberFirstName()
     {
+        $this->markTestIncomplete();
+
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
@@ -1576,6 +1683,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberEmailAddress()
     {
+        $this->markTestIncomplete();
+
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
@@ -1613,6 +1722,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberCustomFields()
     {
+        $this->markTestIncomplete();
+
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
@@ -1652,6 +1763,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberWithInvalidSubscriberID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $subscriber = $this->api->update_subscriber(12345);
     }
@@ -1665,6 +1778,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUnsubscribe()
     {
+        $this->markTestIncomplete();
+
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
@@ -1692,6 +1807,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUnsubscribeWithNotSubscribedEmailAddress()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $subscriber = $this->api->unsubscribe('not-subscribed@convertkit.com');
     }
@@ -1706,6 +1823,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUnsubscribeWithInvalidEmailAddress()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $subscriber = $this->api->unsubscribe('invalid-email');
     }
@@ -1719,6 +1838,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberTags()
     {
+        $this->markTestIncomplete();
+
         $subscriber = $this->api->get_subscriber_tags((int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
         $this->assertInstanceOf('stdClass', $subscriber);
         $this->assertArrayHasKey('tags', get_object_vars($subscriber));
@@ -1734,6 +1855,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberTagsWithInvalidSubscriberID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $subscriber = $this->api->get_subscriber_tags(12345);
     }
@@ -1752,6 +1875,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateUpdateAndDestroyDraftBroadcast()
     {
+        $this->markTestIncomplete();
+
         // Create a broadcast first.
         $result = $this->api->create_broadcast(
             subject: 'Test Subject',
@@ -1804,6 +1929,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateAndDestroyPublicBroadcastWithValidDates()
     {
+        $this->markTestIncomplete();
+
         // Create DateTime object.
         $publishedAt = new DateTime('now');
         $publishedAt->modify('+7 days');
@@ -1849,6 +1976,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcast()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_broadcast($_ENV['CONVERTKIT_API_BROADCAST_ID']);
         $result = get_object_vars($result->broadcast);
         $this->assertEquals($result['id'], $_ENV['CONVERTKIT_API_BROADCAST_ID']);
@@ -1864,6 +1993,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcastWithInvalidBroadcastID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->get_broadcast(12345);
     }
@@ -1877,6 +2008,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcastStats()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_broadcast_stats($_ENV['CONVERTKIT_API_BROADCAST_ID']);
         $result = get_object_vars($result->broadcast);
         $this->assertArrayHasKey('id', $result);
@@ -1898,6 +2031,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcastStatsWithInvalidBroadcastID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->get_broadcast_stats(12345);
     }
@@ -1912,6 +2047,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateBroadcastWithInvalidBroadcastID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->update_broadcast(12345);
     }
@@ -1926,6 +2063,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDestroyBroadcastWithInvalidBroadcastID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->destroy_broadcast(12345);
     }
@@ -1942,6 +2081,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateAndDestroyWebhook()
     {
+        $this->markTestIncomplete();
+
         // Create a webhook first.
         $result = $this->api->create_webhook(
             url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
@@ -1966,6 +2107,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateAndDestroyWebhookWithEventParameter()
     {
+        $this->markTestIncomplete();
+
         // Create a webhook first.
         $result = $this->api->create_webhook(
             url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
@@ -1989,6 +2132,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateWebhookWithInvalidEvent()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(InvalidArgumentException::class);
         $this->api->create_webhook(
             url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
@@ -2006,6 +2151,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDestroyWebhookWithInvalidRuleID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->destroy_webhook(12345);
     }
@@ -2019,6 +2166,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetCustomFields()
     {
+        $this->markTestIncomplete();
+
         $result = $this->api->get_custom_fields();
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('custom_fields', get_object_vars($result));
@@ -2040,6 +2189,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomField()
     {
+        $this->markTestIncomplete();
+
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
 
@@ -2064,6 +2215,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFieldWithBlankLabel()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->create_custom_field('');
     }
@@ -2077,6 +2230,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFields()
     {
+        $this->markTestIncomplete();
+
         $labels = [
             'Custom Field ' . mt_rand(),
             'Custom Field ' . mt_rand(),
@@ -2110,6 +2265,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomField()
     {
+        $this->markTestIncomplete();
+
         // Create custom field.
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
@@ -2141,6 +2298,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomFieldWithInvalidID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->update_custom_field(12345, 'Something');
     }
@@ -2154,6 +2313,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomField()
     {
+        $this->markTestIncomplete();
+
         // Create custom field.
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
@@ -2179,6 +2340,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomFieldWithInvalidID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->delete_custom_field(12345);
     }
@@ -2192,6 +2355,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testListPurchases()
     {
+        $this->markTestIncomplete();
+
         $purchases = $this->api->list_purchases([
             'page' => 1,
         ]);
@@ -2211,6 +2376,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetPurchase()
     {
+        $this->markTestIncomplete();
+
         // Get ID of first purchase.
         $purchases = $this->api->list_purchases([
             'page' => 1,
@@ -2233,6 +2400,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetPurchaseWithInvalidID()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->get_purchase(12345);
     }
@@ -2246,6 +2415,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreatePurchase()
     {
+        $this->markTestIncomplete();
+
         $purchase = $this->api->create_purchase([
             'purchase' => [
                 'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
@@ -2293,6 +2464,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreatePurchaseWithMissingData()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $this->api->create_purchase([
             'invalid-key' => [
@@ -2310,6 +2483,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLegacyForm()
     {
+        $this->markTestIncomplete();
+
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_FORM_URL']);
 
         // Assert that the markup is HTML.
@@ -2328,6 +2503,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLandingPage()
     {
+        $this->markTestIncomplete();
+
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 
         // Assert that the markup is HTML.
@@ -2346,6 +2523,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLegacyLandingPage()
     {
+        $this->markTestIncomplete();
+
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
 
         // Assert that the markup is HTML.
@@ -2365,6 +2544,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInvalidURL()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(InvalidArgumentException::class);
         $markup = $this->api->get_resource('not-a-url');
     }
@@ -2379,6 +2560,8 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInaccessibleURL()
     {
+        $this->markTestIncomplete();
+
         $this->expectException(ClientException::class);
         $markup = $this->api->get_resource('https://convertkit.com/a/url/that/does/not/exist');
     }
