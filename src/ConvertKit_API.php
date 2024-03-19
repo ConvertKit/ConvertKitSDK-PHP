@@ -119,8 +119,9 @@ class ConvertKit_API
 
         // Set headers.
         $headers = [
-            'Accept'     => 'application/json',
-            'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+            'Accept'       => 'application/json',
+            'Content-Type' => 'application/json; charset=utf-8',
+            'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
         ];
         if (!empty($this->access_token)) {
             $headers['Authorization'] = 'Bearer ' . $this->access_token;
@@ -209,16 +210,14 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri:    $this->oauth_token_url,
-            body:   http_build_query(
+            body:   (string) json_encode(
                 [
                     'code'          => $authCode,
                     'client_id'     => $this->client_id,
                     'client_secret' => $this->client_secret,
                     'grant_type'    => 'authorization_code',
                     'redirect_uri'  => $redirectURI,
-                ],
-                '',
-                '&'
+                ]
             )
         );
 
@@ -246,16 +245,14 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri: $this->oauth_token_url,
-            body: http_build_query(
+            body: (string) json_encode(
                 [
                     'refresh_token' => $refreshToken,
                     'client_id'     => $this->client_id,
                     'client_secret' => $this->client_secret,
                     'grant_type'    => 'refresh_token',
                     'redirect_uri'  => $redirectURI,
-                ],
-                '',
-                '&'
+                ]
             )
         );
 
@@ -272,7 +269,7 @@ class ConvertKit_API
     /**
      * Gets the current account
      *
-     * @see https://developers.convertkit.com/v4.html#get-current-account
+     * @see https://developers.convertkit.com/#account
      *
      * @return false|mixed
      */
@@ -1589,7 +1586,7 @@ class ConvertKit_API
         // Log request.
         $this->create_log(sprintf('%s %s', $method, $endpoint));
         $this->create_log(sprintf('%s', json_encode($args)));
-        
+
         // Build request.
         switch ($method) {
             case 'GET':
@@ -1607,7 +1604,7 @@ class ConvertKit_API
                 $request = new Request(
                     method: $method,
                     uri:    $url,
-                    body:   http_build_query($args, '', '&'),
+                    body:   (string) json_encode($args),
                 );
                 break;
         }
@@ -1619,7 +1616,7 @@ class ConvertKit_API
         );
 
         // Inspect response.
-        $status_code = $response->getStatusCode();
+        $status_code   = $response->getStatusCode();
         $response_body = $response->getBody()->getContents();
 
         // Log response.
@@ -1627,12 +1624,7 @@ class ConvertKit_API
         $this->create_log(sprintf('Response Body: %s', $response->getBody()->getContents()));
         $this->create_log('Finish request successfully');
 
-        // If response body is blank e.g. a DELETE method was used that returns no data,
-        // don't attempt to decode.
-        if ( is_null( $response_body ) ) {
-            return $response_body;
-        }
-
+        // Return response.
         return json_decode($response_body);
     }
 }
