@@ -443,6 +443,30 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_email_stats() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetEmailStats()
+    {
+        $result = $this->api->get_email_stats();
+        $this->assertInstanceOf('stdClass', $result);
+
+        $result = get_object_vars($result);
+        $stats = get_object_vars($result['stats']);
+        $this->assertArrayHasKey('sent', $stats);
+        $this->assertArrayHasKey('clicked', $stats);
+        $this->assertArrayHasKey('opened', $stats);
+        $this->assertArrayHasKey('email_stats_mode', $stats);
+        $this->assertArrayHasKey('open_tracking_enabled', $stats);
+        $this->assertArrayHasKey('click_tracking_enabled', $stats);
+        $this->assertArrayHasKey('starting', $stats);
+        $this->assertArrayHasKey('ending', $stats);
+    }
+
+    /**
      * Test that get_forms() returns the expected data.
      *
      * @since   1.0.0

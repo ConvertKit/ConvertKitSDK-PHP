@@ -322,6 +322,18 @@ class ConvertKit_API
     }
 
     /**
+     * Gets email stats
+     *
+     * @see https://developers.convertkit.com/v4.html#get-email-stats
+     *
+     * @return false|mixed
+     */
+    public function get_email_stats()
+    {
+        return $this->get('account/email_stats');
+    }
+
+    /**
      * Gets all forms.
      *
      * @since 1.0.0
