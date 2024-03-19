@@ -467,6 +467,101 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_growth_stats() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetGrowthStats()
+    {
+        $result = $this->api->get_growth_stats();
+        $this->assertInstanceOf('stdClass', $result);
+
+        $result = get_object_vars($result);
+        $stats = get_object_vars($result['stats']);
+        $this->assertArrayHasKey('cancellations', $stats);
+        $this->assertArrayHasKey('net_new_subscribers', $stats);
+        $this->assertArrayHasKey('new_subscribers', $stats);
+        $this->assertArrayHasKey('subscribers', $stats);
+        $this->assertArrayHasKey('starting', $stats);
+        $this->assertArrayHasKey('ending', $stats);
+    }
+
+    /**
+     * Test that get_growth_stats() returns the expected data
+     * when a start date is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetGrowthStatsWithStartDate()
+    {
+        // Define start and end dates.
+        $starting = new DateTime('now');
+        $starting->modify('-7 days');
+        $ending = new DateTime('now');
+
+        // Send request.
+        $result = $this->api->get_growth_stats(
+            starting: $starting
+        );
+        $this->assertInstanceOf('stdClass', $result);
+
+        // Confirm response object contains expected keys.
+        $result = get_object_vars($result);
+        $stats = get_object_vars($result['stats']);
+        $this->assertArrayHasKey('cancellations', $stats);
+        $this->assertArrayHasKey('net_new_subscribers', $stats);
+        $this->assertArrayHasKey('new_subscribers', $stats);
+        $this->assertArrayHasKey('subscribers', $stats);
+        $this->assertArrayHasKey('starting', $stats);
+        $this->assertArrayHasKey('ending', $stats);
+
+        // Assert start and end dates were honored.
+        $this->assertEquals($stats['starting'], $starting->format('Y-m-d').'T00:00:00-04:00');
+        $this->assertEquals($stats['ending'], $ending->format('Y-m-d').'T23:59:59-04:00');
+    }
+
+    /**
+     * Test that get_growth_stats() returns the expected data
+     * when an end date is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetGrowthStatsWithEndDate()
+    {
+        // Define start and end dates.
+        $starting = new DateTime('now');
+        $starting->modify('-90 days');
+        $ending = new DateTime('now');
+        $ending->modify('-7 days');
+
+        // Send request.
+        $result = $this->api->get_growth_stats(
+            ending: $ending
+        );
+        $this->assertInstanceOf('stdClass', $result);
+
+        // Confirm response object contains expected keys.
+        $result = get_object_vars($result);
+        $stats = get_object_vars($result['stats']);
+        $this->assertArrayHasKey('cancellations', $stats);
+        $this->assertArrayHasKey('net_new_subscribers', $stats);
+        $this->assertArrayHasKey('new_subscribers', $stats);
+        $this->assertArrayHasKey('subscribers', $stats);
+        $this->assertArrayHasKey('starting', $stats);
+        $this->assertArrayHasKey('ending', $stats);
+
+        // Assert start and end dates were honored.
+        $this->assertEquals($stats['starting'], $starting->format('Y-m-d').'T00:00:00-04:00');
+        $this->assertEquals($stats['ending'], $ending->format('Y-m-d').'T23:59:59-04:00');
+    }
+
+    /**
      * Test that get_forms() returns the expected data.
      *
      * @since   1.0.0

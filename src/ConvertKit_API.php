@@ -334,6 +334,23 @@ class ConvertKit_API
     }
 
     /**
+     * Gets growth stats
+     *
+     * @see https://developers.convertkit.com/v4.html#get-growth-stats
+     *
+     * @param \DateTime $starting Gets stats for time period beginning on this date. Defaults to 90 days ago.
+     * @param \DateTime $ending   Gets stats for time period ending on this date. Defaults to today.
+     * @return false|mixed
+     */
+    public function get_growth_stats(\DateTime $starting = null, \DateTime $ending = null)
+    {
+        return $this->get('account/growth_stats', [
+            'starting' => (!is_null($starting) ? $starting->format('Y-m-d') : ''),
+            'ending' => (!is_null($ending) ? $ending->format('Y-m-d') : ''),
+        ]);
+    }
+
+    /**
      * Gets all forms.
      *
      * @since 1.0.0
