@@ -414,16 +414,14 @@ class ConvertKitAPITest extends TestCase
     {
         $result = $this->api->update_account_colors([
             '#111111',
-            '#222222',
         ]);
-        var_dump($result);
-        die();
         $this->assertInstanceOf('stdClass', $result);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
         $this->assertArrayHasKey('colors', $result);
         $this->assertIsArray($result['colors']);
+        $this->assertEquals($result['colors'][0], '#111111');
     }
 
     /**
