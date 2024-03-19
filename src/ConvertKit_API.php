@@ -310,6 +310,18 @@ class ConvertKit_API
     }
 
     /**
+     * Gets the Creator Profile
+     *
+     * @see https://developers.convertkit.com/v4.html#get-creator-profile
+     *
+     * @return false|mixed
+     */
+    public function get_creator_profile()
+    {
+        return $this->get('account/creator_profile');
+    }
+
+    /**
      * Gets all forms.
      *
      * @since 1.0.0

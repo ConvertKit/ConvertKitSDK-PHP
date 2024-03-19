@@ -374,12 +374,11 @@ class ConvertKitAPITest extends TestCase
         $result = $this->api->get_account();
         $this->assertInstanceOf('stdClass', $result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
-        $account = get_object_vars($result['account']);
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('user', $result);
         $this->assertArrayHasKey('account', $result);
+
+        $account = get_object_vars($result['account']);
         $this->assertArrayHasKey('name', $account);
         $this->assertArrayHasKey('plan_type', $account);
         $this->assertArrayHasKey('primary_email_address', $account);
@@ -397,7 +396,6 @@ class ConvertKitAPITest extends TestCase
         $result = $this->api->get_account_colors();
         $this->assertInstanceOf('stdClass', $result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
         $this->assertArrayHasKey('colors', $result);
         $this->assertIsArray($result['colors']);
@@ -417,11 +415,31 @@ class ConvertKitAPITest extends TestCase
         ]);
         $this->assertInstanceOf('stdClass', $result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
         $this->assertArrayHasKey('colors', $result);
         $this->assertIsArray($result['colors']);
         $this->assertEquals($result['colors'][0], '#111111');
+    }
+
+    /**
+     * Test that get_creator_profile() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetCreatorProfile()
+    {
+        $result = $this->api->get_creator_profile();
+        $this->assertInstanceOf('stdClass', $result);
+
+        $result = get_object_vars($result);
+        $profile = get_object_vars($result['profile']);
+        $this->assertArrayHasKey('name', $profile);
+        $this->assertArrayHasKey('byline', $profile);
+        $this->assertArrayHasKey('bio', $profile);
+        $this->assertArrayHasKey('image_url', $profile);
+        $this->assertArrayHasKey('profile_url', $profile);
     }
 
     /**
