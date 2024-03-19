@@ -210,7 +210,7 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri:    $this->oauth_token_url,
-            body:   json_encode(
+            body:   (string) json_encode(
                 [
                     'code'          => $authCode,
                     'client_id'     => $this->client_id,
@@ -245,7 +245,7 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri: $this->oauth_token_url,
-            body: json_encode(
+            body: (string) json_encode(
                 [
                     'refresh_token' => $refreshToken,
                     'client_id'     => $this->client_id,
@@ -1536,17 +1536,17 @@ class ConvertKit_API
         return $this->make_request($endpoint, 'DELETE', $args);
     }
 
-/**
- * Performs an API request using Guzzle.
- *
- * @param string                                                                                $endpoint API Endpoint.
- * @param string                                                                                $method   Request method.
- * @param array<string, bool|integer|string|array<int|string, int|string|array<string|string>>> $args     Request arguments.
- *
- * @throws \Exception If JSON encoding arguments failed.
- *
- * @return false|mixed
- */
+    /**
+     * Performs an API request using Guzzle.
+     *
+     * @param string                                                                                $endpoint API Endpoint.
+     * @param string                                                                                $method   Request method.
+     * @param array<string, bool|integer|string|array<int|string, int|string|array<string|string>>> $args     Request arguments.
+     *
+     * @throws \Exception If JSON encoding arguments failed.
+     *
+     * @return false|mixed
+     */
     public function make_request(string $endpoint, string $method, array $args = [])
     {
         // Build URL.
@@ -1573,7 +1573,7 @@ class ConvertKit_API
                 $request = new Request(
                     method: $method,
                     uri:    $url,
-                    body:   json_encode($args),
+                    body:   (string) json_encode($args),
                 );
                 break;
         }
@@ -1593,12 +1593,7 @@ class ConvertKit_API
         $this->create_log(sprintf('Response Body: %s', $response->getBody()->getContents()));
         $this->create_log('Finish request successfully');
 
-        // If response body is blank e.g. a DELETE method was used that returns no data,
-        // don't attempt to decode.
-        if (is_null($response_body)) {
-            return $response_body;
-        }
-
+        // Return response.
         return json_decode($response_body);
     }
 }
