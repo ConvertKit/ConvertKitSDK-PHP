@@ -402,7 +402,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that update_account_colors() returns the expected data.
+     * Test that update_account_colors() updates the account's colors.
      *
      * @since   2.0.0
      *
