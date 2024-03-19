@@ -448,12 +448,8 @@ class ConvertKitAPITest extends TestCase
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID']
         );
 
-        // Assert subscribers exist.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('subscribers', $result);
-        $this->assertIsArray($result['subscribers']);
-
-        // Assert pagination exists.
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
     }
 
@@ -473,19 +469,113 @@ class ConvertKitAPITest extends TestCase
             subscriber_state: 'bounced'
         );
 
-        // Assert subscribers exist.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('subscribers', $result);
-        $this->assertIsArray($result['subscribers']);
-
-        // Check they are cancelled.
-        $this->assertEquals($result['subscribers'][0]->state, 'bounced');
-
-        // Assert pagination exists.
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertEquals($result->subscribers[0]->state, 'bounced');
     }
 
-    // @TODO Test Added_After, added_before, created_after, created_before, pagination (per_page, after, before)
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the added_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithAddedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            added_after: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual($date->format('Y-m-d'), date('Y-m-d', strtotime($result->subscribers[0]->added_at)));
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the added_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithAddedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            added_before: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual($date->format('Y-m-d'), date('Y-m-d', strtotime($result->subscribers[0]->added_at)));
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the created_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithCreatedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            created_after: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual($date->format('Y-m-d'), date('Y-m-d', strtotime($result->subscribers[0]->created_at)));
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the created_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithCreatedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            created_before: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual($date->format('Y-m-d'), date('Y-m-d', strtotime($result->subscribers[0]->created_at)));
+    }
 
     /**
      * Test that get_form_subscriptions() returns the expected data
@@ -503,52 +593,52 @@ class ConvertKitAPITest extends TestCase
             per_page: 1
         );
 
-        // Assert a single subscriber was returned.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('subscribers', $result);
-        $this->assertIsArray($result['subscribers']);
-        $this->assertCount(1, $result['subscribers']);
-        
-        // Assert pagination exists.
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
-        $this->assertFalse($result['pagination']->has_previous_page);
-        $this->assertTrue($result['pagination']->has_next_page);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+        
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
         
         // Use pagination to fetch next page.
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
             per_page: 1,
-            after_cursor: $result['pagination']->end_cursor
+            after_cursor: $result->pagination->end_cursor
         );
 
-        // Assert a single subscriber was returned.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('subscribers', $result);
-        $this->assertIsArray($result['subscribers']);
-        $this->assertCount(1, $result['subscribers']);
-        
-        // Assert pagination exists.
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
-        $this->assertTrue($result['pagination']->has_previous_page);
-        $this->assertTrue($result['pagination']->has_next_page);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+        
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
 
         // Use pagination to fetch previous page.
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
             per_page: 1,
-            before_cursor: $result['pagination']->start_cursor
+            before_cursor: $result->pagination->start_cursor
         );
 
-        // Assert a single subscriber was returned.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('subscribers', $result);
-        $this->assertIsArray($result['subscribers']);
-        $this->assertCount(1, $result['subscribers']);
-        
-        // Assert pagination exists.
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
-        $this->assertFalse($result['pagination']->has_previous_page);
-        $this->assertTrue($result['pagination']->has_next_page);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+        
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -2657,6 +2747,21 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Helper method to assert the given key exists as an array
+     * in the API response.
+     * 
+     * @since   2.0.0
+     * 
+     * @param   array   $result     API Result.
+     */
+    private function assertDataExists($result, $key)
+    {
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey($key, $result);
+        $this->assertIsArray($result[$key]);
+    }
+
+    /**
      * Helper method to assert pagination object exists in response.
      * 
      * @since   2.0.0
@@ -2665,6 +2770,7 @@ class ConvertKitAPITest extends TestCase
      */
     private function assertPaginationExists($result)
     {
+        $result = get_object_vars($result);
         $this->assertArrayHasKey('pagination', $result);
         $pagination = get_object_vars($result['pagination']);
         $this->assertArrayHasKey('has_previous_page', $pagination);
