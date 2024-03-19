@@ -1497,10 +1497,6 @@ class ConvertKit_API
      */
     public function get(string $endpoint, array $args = [])
     {
-        // Log if debugging enabled.
-        $this->create_log(sprintf('GET %s: %s', $endpoint, json_encode($args)));
-
-        // Make request and return results.
         return $this->make_request($endpoint, 'GET', $args);
     }
 
@@ -1514,10 +1510,6 @@ class ConvertKit_API
      */
     public function post(string $endpoint, array $args = [])
     {
-        // Log if debugging enabled.
-        $this->create_log(sprintf('POST %s: %s', $endpoint, json_encode($args)));
-
-        // Make request and return results.
         return $this->make_request($endpoint, 'POST', $args);
     }
 
@@ -1531,10 +1523,6 @@ class ConvertKit_API
      */
     public function put(string $endpoint, array $args = [])
     {
-        // Log if debugging enabled.
-        $this->create_log(sprintf('PUT %s: %s', $endpoint, json_encode($args)));
-
-        // Make request and return results.
         return $this->make_request($endpoint, 'PUT', $args);
     }
 
@@ -1548,10 +1536,6 @@ class ConvertKit_API
      */
     public function delete(string $endpoint, array $args = [])
     {
-        // Log if debugging enabled.
-        $this->create_log(sprintf('DELETE %s: %s', $endpoint, json_encode($args)));
-
-        // Make request and return results.
         return $this->make_request($endpoint, 'DELETE', $args);
     }
 
@@ -1571,18 +1555,10 @@ class ConvertKit_API
         // Build URL.
         $url = $this->api_url_base . $this->api_version . '/' . $endpoint;
 
-        $this->create_log(sprintf('Making request on %s.', $url));
-
-        // Build request body.
-        $request_body = json_encode($args);
-
-        $this->create_log(sprintf('%s, Request body: %s', $method, $request_body));
-
-        // Bail if an error occured encoind the arguments.
-        if (!$request_body) {
-            throw new \Exception('Error encoding arguments');
-        }
-
+        // Log request.
+        $this->create_log(sprintf('%s %s', $method, $endpoint));
+        $this->create_log(sprintf('%s', json_encode($args)));
+        
         // Build request.
         switch ($method) {
             case 'GET':
@@ -1591,31 +1567,19 @@ class ConvertKit_API
                 }
 
                 $request = new Request(
-                    $method,
-                    $url,
-                    [
-                        'headers' => [
-                            'Content-Type'   => 'application/json',
-                            'Content-Length' => strlen($request_body),
-                        ],
-                    ],
+                    method: $method,
+                    uri: $url
                 );
                 break;
 
             default:
                 $request = new Request(
-                    $method,
-                    $url,
-                    [
-                        'headers' => [
-                            'Content-Type'   => 'application/json',
-                            'Content-Length' => strlen($request_body),
-                        ],
-                    ],
-                    $request_body
+                    method: $method,
+                    uri:    $url,
+                    body:   http_build_query($args, '', '&'),
                 );
                 break;
-        }//end switch
+        }
 
         // Send request.
         $response = $this->client->send(
@@ -1625,22 +1589,19 @@ class ConvertKit_API
 
         // Inspect response.
         $status_code = $response->getStatusCode();
+        $response_body = $response->getBody()->getContents();
 
-        // If not between 200 and 300.
-        if (!preg_match('/^[2-3][0-9]{2}/', (string) $status_code)) {
-            $this->create_log(sprintf('Response code is %s.', $status_code));
-            return false;
-        }
+        // Log response.
+        $this->create_log(sprintf('Response Status Code: %s', $response->getStatusCode()));
+        $this->create_log(sprintf('Response Body: %s', $response->getBody()->getContents()));
+        $this->create_log('Finish request successfully');
 
-        // Inspect response body.
-        $response_body = json_decode($response->getBody()->getContents());
-
-        if ($response_body) {
-            $this->create_log('Finish request successfully.');
+        // If response body is blank e.g. a DELETE method was used that returns no data,
+        // don't attempt to decode.
+        if ( is_null( $response_body ) ) {
             return $response_body;
         }
 
-        $this->create_log('Failed to finish request.');
-        return false;
+        return json_decode($response_body);
     }
 }
