@@ -283,7 +283,7 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/v4.html#list-colors
      *
-     * @return array
+     * @return false|mixed
      */
     public function get_account_colors()
     {
@@ -293,19 +293,17 @@ class ConvertKit_API
     /**
      * Gets the account's colors
      *
-     * @see https://developers.convertkit.com/v4.html#list-colors
-     * 
      * @param array<string, string> $colors Hex colors.
      *
-     * @return array
+     * @see https://developers.convertkit.com/v4.html#list-colors
+     *
+     * @return false|mixed
      */
     public function update_account_colors(array $colors)
     {
         return $this->put(
             endpoint: 'account/colors',
-            args: [
-                'colors' => $colors,
-            ]
+            args: ['colors' => $colors]
         );
     }
 
@@ -336,18 +334,22 @@ class ConvertKit_API
     /**
      * Gets growth stats
      *
-     * @see https://developers.convertkit.com/v4.html#get-growth-stats
-     *
      * @param \DateTime $starting Gets stats for time period beginning on this date. Defaults to 90 days ago.
      * @param \DateTime $ending   Gets stats for time period ending on this date. Defaults to today.
+     *
+     * @see https://developers.convertkit.com/v4.html#get-growth-stats
+     *
      * @return false|mixed
      */
     public function get_growth_stats(\DateTime $starting = null, \DateTime $ending = null)
     {
-        return $this->get('account/growth_stats', [
-            'starting' => (!is_null($starting) ? $starting->format('Y-m-d') : ''),
-            'ending' => (!is_null($ending) ? $ending->format('Y-m-d') : ''),
-        ]);
+        return $this->get(
+            'account/growth_stats',
+            [
+                'starting' => (!is_null($starting) ? $starting->format('Y-m-d') : ''),
+                'ending'   => (!is_null($ending) ? $ending->format('Y-m-d') : ''),
+            ]
+        );
     }
 
     /**
