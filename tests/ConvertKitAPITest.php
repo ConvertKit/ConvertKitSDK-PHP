@@ -444,57 +444,17 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptions()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID']
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        // Assert subscribers exist.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        $this->assertArrayHasKey('subscribers', $result);
+        $this->assertIsArray($result['subscribers']);
 
-        // Assert sort order is ascending.
-        $this->assertGreaterThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
-        );
-    }
-
-    /**
-     * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified and the sort order is descending.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetFormSubscriptionsWithDescSortOrder()
-    {
-        $this->markTestIncomplete();
-
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            sort_order: 'desc'
-        );
-
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
-
-        // Assert sort order.
-        $this->assertLessThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
-        );
+        // Assert pagination exists.
+        $this->assertPaginationExists($result);
     }
 
     /**
@@ -506,53 +466,89 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testGetFormSubscriptionsWithCancelledSubscriberState()
+    public function testGetFormSubscriptionsWithBouncedSubscriberState()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            sort_order: 'asc',
-            subscriber_state: 'cancelled'
+            subscriber_state: 'bounced'
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        // Assert subscribers exist.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertEquals($result['total_subscriptions'], 0);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        $this->assertArrayHasKey('subscribers', $result);
+        $this->assertIsArray($result['subscribers']);
+
+        // Check they are cancelled.
+        $this->assertEquals($result['subscribers'][0]->state, 'bounced');
+
+        // Assert pagination exists.
+        $this->assertPaginationExists($result);
     }
+
+    // @TODO Test Added_After, added_before, created_after, created_before, pagination (per_page, after, before)
 
     /**
      * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified and the page is set to 2.
+     * when a valid Form ID is specified and pagination parameters
+     * and per_page limits are specified.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetFormSubscriptionsWithPage()
+    public function testGetFormSubscriptionsPagination()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            sort_order: 'asc',
-            subscriber_state: 'active',
-            page: 2
+            per_page: 1
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        // Assert a single subscriber was returned.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertEquals($result['page'], 2);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        $this->assertArrayHasKey('subscribers', $result);
+        $this->assertIsArray($result['subscribers']);
+        $this->assertCount(1, $result['subscribers']);
+        
+        // Assert pagination exists.
+        $this->assertPaginationExists($result);
+        $this->assertFalse($result['pagination']->has_previous_page);
+        $this->assertTrue($result['pagination']->has_next_page);
+        
+        // Use pagination to fetch next page.
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            per_page: 1,
+            after_cursor: $result['pagination']->end_cursor
+        );
+
+        // Assert a single subscriber was returned.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('subscribers', $result);
+        $this->assertIsArray($result['subscribers']);
+        $this->assertCount(1, $result['subscribers']);
+        
+        // Assert pagination exists.
+        $this->assertPaginationExists($result);
+        $this->assertTrue($result['pagination']->has_previous_page);
+        $this->assertTrue($result['pagination']->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            per_page: 1,
+            before_cursor: $result['pagination']->start_cursor
+        );
+
+        // Assert a single subscriber was returned.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('subscribers', $result);
+        $this->assertIsArray($result['subscribers']);
+        $this->assertCount(1, $result['subscribers']);
+        
+        // Assert pagination exists.
+        $this->assertPaginationExists($result);
+        $this->assertFalse($result['pagination']->has_previous_page);
+        $this->assertTrue($result['pagination']->has_next_page);
     }
 
     /**
@@ -2658,5 +2654,23 @@ class ConvertKitAPITest extends TestCase
 
         // Return API object.
         return $api;
+    }
+
+    /**
+     * Helper method to assert pagination object exists in response.
+     * 
+     * @since   2.0.0
+     * 
+     * @param   array   $result     API Result.
+     */
+    private function assertPaginationExists($result)
+    {
+        $this->assertArrayHasKey('pagination', $result);
+        $pagination = get_object_vars($result['pagination']);
+        $this->assertArrayHasKey('has_previous_page', $pagination);
+        $this->assertArrayHasKey('has_next_page', $pagination);
+        $this->assertArrayHasKey('start_cursor', $pagination);
+        $this->assertArrayHasKey('end_cursor', $pagination);
+        $this->assertArrayHasKey('per_page', $pagination);
     }
 }

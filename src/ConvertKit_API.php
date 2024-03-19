@@ -347,7 +347,7 @@ class ConvertKit_API
      * List subscribers for a form
      *
      * @param integer $form_id          Form ID.
-     * @param string  $subscriber_state Subscriber State (active,cancelled).
+     * @param string  $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
      * @param 
      * @param integer $page             Page.
      *
@@ -369,8 +369,8 @@ class ConvertKit_API
         // Build parameters.
         $options = [];
 
-        if (!empty($subscriber_status)) {
-            $options['status'] = $subscriber_status;
+        if (!empty($subscriber_state)) {
+            $options['status'] = $subscriber_state;
         }
         if (!is_null($created_after)) {
             $options['created_after'] = $created_after->format('Y-m-d');
