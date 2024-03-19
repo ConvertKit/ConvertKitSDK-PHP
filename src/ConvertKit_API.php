@@ -119,9 +119,9 @@ class ConvertKit_API
 
         // Set headers.
         $headers = [
-            'Accept'     => 'application/json',
+            'Accept'       => 'application/json',
             'Content-Type' => 'application/json; charset=utf-8',
-            'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+            'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
         ];
         if (!empty($this->access_token)) {
             $headers['Authorization'] = 'Bearer ' . $this->access_token;
@@ -1537,16 +1537,16 @@ class ConvertKit_API
     }
 
 /**
-     * Performs an API request using Guzzle.
-     *
-     * @param string                                                                                $endpoint API Endpoint.
-     * @param string                                                                                $method   Request method.
-     * @param array<string, bool|integer|string|array<int|string, int|string|array<string|string>>> $args     Request arguments.
-     *
-     * @throws \Exception If JSON encoding arguments failed.
-     *
-     * @return false|mixed
-     */
+ * Performs an API request using Guzzle.
+ *
+ * @param string                                                                                $endpoint API Endpoint.
+ * @param string                                                                                $method   Request method.
+ * @param array<string, bool|integer|string|array<int|string, int|string|array<string|string>>> $args     Request arguments.
+ *
+ * @throws \Exception If JSON encoding arguments failed.
+ *
+ * @return false|mixed
+ */
     public function make_request(string $endpoint, string $method, array $args = [])
     {
         // Build URL.
@@ -1555,7 +1555,7 @@ class ConvertKit_API
         // Log request.
         $this->create_log(sprintf('%s %s', $method, $endpoint));
         $this->create_log(sprintf('%s', json_encode($args)));
-        
+
         // Build request.
         switch ($method) {
             case 'GET':
@@ -1585,7 +1585,7 @@ class ConvertKit_API
         );
 
         // Inspect response.
-        $status_code = $response->getStatusCode();
+        $status_code   = $response->getStatusCode();
         $response_body = $response->getBody()->getContents();
 
         // Log response.
@@ -1595,7 +1595,7 @@ class ConvertKit_API
 
         // If response body is blank e.g. a DELETE method was used that returns no data,
         // don't attempt to decode.
-        if ( is_null( $response_body ) ) {
+        if (is_null($response_body)) {
             return $response_body;
         }
 
