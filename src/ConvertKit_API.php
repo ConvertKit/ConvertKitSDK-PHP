@@ -309,8 +309,8 @@ class ConvertKit_API
     /**
      * Adds a subscriber to a form by email address
      *
-     * @param integer               $form_id    Form ID.
-     * @param string                $email      Email Address.
+     * @param integer $form_id Form ID.
+     * @param string  $email   Email Address.
      *
      * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form-by-email-address
      *
@@ -320,21 +320,19 @@ class ConvertKit_API
     {
         return $this->post(
             endpoint: sprintf('forms/%s/subscribers', $form_id),
-            args: [
-                'email_address' => $email,
-            ]
+            args: ['email_address' => $email]
         );
     }
 
     /**
      * Adds a subscriber to a form by subscriber ID
      *
-     * @param integer   $form_id        Form ID.
-     * @param integer   $subscriber_id  Subscriber ID.
+     * @param integer $form_id       Form ID.
+     * @param integer $subscriber_id Subscriber ID.
      *
      * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form
-     * 
-     * @since  2.0.0
+     *
+     * @since 2.0.0
      *
      * @return false|mixed
      */
@@ -346,10 +344,15 @@ class ConvertKit_API
     /**
      * List subscribers for a form
      *
-     * @param integer $form_id          Form ID.
-     * @param string  $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param 
-     * @param integer $page             Page.
+     * @param integer   $form_id          Form ID.
+     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
+     * @param string    $after_cursor     Return results after the given pagination cursor.
+     * @param string    $before_cursor    Return results before the given pagination cursor.
+     * @param integer   $per_page         Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-form
      *
@@ -392,7 +395,7 @@ class ConvertKit_API
             before_cursor: $before_cursor,
             per_page: $per_page
         );
-        
+
         // Send request.
         return $this->get(
             endpoint: sprintf('forms/%s/subscribers', $form_id),
@@ -1482,11 +1485,16 @@ class ConvertKit_API
     }
 
     /**
-     * Adds pagination parameters to the given array of existing parameters.
-     * 
-     * @since   2.0.0
-     * 
-     * @return  array
+     * Adds pagination parameters to the given array of existing API parameters.
+     *
+     * @param array<string, string|integer> $params        API parameters.
+     * @param string                        $after_cursor  Return results after the given pagination cursor.
+     * @param string                        $before_cursor Return results before the given pagination cursor.
+     * @param integer                       $per_page      Number of results to return.
+     *
+     * @since 2.0.0
+     *
+     * @return array<string, string|integer>
      */
     private function build_pagination_params(
         array $params,

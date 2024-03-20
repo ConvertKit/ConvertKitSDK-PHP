@@ -499,7 +499,10 @@ class ConvertKitAPITest extends TestCase
         $this->assertPaginationExists($result);
 
         // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual($date->format('Y-m-d'), date('Y-m-d', strtotime($result->subscribers[0]->added_at)));
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
+        );
     }
 
     /**
@@ -524,7 +527,10 @@ class ConvertKitAPITest extends TestCase
         $this->assertPaginationExists($result);
 
         // Check the correct subscribers were returned.
-        $this->assertLessThanOrEqual($date->format('Y-m-d'), date('Y-m-d', strtotime($result->subscribers[0]->added_at)));
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
+        );
     }
 
     /**
@@ -549,7 +555,10 @@ class ConvertKitAPITest extends TestCase
         $this->assertPaginationExists($result);
 
         // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual($date->format('Y-m-d'), date('Y-m-d', strtotime($result->subscribers[0]->created_at)));
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+        );
     }
 
     /**
@@ -574,7 +583,10 @@ class ConvertKitAPITest extends TestCase
         $this->assertPaginationExists($result);
 
         // Check the correct subscribers were returned.
-        $this->assertLessThanOrEqual($date->format('Y-m-d'), date('Y-m-d', strtotime($result->subscribers[0]->created_at)));
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+        );
     }
 
     /**
@@ -599,11 +611,11 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single subscriber was returned.
         $this->assertCount(1, $result->subscribers);
-        
+
         // Assert has_previous_page and has_next_page are correct.
         $this->assertFalse($result->pagination->has_previous_page);
         $this->assertTrue($result->pagination->has_next_page);
-        
+
         // Use pagination to fetch next page.
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
@@ -617,7 +629,7 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single subscriber was returned.
         $this->assertCount(1, $result->subscribers);
-        
+
         // Assert has_previous_page and has_next_page are correct.
         $this->assertTrue($result->pagination->has_previous_page);
         $this->assertTrue($result->pagination->has_next_page);
@@ -635,15 +647,15 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single subscriber was returned.
         $this->assertCount(1, $result->subscribers);
-        
+
         // Assert has_previous_page and has_next_page are correct.
         $this->assertFalse($result->pagination->has_previous_page);
         $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
-     * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified.
+     * Test that get_form_subscriptions() throws a ClientException when an invalid
+     * Form ID is specified.
      *
      * @since   1.0.0
      *
@@ -651,10 +663,44 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetFormSubscriptionsWithInvalidFormID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
-        $result = $this->api->get_form_subscriptions(12345);
+        $result = $this->api->get_form_subscriptions(
+            form_id: 12345
+        );
+    }
+
+    /**
+     * Test that get_form_subscriptions() throws a ClientException when an invalid
+     * subscriber state is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithInvalidSubscriberState()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            subscriber_state: 'not-a-valid-state'
+        );
+    }
+
+    /**
+     * Test that get_form_subscriptions() throws a ClientException when invalid
+     * pagination parameters are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithInvalidPagination()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            after_cursor: 'not-a-valid-cursor'
+        );
     }
 
     /**
@@ -2749,9 +2795,9 @@ class ConvertKitAPITest extends TestCase
     /**
      * Helper method to assert the given key exists as an array
      * in the API response.
-     * 
+     *
      * @since   2.0.0
-     * 
+     *
      * @param   array   $result     API Result.
      */
     private function assertDataExists($result, $key)
@@ -2763,9 +2809,9 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Helper method to assert pagination object exists in response.
-     * 
+     *
      * @since   2.0.0
-     * 
+     *
      * @param   array   $result     API Result.
      */
     private function assertPaginationExists($result)
