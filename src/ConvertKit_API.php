@@ -420,66 +420,94 @@ class ConvertKit_API
      *
      * @param integer               $sequence_id Sequence ID.
      * @param string                $email       Email Address.
-     * @param string                $first_name  First Name.
-     * @param array<string, string> $fields      Custom Fields.
-     * @param array<string, int>    $tag_ids     Tag ID(s) to subscribe to.
      *
-     * @see https://developers.convertkit.com/#add-subscriber-to-a-sequence
+     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence-by-email-address
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_sequence(
-        int $sequence_id,
-        string $email,
-        string $first_name = '',
-        array $fields = [],
-        array $tag_ids = []
-    ) {
-        // Build parameters.
-        $options = ['email' => $email];
-
-        if (!empty($first_name)) {
-            $options['first_name'] = $first_name;
-        }
-        if (!empty($fields)) {
-            $options['fields'] = $fields;
-        }
-        if (!empty($tag_ids)) {
-            $options['tags'] = $tag_ids;
-        }
-
-        // Send request.
+    public function add_subscriber_to_sequence(int $sequence_id, string $email) {
         return $this->post(
-            sprintf('sequences/%s/subscribe', $sequence_id),
-            $options
+            endpoint: sprintf('sequences/%s/subscribers', $sequence),
+            args: ['email_address' => $email]
         );
     }
 
     /**
-     * Gets subscribers to a sequence
+     * Adds a subscriber to a sequence by subscriber ID
      *
-     * @param integer $sequence_id      Sequence ID.
-     * @param string  $sort_order       Sort Order (asc|desc).
-     * @param string  $subscriber_state Subscriber State (active,cancelled).
-     * @param integer $page             Page.
+     * @param integer $sequence_id   Sequence ID.
+     * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/#list-subscriptions-to-a-sequence
+     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence
+     *
+     * @since 2.0.0
+     *
+     * @return false|mixed
+     */
+    public function add_subscriber_to_sequence_by_subscriber_id(int $sequence_id, int $subscriber_id)
+    {
+        return $this->post(sprintf('sequences/%s/subscribers/%s', $sequence_id, $subscriber_id));
+    }
+
+    /**
+     * List subscribers for a sequence
+     *
+     * @param integer   $sequence_id      Sequence ID.
+     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
+     * @param string    $after_cursor     Return results after the given pagination cursor.
+     * @param string    $before_cursor    Return results before the given pagination cursor.
+     * @param integer   $per_page         Number of results to return.
+     *
+     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-sequence
      *
      * @return false|mixed
      */
     public function get_sequence_subscriptions(
         int $sequence_id,
-        string $sort_order = 'asc',
         string $subscriber_state = 'active',
-        int $page = 1
+        \DateTime $created_after = null,
+        \DateTime $created_before = null,
+        \DateTime $added_after = null,
+        \DateTime $added_before = null,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
     ) {
+        // Build parameters.
+        $options = [];
+
+        if (!empty($subscriber_state)) {
+            $options['status'] = $subscriber_state;
+        }
+        if (!is_null($created_after)) {
+            $options['created_after'] = $created_after->format('Y-m-d');
+        }
+        if (!is_null($created_before)) {
+            $options['created_before'] = $created_before->format('Y-m-d');
+        }
+        if (!is_null($added_after)) {
+            $options['added_after'] = $added_after->format('Y-m-d');
+        }
+        if (!is_null($added_before)) {
+            $options['added_before'] = $added_before->format('Y-m-d');
+        }
+
+        // Build pagination parameters.
+        $options = $this->build_pagination_params(
+            params: $options,
+            after_cursor: $after_cursor,
+            before_cursor: $before_cursor,
+            per_page: $per_page
+        );
+
+        // Send request.
         return $this->get(
-            sprintf('sequences/%s/subscriptions', $sequence_id),
-            [
-                'sort_order'       => $sort_order,
-                'subscriber_state' => $subscriber_state,
-                'page'             => $page,
-            ]
+            endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
+            args: $options
         );
     }
 
