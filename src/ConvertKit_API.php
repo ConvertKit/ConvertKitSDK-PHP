@@ -95,6 +95,20 @@ class ConvertKit_API
      */
     protected $client;
 
+    /**
+     * Guzzle Http Response
+     *
+     * @var \Psr\Http\Message\ResponseInterface
+     */
+    protected $response;
+
+    /**
+     * Guzzle Http Status Code
+     *
+     * @var integer
+     */
+    protected $status_code = 0;
+
 
     /**
      * Constructor for ConvertKitAPI instance
@@ -1636,21 +1650,45 @@ class ConvertKit_API
         }
 
         // Send request.
-        $response = $this->client->send(
+        $this->response = $this->client->send(
             $request,
             ['exceptions' => false]
         );
 
         // Inspect response.
-        $status_code   = $response->getStatusCode();
-        $response_body = $response->getBody()->getContents();
+        $this->status_code = $this->response->getStatusCode();
+        $response_body     = $this->response->getBody()->getContents();
 
         // Log response.
-        $this->create_log(sprintf('Response Status Code: %s', $response->getStatusCode()));
-        $this->create_log(sprintf('Response Body: %s', $response->getBody()->getContents()));
+        $this->create_log(sprintf('Response Status Code: %s', $this->response->getStatusCode()));
+        $this->create_log(sprintf('Response Body: %s', $this->response->getBody()->getContents()));
         $this->create_log('Finish request successfully');
 
         // Return response.
         return json_decode($response_body);
+    }
+
+    /**
+     * Returns the response interface used for the last API request.
+     *
+     * @since 2.0.0
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function get_response_interface()
+    {
+        return $this->response;
+    }
+
+    /**
+     * Returns the HTTP status code for the last successful API request.
+     *
+     * @since 2.0.0
+     *
+     * @return integer
+     */
+    public function get_response_status_code()
+    {
+        return $this->status_code;
     }
 }
