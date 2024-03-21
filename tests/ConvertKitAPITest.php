@@ -639,19 +639,21 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequences()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_sequences();
-        $this->assertInstanceOf('stdClass', $result);
+
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'sequences');
+        $this->assertPaginationExists($result);
 
         // Check first sequence in resultset has expected data.
-        $sequence = get_object_vars($result->courses[0]);
+        $sequence = get_object_vars($result->sequences[0]);
         $this->assertArrayHasKey('id', $sequence);
         $this->assertArrayHasKey('name', $sequence);
         $this->assertArrayHasKey('hold', $sequence);
         $this->assertArrayHasKey('repeat', $sequence);
         $this->assertArrayHasKey('created_at', $sequence);
     }
+
 
     /**
      * Test that add_subscriber_to_sequence() returns the expected data.

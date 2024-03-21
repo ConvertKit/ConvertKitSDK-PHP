@@ -1562,7 +1562,7 @@ class ConvertKit_API
      * @return array<string, string|integer>
      */
     private function build_pagination_params(
-        array $params,
+        array $params = [],
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
