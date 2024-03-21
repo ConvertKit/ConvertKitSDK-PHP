@@ -654,6 +654,65 @@ class ConvertKitAPITest extends TestCase
         $this->assertArrayHasKey('created_at', $sequence);
     }
 
+    /**
+     * Test that get_sequences() returns the expected data when
+     * pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequencesPagination()
+    {
+        $result = $this->api->get_sequences(
+            per_page: 1
+        );
+
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'sequences');
+        $this->assertPaginationExists($result);
+
+        // Assert a single sequence was returned.
+        $this->assertCount(1, $result->sequences);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_sequences(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'sequences');
+        $this->assertPaginationExists($result);
+
+        // Assert a single sequence was returned.
+        $this->assertCount(1, $result->sequences);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertFalse($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_sequences(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'sequences');
+        $this->assertPaginationExists($result);
+
+        // Assert a single sequence was returned.
+        $this->assertCount(1, $result->sequences);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+    }
 
     /**
      * Test that add_subscriber_to_sequence() returns the expected data.
@@ -664,14 +723,17 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequence()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            email: $this->generateEmailAddress()
+            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
         );
         $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(
+            get_object_vars($result->subscriber)['email_address'],
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        );
     }
 
     /**
@@ -684,12 +746,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithInvalidSequenceID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: 12345,
-            email: $this->generateEmailAddress()
+            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
         );
     }
 
@@ -703,8 +763,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceWithInvalidEmailAddress()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
@@ -713,92 +771,56 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_subscriber_to_sequence() returns the expected data
-     * when a first_name parameter is included.
+     * Test that add_subscriber_to_sequence_by_subscriber_id() returns the expected data.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testAddSubscriberToSequenceWithFirstName()
+    public function testAddSubscriberToSequenceByID()
     {
-        $this->markTestIncomplete();
-
-        $emailAddress = $this->generateEmailAddress();
-        $firstName = 'First Name';
-        $result = $this->api->add_subscriber_to_sequence(
-            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            email: $emailAddress,
-            first_name: $firstName
+        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
         );
-
         $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
-
-        // Fetch subscriber from API to confirm the first name was saved.
-        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
-        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
-        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
     }
 
     /**
-     * Test that add_subscriber_to_sequence() returns the expected data
-     * when custom field data is included.
+     * Test that add_subscriber_to_sequence_by_subscriber_id() throws a ClientException when an invalid
+     * sequence ID is specified.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testAddSubscriberToSequenceWithCustomFields()
+    public function testAddSubscriberToSequenceByIDWithInvalidSequenceID()
     {
-        $this->markTestIncomplete();
-
-        $result = $this->api->add_subscriber_to_sequence(
-            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            email: $this->generateEmailAddress(),
-            first_name: 'First Name',
-            fields: [
-                'last_name' => 'Last Name',
-            ]
+        $this->expectException(ClientException::class);
+        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
+            sequence_id: 12345,
+            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
         );
-
-        // Check subscription object returned.
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
-
-        // Fetch subscriber from API to confirm the custom fields were saved.
-        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
-        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
     }
 
     /**
-     * Test that add_subscriber_to_sequence() returns the expected data
-     * when custom field data is included.
+     * Test that add_subscriber_to_sequence_by_subscriber_id() throws a ClientException when an invalid
+     * email address is specified.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testAddSubscriberToSequenceWithTagID()
+    public function testAddSubscriberToSequenceByIDWithInvalidSubscriberID()
     {
-        $this->markTestIncomplete();
-
-        $result = $this->api->add_subscriber_to_sequence(
-            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            email: $this->generateEmailAddress(),
-            first_name: 'First Name',
-            tag_ids: [
-                (int) $_ENV['CONVERTKIT_API_TAG_ID']
-            ]
+        $this->expectException(ClientException::class);
+        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
+            sequence_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+            subscriber_id: 12345
         );
-
-        // Check subscription object returned.
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
-
-        // Fetch subscriber tags from API to confirm the tag saved.
-        $subscriberTags = $this->api->get_subscriber_tags($result->subscription->subscriber->id);
-        $this->assertEquals($subscriberTags->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
     /**
@@ -810,83 +832,218 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequenceSubscriptions()
     {
-        $this->markTestIncomplete();
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID']
+        );
 
-        $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID']);
-        $this->assertInstanceOf('stdClass', $result);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+    }
 
-        // Assert expected keys exist.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the subscription status
+     * is cancelled.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithBouncedSubscriberState()
+    {
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            subscriber_state: 'bounced'
+        );
 
-        // Assert subscriptions exist.
-        $this->assertIsArray($result['subscriptions']);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
-        // Assert sort order is ascending.
+        // Check the correct subscribers were returned.
+        $this->assertEquals($result->subscribers[0]->state, 'bounced');
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the added_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithAddedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            added_after: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
         $this->assertGreaterThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
         );
     }
 
     /**
-     * Test that get_sequence_subscriptions() returns the expected data in descending order.
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the added_before parameter
+     * is used.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testGetSequenceSubscriptionsWithDescSortOrder()
+    public function testGetSequenceSubscriptionsWithAddedBeforeParam()
     {
-        $this->markTestIncomplete();
-
+        $date = new \DateTime('2024-01-01');
         $result = $this->api->get_sequence_subscriptions(
-            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            sort_order: 'desc'
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            added_before: $date
         );
-        $this->assertInstanceOf('stdClass', $result);
 
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
-        // Assert subscriptions exist.
-        $this->assertIsArray($result['subscriptions']);
-
-        // Assert sort order.
+        // Check the correct subscribers were returned.
         $this->assertLessThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
         );
     }
 
     /**
-     * Test that get_sequence_subscriptions() throws a ClientException when an invalid
-     * sort order is specified.
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the created_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithCreatedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            created_after: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the created_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithCreatedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            created_before: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and pagination parameters
+     * and per_page limits are specified.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetSequenceSubscriptionsWithInvalidSortOrder()
+    public function testGetSequenceSubscriptionsPagination()
     {
-        $this->markTestIncomplete();
-
-        $this->expectException(ClientException::class);
         $result = $this->api->get_sequence_subscriptions(
-            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            sort_order: 'invalidSortOrder'
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            per_page: 1
         );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
      * Test that get_sequence_subscriptions() throws a ClientException when an invalid
-     * sequence ID is specified.
+     * Sequence ID is specified.
      *
      * @since   1.0.0
      *
@@ -895,7 +1052,43 @@ class ConvertKitAPITest extends TestCase
     public function testGetSequenceSubscriptionsWithInvalidSequenceID()
     {
         $this->expectException(ClientException::class);
-        $result = $this->api->get_sequence_subscriptions(12345);
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: 12345
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() throws a ClientException when an invalid
+     * subscriber state is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithInvalidSubscriberState()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            subscriber_state: 'not-a-valid-state'
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() throws a ClientException when invalid
+     * pagination parameters are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithInvalidPagination()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            after_cursor: 'not-a-valid-cursor'
+        );
     }
 
     /**

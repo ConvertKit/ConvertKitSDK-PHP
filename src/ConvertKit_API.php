@@ -430,14 +430,14 @@ class ConvertKit_API
     }
 
     /**
-     * Gets all sequences
+     * Gets sequences
      *
-     * @see https://developers.convertkit.com/#list-sequences
+     * @param string  $after_cursor  Return results after the given pagination cursor.
+     * @param string  $before_cursor Return results before the given pagination cursor.
+     * @param integer $per_page      Number of results to return.
      *
-     * @param string    $after_cursor     Return results after the given pagination cursor.
-     * @param string    $before_cursor    Return results before the given pagination cursor.
-     * @param integer   $per_page         Number of results to return.
-     * 
+     * @see https://developers.convertkit.com/v4.html#list-sequences
+     *
      * @return false|mixed
      */
     public function get_sequences(string $after_cursor = '', string $before_cursor = '', int $per_page = 100)
@@ -455,16 +455,17 @@ class ConvertKit_API
     /**
      * Adds a subscriber to a sequence by email address
      *
-     * @param integer               $sequence_id Sequence ID.
-     * @param string                $email       Email Address.
+     * @param integer $sequence_id Sequence ID.
+     * @param string  $email       Email Address.
      *
      * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence-by-email-address
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_sequence(int $sequence_id, string $email) {
+    public function add_subscriber_to_sequence(int $sequence_id, string $email)
+    {
         return $this->post(
-            endpoint: sprintf('sequences/%s/subscribers', $sequence),
+            endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
             args: ['email_address' => $email]
         );
     }
