@@ -1592,6 +1592,173 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($subscriberTags->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
+    public function testGetSubscribers()
+    {
+
+    }
+
+    public function testGetSubscribersByEmailAddress()
+    {
+        
+    }
+
+    public function testGetSubscribersWithBouncedSubscriberState()
+    {
+
+    }
+
+    public function testGetSubscribersWithAddedAfterParam()
+    {
+
+    }
+
+    public function testGetSubscribersWithAddedBeforeParam()
+    {
+        
+    }
+
+    public function testGetSubscribersWithUpdatedAfterParam()
+    {
+
+    }
+
+    public function testGetSubscribersWithUpdatedBeforeParam()
+    {
+        
+    }
+
+    public function testGetSubscibersWithSortFieldParam()
+    {
+
+    }
+
+    public function testGetSubscibersWithSortOrderParam()
+    {
+        
+    }
+
+    public function testGetSubscribersPagination()
+    {
+
+    }
+
+    public function testGetSubscribersWithInvalidEmailAddress()
+    {
+        
+    }
+
+    public function testGetSubscribersWithInvalidSubscriberState()
+    {
+
+    }
+
+    public function testGetSubscribersWithInvalidSortFieldParam()
+    {
+        
+    }
+
+    public function testGetSubscribersWithInvalidSortOrderParam()
+    {
+        
+    }
+
+    public function testGetSubscribersWithInvalidPagination()
+    {
+        
+    }
+
+    /**
+     * Test that create_subscriber() returns the expected data.
+     * 
+     * @since   2.0.0
+     * 
+     * @return void
+     */
+    public function testCreateSubscriber()
+    {
+
+    }
+
+    /**
+     * Test that create_subscriber() returns the expected data
+     * when a first name is included.
+     * 
+     * @since   2.0.0
+     * 
+     * @return void
+     */
+    public function testCreateSubscriberWithFirstName()
+    {
+
+    }
+
+    /**
+     * Test that create_subscriber() returns the expected data
+     * when a subscriber state is included.
+     * 
+     * @since   2.0.0
+     * 
+     * @return void
+     */
+    public function testCreateSubscriberWithSubscriberState()
+    {
+
+    }
+
+    /**
+     * Test that create_subscriber() returns the expected data
+     * when custom field data is included.
+     * 
+     * @since   2.0.0
+     * 
+     * @return void
+     */
+    public function testCreateSubscriberWithCustomFields()
+    {
+
+    }
+
+    /**
+     * Test that create_subscriber() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testCreateSubscriberWithInvalidEmailAddress()
+    {
+
+    }
+
+    /**
+     * Test that create_subscriber() throws a ClientException when an invalid
+     * subscriber state is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testCreateSubscriberWithInvalidSubscriberState()
+    {
+
+    }
+
+    public function testCreateSubscribers()
+    {
+
+    }
+
+    public function testCreateSubscribersWithBlankData()
+    {
+
+    }
+
+    public function testCreateSubscribersWithInvalidEmailAddresses()
+    {
+
+    }
+
     /**
      * Test that get_subscriber_id() returns the expected data.
      *
