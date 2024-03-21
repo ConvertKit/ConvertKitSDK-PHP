@@ -62,6 +62,29 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that a Response instance is returned when calling getResponseInterface()
+     * after making an API request.
+     *
+     * @since   2.0.0
+     *
+     * @return  void
+     */
+    public function testGetResponseInterface()
+    {
+        // Assert response interface is null, as no API request made.
+        $this->assertNull($this->api->getResponseInterface());
+
+        // Perform an API request.
+        $result = $this->api->get_account();
+
+        // Assert response interface is of a valid type.
+        $this->assertInstanceOf(Response::class, $this->api->getResponseInterface());
+
+        // Assert the correct status code was returned.
+        $this->assertEquals(200, $this->api->getResponseInterface()->getStatusCode());
+    }
+
+    /**
      * Test that a ClientInterface can be injected.
      *
      * @since   1.3.0
@@ -95,6 +118,12 @@ class ConvertKitAPITest extends TestCase
         $this->assertSame('Test Account for Guzzle Mock', $result->name);
         $this->assertSame('free', $result->plan_type);
         $this->assertSame('mock@guzzle.mock', $result->primary_email_address);
+
+        // Assert response interface is of a valid type when using `set_http_client`.
+        $this->assertInstanceOf(Response::class, $this->api->getResponseInterface());
+
+        // Assert the correct status code was returned.
+        $this->assertEquals(200, $this->api->getResponseInterface()->getStatusCode());
     }
 
     /**
@@ -221,29 +250,6 @@ class ConvertKitAPITest extends TestCase
     {
         $result = $this->api->get_account();
         $this->assertEmpty($this->getLogFileContents());
-    }
-
-    /**
-     * Test that a Response instance is returned when calling getResponseInterface()
-     * after making an API request.
-     *
-     * @since   2.0.0
-     *
-     * @return  void
-     */
-    public function testGetResponseInterface()
-    {
-        // Assert response interface is null, as no API request made.
-        $this->assertNull($this->api->getResponseInterface());
-
-        // Perform an API request.
-        $result = $this->api->get_account();
-
-        // Assert response interface is of a valid type.
-        $this->assertInstanceOf(Response::class, $this->api->getResponseInterface());
-
-        // Assert the correct status code was returned.
-        $this->assertEquals(200, $this->api->getResponseInterface()->getStatusCode());
     }
 
     /**
