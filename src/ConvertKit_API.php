@@ -28,21 +28,21 @@ class ConvertKit_API
     /**
      * ConvertKit OAuth Application Client ID
      *
-     * @var boolean|string
+     * @var string
      */
-    protected $client_id = false;
+    protected $client_id = '';
 
     /**
      * ConvertKit OAuth Application Client Secret
      *
-     * @var boolean|string
+     * @var string
      */
-    protected $client_secret = false;
+    protected $client_secret = '';
 
     /**
      * Access Token
      *
-     * @var boolean|string
+     * @var string
      */
     protected $access_token = '';
 
@@ -174,8 +174,34 @@ class ConvertKit_API
             return;
         }
 
+        // Mask the Client ID, Client Secret and Access Token.
+        $message = str_replace(
+            $this->client_id,
+            str_repeat('*', (strlen($this->client_id) - 4)) . substr($this->client_id, - 4),
+            $message
+        );
+        $message = str_replace(
+            $this->client_secret,
+            str_repeat('*', (strlen($this->client_secret) - 4)) . substr($this->client_secret, - 4),
+            $message
+        );
+        $message = str_replace(
+            $this->access_token,
+            str_repeat('*', (strlen($this->access_token) - 4)) . substr($this->access_token, - 4),
+            $message
+        );
+
+        // Mask email addresses that may be contained within the message.
+        $message = preg_replace_callback(
+            '^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})^',
+            function ($matches) {
+                return preg_replace('/\B[^@.]/', '*', $matches[0]);
+            },
+            $message
+        );
+
         // Add to log.
-        $this->debug_logger->info($message);
+        $this->debug_logger->info((string) $message);
     }
 
     /**
@@ -1556,6 +1582,37 @@ class ConvertKit_API
         $markup = str_replace('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', '', $markup);
 
         return $markup;
+    }
+
+    /**
+     * Adds pagination parameters to the given array of existing API parameters.
+     *
+     * @param array<string, string|integer> $params        API parameters.
+     * @param string                        $after_cursor  Return results after the given pagination cursor.
+     * @param string                        $before_cursor Return results before the given pagination cursor.
+     * @param integer                       $per_page      Number of results to return.
+     *
+     * @since 2.0.0
+     *
+     * @return array<string, string|integer>
+     */
+    private function build_pagination_params(
+        array $params,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        if (!empty($after_cursor)) {
+            $params['after'] = $after_cursor;
+        }
+        if (!empty($before_cursor)) {
+            $params['before'] = $before_cursor;
+        }
+        if (!empty($per_page)) {
+            $params['per_page'] = $per_page;
+        }
+
+        return $params;
     }
 
     /**
