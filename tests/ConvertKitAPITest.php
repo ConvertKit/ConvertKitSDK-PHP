@@ -2911,4 +2911,38 @@ class ConvertKitAPITest extends TestCase
         // Return API object.
         return $api;
     }
+
+    /**
+     * Helper method to assert the given key exists as an array
+     * in the API response.
+     *
+     * @since   2.0.0
+     *
+     * @param   array   $result     API Result.
+     */
+    private function assertDataExists($result, $key)
+    {
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey($key, $result);
+        $this->assertIsArray($result[$key]);
+    }
+
+    /**
+     * Helper method to assert pagination object exists in response.
+     *
+     * @since   2.0.0
+     *
+     * @param   array   $result     API Result.
+     */
+    private function assertPaginationExists($result)
+    {
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('pagination', $result);
+        $pagination = get_object_vars($result['pagination']);
+        $this->assertArrayHasKey('has_previous_page', $pagination);
+        $this->assertArrayHasKey('has_next_page', $pagination);
+        $this->assertArrayHasKey('start_cursor', $pagination);
+        $this->assertArrayHasKey('end_cursor', $pagination);
+        $this->assertArrayHasKey('per_page', $pagination);
+    }
 }
