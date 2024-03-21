@@ -102,13 +102,6 @@ class ConvertKit_API
      */
     protected $response;
 
-    /**
-     * Guzzle Http Status Code
-     *
-     * @var integer
-     */
-    protected $status_code = 0;
-
 
     /**
      * Constructor for ConvertKitAPI instance
@@ -1655,13 +1648,12 @@ class ConvertKit_API
             ['exceptions' => false]
         );
 
-        // Inspect response.
-        $this->status_code = $this->response->getStatusCode();
-        $response_body     = $this->response->getBody()->getContents();
+        // Get response.
+        $response_body = $this->response->getBody()->getContents();
 
         // Log response.
         $this->create_log(sprintf('Response Status Code: %s', $this->response->getStatusCode()));
-        $this->create_log(sprintf('Response Body: %s', $this->response->getBody()->getContents()));
+        $this->create_log(sprintf('Response Body: %s', $response_body));
         $this->create_log('Finish request successfully');
 
         // Return response.
@@ -1675,20 +1667,8 @@ class ConvertKit_API
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function get_response_interface()
+    public function getResponseInterface()
     {
         return $this->response;
-    }
-
-    /**
-     * Returns the HTTP status code for the last successful API request.
-     *
-     * @since 2.0.0
-     *
-     * @return integer
-     */
-    public function get_response_status_code()
-    {
-        return $this->status_code;
     }
 }

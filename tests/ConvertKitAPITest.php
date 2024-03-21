@@ -224,7 +224,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that a Response instance is returned when calling get_response_interface()
+     * Test that a Response instance is returned when calling getResponseInterface()
      * after making an API request.
      *
      * @since   2.0.0
@@ -234,32 +234,16 @@ class ConvertKitAPITest extends TestCase
     public function testGetResponseInterface()
     {
         // Assert response interface is null, as no API request made.
-        $this->assertNull($this->api->get_response_interface());
+        $this->assertNull($this->api->getResponseInterface());
 
         // Perform an API request.
         $result = $this->api->get_account();
 
         // Assert response interface is of a valid type.
-        $this->assertInstanceOf(Response::class, $this->api->get_response_interface());
-    }
+        $this->assertInstanceOf(Response::class, $this->api->getResponseInterface());
 
-    /**
-     * Test that the get_response_status_code() returns the expected HTTP status code.
-     *
-     * @since   2.0.0
-     *
-     * @return  void
-     */
-    public function testGetResponseStatusCode()
-    {
-        // Assert no status code has yet been set in get_response_status_code, as no API request made.
-        $this->assertEquals(0, $this->api->get_response_status_code());
-
-        // Perform an API request.
-        $result = $this->api->get_account();
-
-        // Assert the correct status code defined in get_response_status_code()
-        $this->assertEquals(200, $this->api->get_response_status_code());
+        // Assert the correct status code was returned.
+        $this->assertEquals(200, $this->api->getResponseInterface()->getStatusCode());
     }
 
     /**
