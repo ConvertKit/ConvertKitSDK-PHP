@@ -936,7 +936,8 @@ class ConvertKit_API
     /**
      * Create multiple subscribers.
      *
-     * @param array<int,array<string,string>> $subscribers Subscribers.
+     * @param array<int,array<string,string>> $subscribers  Subscribers.
+     * @param string                          $callback_url URL to notify for large batch size when async processing complete.
      *
      * @since 2.0.0
      *
@@ -944,10 +945,14 @@ class ConvertKit_API
      *
      * @return mixed
      */
-    public function create_subscribers(array $subscribers)
+    public function create_subscribers(array $subscribers, string $callback_url = '')
     {
         // Build parameters.
         $options = ['subscribers' => $subscribers];
+
+        if (!empty($callback_url)) {
+            $options['callback_url'] = $callback_url;
+        }
 
         // Send request.
         return $this->post(
