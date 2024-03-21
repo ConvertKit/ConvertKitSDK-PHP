@@ -408,11 +408,22 @@ class ConvertKit_API
      *
      * @see https://developers.convertkit.com/#list-sequences
      *
+     * @param string    $after_cursor     Return results after the given pagination cursor.
+     * @param string    $before_cursor    Return results before the given pagination cursor.
+     * @param integer   $per_page         Number of results to return.
+     * 
      * @return false|mixed
      */
-    public function get_sequences()
+    public function get_sequences(string $after_cursor = '', string $before_cursor = '', int $per_page = 100)
     {
-        return $this->get('sequences');
+        return $this->get(
+            endpoint: 'sequences',
+            args: $this->build_pagination_params(
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
@@ -1510,6 +1521,37 @@ class ConvertKit_API
         $markup = str_replace('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', '', $markup);
 
         return $markup;
+    }
+
+    /**
+     * Adds pagination parameters to the given array of existing API parameters.
+     *
+     * @param array<string, string|integer> $params        API parameters.
+     * @param string                        $after_cursor  Return results after the given pagination cursor.
+     * @param string                        $before_cursor Return results before the given pagination cursor.
+     * @param integer                       $per_page      Number of results to return.
+     *
+     * @since 2.0.0
+     *
+     * @return array<string, string|integer>
+     */
+    private function build_pagination_params(
+        array $params = [],
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        if (!empty($after_cursor)) {
+            $params['after'] = $after_cursor;
+        }
+        if (!empty($before_cursor)) {
+            $params['before'] = $before_cursor;
+        }
+        if (!empty($per_page)) {
+            $params['per_page'] = $per_page;
+        }
+
+        return $params;
     }
 
     /**
