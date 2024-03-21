@@ -814,20 +814,20 @@ class ConvertKit_API
 
     /**
      * Get subscribers.
-     * 
-     * @since   2.0.0
      *
      * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
      * @param string    $email_address    Search susbcribers by email address. This is an exact match search.
      * @param \DateTime $created_after    Filter subscribers who have been created after this date.
      * @param \DateTime $created_before   Filter subscribers who have been created before this date.
-     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
-     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
+     * @param \DateTime $updated_after    Filter subscribers who have been updated after this date.
+     * @param \DateTime $updated_before   Filter subscribers who have been updated before this date.
      * @param string    $sort_field       Sort Field (id|updated_at|cancelled_at).
      * @param string    $sort_order       Sort Order (asc|desc).
      * @param string    $after_cursor     Return results after the given pagination cursor.
      * @param string    $before_cursor    Return results before the given pagination cursor.
      * @param integer   $per_page         Number of results to return.
+     *
+     * @since 2.0.0
      *
      * @see https://developers.convertkit.com/v4.html#list-subscribers
      *
@@ -845,8 +845,7 @@ class ConvertKit_API
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
-    )
-    {
+    ) {
         // Build parameters.
         $options = [];
 
@@ -892,20 +891,20 @@ class ConvertKit_API
 
     /**
      * Create a subscriber.
-     * 
+     *
      * Behaves as an upsert. If a subscriber with the provided email address does not exist,
      * it creates one with the specified first name and state. If a subscriber with the provided
      * email address already exists, it updates the first name.
-     * 
-     * @since   2.0.0
-     * 
-     * @param string                $email_address      Email Address.
-     * @param string                $first_name         First Name.
-     * @param string                $subscriber_state   Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param array<string, string> $fields             Custom Fields.
-     * 
+     *
+     * @param string                $email_address    Email Address.
+     * @param string                $first_name       First Name.
+     * @param string                $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param array<string, string> $fields           Custom Fields.
+     *
+     * @since 2.0.0
+     *
      * @see https://developers.convertkit.com/v4.html#create-a-subscriber
-     * 
+     *
      * @return mixed
      */
     public function create_subscriber(
@@ -913,16 +912,15 @@ class ConvertKit_API
         string $first_name = '',
         string $subscriber_state = '',
         array $fields = []
-    )
-    {
+    ) {
         // Build parameters.
         $options = [];
 
         if (!empty($first_name)) {
             $options['first_name'] = $first_name;
         }
-        if (!empty($state)) {
-            $options['state'] = $state;
+        if (!empty($subscriber_state)) {
+            $options['state'] = $subscriber_state;
         }
         if (count($fields)) {
             $options['fields'] = $fields;
@@ -935,9 +933,27 @@ class ConvertKit_API
         );
     }
 
+    /**
+     * Create multiple subscribers.
+     *
+     * @param array<int,array<string,string>> $subscribers Subscribers.
+     *
+     * @since 2.0.0
+     *
+     * @see https://developers.convertkit.com/v4.html#bulk-create-subscribers
+     *
+     * @return mixed
+     */
     public function create_subscribers(array $subscribers)
     {
-        // @TODO.
+        // Build parameters.
+        $options = ['subscribers' => $subscribers];
+
+        // Send request.
+        return $this->post(
+            endpoint: 'bulk/subscribers',
+            args: $options
+        );
     }
 
     /**
@@ -1047,7 +1063,7 @@ class ConvertKit_API
     /**
      * Unsubscribe the given subscriber ID.
      *
-     * @param int $subscriber_id Subscriber ID.
+     * @param integer $subscriber_id Subscriber ID.
      *
      * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
      *
@@ -1062,6 +1078,9 @@ class ConvertKit_API
      * Get a list of the tags for a subscriber.
      *
      * @param integer $subscriber_id Subscriber ID.
+     * @param string  $after_cursor  Return results after the given pagination cursor.
+     * @param string  $before_cursor Return results before the given pagination cursor.
+     * @param integer $per_page      Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-tags-for-a-subscriber
      *
