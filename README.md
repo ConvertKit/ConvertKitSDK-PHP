@@ -39,7 +39,7 @@ If you use Composer, these dependencies should be handled automatically.
 
 ### 2.x (v4 API, OAuth, PHP 8.0+)
 
-Get your ConvertKit OAuth Client ID and Secret, and set it somewhere in your application.
+Please reach out to ConvertKit to set up an OAuth application for you. We'll provide you with your Client ID and Secret.
 
 ```php
 // Require the autoloader (if you're using a PHP framework, this may already be done for you).

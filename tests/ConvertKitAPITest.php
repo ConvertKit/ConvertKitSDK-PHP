@@ -152,6 +152,65 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that debug logging works when enabled and an API call is made, with email addresses and credentials
+     * masked in the log file.
+     *
+     * @since   2.0.0
+     *
+     * @return  void
+     */
+    public function testDebugCredentialsAndEmailsAreMasked()
+    {
+        // Setup API with debugging enabled.
+        $api = new ConvertKit_API(
+            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
+            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+            debug: true
+        );
+
+        // Create log entries with Client ID, Client Secret, Access Token and Email Address, as if an API method
+        // were to log this sensitive data.
+        $this->callPrivateMethod($api, 'create_log', ['Client ID: ' . $_ENV['CONVERTKIT_OAUTH_CLIENT_ID']]);
+        $this->callPrivateMethod($api, 'create_log', ['Client Secret: ' . $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']]);
+        $this->callPrivateMethod($api, 'create_log', ['Access Token: ' . $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']]);
+        $this->callPrivateMethod($api, 'create_log', ['Email: ' . $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']]);
+
+        // Confirm that the log includes the masked Client ID, Secret, Access Token and Email Address.
+        $this->assertStringContainsString(
+            str_repeat(
+                '*',
+                (strlen($_ENV['CONVERTKIT_OAUTH_CLIENT_ID']) - 4)
+            ) . substr($_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], -4),
+            $this->getLogFileContents()
+        );
+        $this->assertStringContainsString(
+            str_repeat(
+                '*',
+                (strlen($_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']) - 4)
+            ) . substr($_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'], -4),
+            $this->getLogFileContents()
+        );
+        $this->assertStringContainsString(
+            str_repeat(
+                '*',
+                (strlen($_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']) - 4)
+            ) . substr($_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'], -4),
+            $this->getLogFileContents()
+        );
+        $this->assertStringContainsString(
+            'o****@n********.c**',
+            $this->getLogFileContents()
+        );
+
+        // Confirm that the log does not include the unmasked Client ID, Secret, Access Token or Email Address.
+        $this->assertStringNotContainsString($_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $this->getLogFileContents());
+        $this->assertStringNotContainsString($_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'], $this->getLogFileContents());
+        $this->assertStringNotContainsString($_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'], $this->getLogFileContents());
+        $this->assertStringNotContainsString($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], $this->getLogFileContents());
+    }
+
+    /**
      * Test that debug logging is not performed when disabled and an API call is made.
      *
      * @since   1.2.0
@@ -2596,6 +2655,23 @@ class ConvertKitAPITest extends TestCase
 
         // Return log file contents.
         return file_get_contents($this->logFile);
+    }
+
+    /**
+     * Helper method to call a class' private method.
+     *
+     * @since   2.0.0
+     *
+     * @param   mixed  $obj  Class Object.
+     * @param   string $name Method Name.
+     * @param   array  $args Method Arguments.
+     */
+    private function callPrivateMethod($obj, $name, array $args)
+    {
+        $class = new \ReflectionClass($obj);
+        $method = $class->getMethod($name);
+        $method->setAccessible(true);
+        return $method->invokeArgs($obj, $args);
     }
 
     /**
