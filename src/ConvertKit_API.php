@@ -1511,6 +1511,37 @@ class ConvertKit_API
     }
 
     /**
+     * Adds pagination parameters to the given array of existing API parameters.
+     *
+     * @param array<string, string|integer> $params        API parameters.
+     * @param string                        $after_cursor  Return results after the given pagination cursor.
+     * @param string                        $before_cursor Return results before the given pagination cursor.
+     * @param integer                       $per_page      Number of results to return.
+     *
+     * @since 2.0.0
+     *
+     * @return array<string, string|integer>
+     */
+    private function build_pagination_params(
+        array $params,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        if (!empty($after_cursor)) {
+            $params['after'] = $after_cursor;
+        }
+        if (!empty($before_cursor)) {
+            $params['before'] = $before_cursor;
+        }
+        if (!empty($per_page)) {
+            $params['per_page'] = $per_page;
+        }
+
+        return $params;
+    }
+
+    /**
      * Performs a GET request to the API.
      *
      * @param string                                                     $endpoint API Endpoint.
