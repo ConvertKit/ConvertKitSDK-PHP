@@ -546,8 +546,8 @@ class ConvertKit_API
     public function create_tag(string $tag)
     {
         return $this->post(
-            'tags',
-            [
+            endpoint: 'tags',
+            args: [
                 'name' => $tag,
             ]
         );
@@ -557,7 +557,7 @@ class ConvertKit_API
      * Creates multiple tags.
      *
      * @param array<int,string> $tags Tag Names.
-     * @param bool|string $callback_url     URL to notify for large batch size when async processing complete.
+     * @param string $callback_url    URL to notify for large batch size when async processing complete.
      *
      * @since 1.1.0
      *
@@ -565,23 +565,26 @@ class ConvertKit_API
      *
      * @return false|mixed
      */
-    public function create_tags(array $tags, string $callback_url = false)
+    public function create_tags(array $tags, string $callback_url = '')
     {
-        // Build API compatible array of tags.
-        $apiTags = [];
+        // Build parameters.
+        $options = [
+            'tags' => [],
+        ];
         foreach ($tags as $i => $tag) {
-            $apiTags[] = [
+            $options['tags'] = [
                 'name' => (string) $tag,
             ];
         }
 
+        if (!empty($callback_url)) {
+            $options['callback_url'] = $callback_url;
+        }
+
         // Send request.
         return $this->post(
-            'bulk/tags',
-            [
-                'tag' => $apiTags,
-                'callback_url' => $callback_url,
-            ]
+            endpoint: 'bulk/tags',
+            args: $options
         );
     }
 
@@ -597,7 +600,7 @@ class ConvertKit_API
      */
     public function tag_subscriber(int $tag_id, string $email) {
         return $this->post(
-            endpoint: sprintf('tags/%s/subscribe', $tag_id),
+            endpoint: sprintf('tags/%s/subscribers', $tag_id),
             args: ['email_address' => $email]
         );
     }
@@ -612,7 +615,7 @@ class ConvertKit_API
      *
      * @return false|mixed
      */
-    public function tag_subscriber_by_id(int $tag_id, int $subscriber_id)
+    public function tag_subscriber_by_subscriber_id(int $tag_id, int $subscriber_id)
     {
         return $this->post(sprintf('tags/%s/subscribers/%s', $tag_id, $subscriber_id));
     }

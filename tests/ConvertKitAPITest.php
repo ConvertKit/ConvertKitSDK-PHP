@@ -905,13 +905,14 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTags()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tags();
-        $this->assertIsArray($result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $tag = get_object_vars($result[0]);
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Check first tag in resultset has expected data.
+        $tag = get_object_vars($result->tags[0]);
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
         $this->assertArrayHasKey('created_at', $tag);
@@ -926,17 +927,15 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTag()
     {
-        $this->markTestIncomplete();
-
         $tagName = 'Tag Test ' . mt_rand();
         $result = $this->api->create_tag($tagName);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $tag = get_object_vars($result);
+        $tag = get_object_vars($result->tag);
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
         $this->assertArrayHasKey('created_at', $tag);
-        $this->assertEquals($tag['name'], $tagName);
+        $this->assertEquals($tag['name'], $tagName);  
     }
 
     /**
@@ -949,8 +948,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagBlank()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tag('');
     }
@@ -965,8 +962,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagThatExists()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tag($_ENV['CONVERTKIT_API_TAG_NAME']);
     }
@@ -980,8 +975,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTags()
     {
-        $this->markTestIncomplete();
-
         $tagNames = [
             'Tag Test ' . mt_rand(),
             'Tag Test ' . mt_rand(),
@@ -989,7 +982,7 @@ class ConvertKitAPITest extends TestCase
         $result = $this->api->create_tags($tagNames);
 
         // Iterate through the results to confirm the tags were created.
-        foreach ($result as $i => $tag) {
+        foreach ($result->tags as $i => $tag) {
             // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
             $tag = get_object_vars($tag);
             $this->assertArrayHasKey('id', $tag);
@@ -1009,8 +1002,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsBlank()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             '',
@@ -1028,8 +1019,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsThatExist()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             $_ENV['CONVERTKIT_API_TAG_NAME'],
@@ -1046,73 +1035,104 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriber()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $this->generateEmailAddress()
+            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
         );
         $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(
+            get_object_vars($result->subscriber)['email_address'],
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        );
     }
 
     /**
-     * Test that tag_subscriber() returns the expected data
-     * when a first_name parameter is included.
+     * Test that tag_subscriber() throws a ClientException when an invalid
+     * tag is specified.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testTagSubscriberWithFirstName()
+    public function testTagSubscriberWithInvalidTagID()
     {
-        $this->markTestIncomplete();
-
-        $emailAddress = $this->generateEmailAddress();
-        $firstName = 'First Name';
+        $this->expectException(ClientException::class);
         $result = $this->api->tag_subscriber(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $emailAddress,
-            first_name: $firstName
+            tag_id: 12345,
+            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
         );
-
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
-
-        // Fetch subscriber from API to confirm the first name was saved.
-        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
-        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
-        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
     }
 
     /**
-     * Test that tag_subscriber() returns the expected data
-     * when custom field data is included.
+     * Test that tag_subscriber() throws a ClientException when an invalid
+     * email address is specified.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testTagSubscriberWithCustomFields()
+    public function testTagSubscriberWithInvalidEmailAddress()
     {
-        $this->markTestIncomplete();
-
+        $this->expectException(ClientException::class);
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $this->generateEmailAddress(),
-            first_name: 'First Name',
-            fields: [
-                'last_name' => 'Last Name',
-            ]
+            email: 'not-an-email-address'
         );
+    }
 
-        // Check subscription object returned.
+    /**
+     * Test that tag_subscriber_by_subscriber_id() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberByID()
+    {
+        $result = $this->api->tag_subscriber_by_subscriber_id(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+        );
         $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+    }
 
-        // Fetch subscriber from API to confirm the custom fields were saved.
-        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
-        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
+    /**
+     * Test that tag_subscriber_by_subscriber_id() throws a ClientException when an invalid
+     * sequence ID is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberByIDWithInvalidTagID()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->tag_subscriber_by_subscriber_id(
+            tag_id: 12345,
+            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+        );
+    }
+
+    /**
+     * Test that tag_subscriber_by_subscriber_id() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberByIDWithInvalidSubscriberID()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->tag_subscriber_by_subscriber_id(
+            tag_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+            subscriber_id: 12345
+        );
     }
 
     /**
@@ -1124,16 +1144,14 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriber()
     {
-        $this->markTestIncomplete();
-
         // Tag the subscriber first.
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $this->generateEmailAddress()
+            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
         );
 
         // Get subscriber ID.
-        $subscriberID = $result->subscription->subscriber->id;
+        $subscriberID = $result->subscriber->id;
 
         // Remove tag from subscriber.
         $result = $this->api->remove_tag_from_subscriber(
@@ -1143,6 +1161,8 @@ class ConvertKitAPITest extends TestCase
 
         // Confirm that the subscriber no longer has the tag.
         $result = $this->api->get_subscriber_tags($subscriberID);
+        var_dump($result);
+        die();
         $this->assertIsArray($result->tags);
         $this->assertEmpty($result->tags);
     }
