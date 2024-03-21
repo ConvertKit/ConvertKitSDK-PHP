@@ -813,6 +813,148 @@ class ConvertKit_API
     }
 
     /**
+     * Get subscribers.
+     * 
+     * @since   2.0.0
+     *
+     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param string    $email_address    Search susbcribers by email address. This is an exact match search.
+     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
+     * @param string    $sort_field       Sort Field (id|updated_at|cancelled_at).
+     * @param string    $sort_order       Sort Order (asc|desc).
+     * @param string    $after_cursor     Return results after the given pagination cursor.
+     * @param string    $before_cursor    Return results before the given pagination cursor.
+     * @param integer   $per_page         Number of results to return.
+     *
+     * @see https://developers.convertkit.com/v4.html#list-subscribers
+     *
+     * @return false|mixed
+     */
+    public function get_subscribers(
+        string $subscriber_state = 'active',
+        string $email_address = '',
+        \DateTime $created_after = null,
+        \DateTime $created_before = null,
+        \DateTime $updated_after = null,
+        \DateTime $updated_before = null,
+        string $sort_field = 'id',
+        string $sort_order = 'desc',
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    )
+    {
+        // Build parameters.
+        $options = [];
+
+        if (!empty($subscriber_state)) {
+            $options['status'] = $subscriber_state;
+        }
+        if (!empty($email_address)) {
+            $options['email_address'] = $email_address;
+        }
+        if (!is_null($created_after)) {
+            $options['created_after'] = $created_after->format('Y-m-d');
+        }
+        if (!is_null($created_before)) {
+            $options['created_before'] = $created_before->format('Y-m-d');
+        }
+        if (!is_null($updated_after)) {
+            $options['updated_after'] = $updated_after->format('Y-m-d');
+        }
+        if (!is_null($updated_before)) {
+            $options['updated_before'] = $updated_before->format('Y-m-d');
+        }
+        if (!empty($sort_field)) {
+            $options['sort_field'] = $sort_field;
+        }
+        if (!empty($sort_order)) {
+            $options['sort_order'] = $sort_order;
+        }
+
+        // Build pagination parameters.
+        $options = $this->build_pagination_params(
+            params: $options,
+            after_cursor: $after_cursor,
+            before_cursor: $before_cursor,
+            per_page: $per_page
+        );
+
+        // Send request.
+        return $this->get(
+            endpoint: 'subscribers',
+            args: $options
+        );
+    }
+
+    /**
+     * Create a subscriber.
+     * 
+     * Behaves as an upsert. If a subscriber with the provided email address does not exist,
+     * it creates one with the specified first name and state. If a subscriber with the provided
+     * email address already exists, it updates the first name.
+     * 
+     * @since   2.0.0
+     * 
+     * @param string                $email_address      Email Address.
+     * @param string                $first_name         First Name.
+     * @param string                $subscriber_state   Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param array<string, string> $fields             Custom Fields.
+     * 
+     * @see https://developers.convertkit.com/v4.html#create-a-subscriber
+     * 
+     * @return mixed
+     */
+    public function create_subscriber(
+        string $email_address,
+        string $first_name = '',
+        string $subscriber_state = '',
+        array $fields = []
+    )
+    {
+        // Build parameters.
+        $options = [];
+
+        if (!empty($first_name)) {
+            $options['first_name'] = $first_name;
+        }
+        if (!empty($state)) {
+            $options['state'] = $state;
+        }
+        if (count($fields)) {
+            $options['fields'] = $fields;
+        }
+
+        // Send request.
+        return $this->post(
+            endpoint: 'subscribers',
+            args: $options
+        );
+    }
+
+    public function create_subscribers(array $subscribers)
+    {
+        // @TODO.
+    }
+
+    /**
+     * Get subscriber by id
+     *
+     * @param integer $subscriber_id Subscriber ID.
+     *
+     * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+     *
+     * @return false|integer
+     */
+    public function get_subscriber(int $subscriber_id)
+    {
+        return $this->get(sprintf('subscribers/%s', $subscriber_id));
+    }
+
+    /**
      * Get the ConvertKit subscriber ID associated with email address if it exists.
      * Return false if subscriber not found.
      *
@@ -820,16 +962,12 @@ class ConvertKit_API
      *
      * @throws \InvalidArgumentException If the email address is not a valid email format.
      *
-     * @see https://developers.convertkit.com/#list-subscribers
+     * @see https://developers.convertkit.com/v4.html#get-a-subscriber
      *
      * @return false|integer
      */
     public function get_subscriber_id(string $email_address)
     {
-        if (!filter_var($email_address, FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Email address is not a valid email format.');
-        }
-
         $subscribers = $this->get(
             'subscribers',
             ['email_address' => $email_address]
@@ -850,20 +988,6 @@ class ConvertKit_API
     }
 
     /**
-     * Get subscriber by id
-     *
-     * @param integer $subscriber_id Subscriber ID.
-     *
-     * @see https://developers.convertkit.com/#view-a-single-subscriber
-     *
-     * @return false|integer
-     */
-    public function get_subscriber(int $subscriber_id)
-    {
-        return $this->get(sprintf('subscribers/%s', $subscriber_id));
-    }
-
-    /**
      * Updates the information for a single subscriber.
      *
      * @param integer               $subscriber_id Existing Subscriber ID.
@@ -871,7 +995,7 @@ class ConvertKit_API
      * @param string                $email_address New Email Address.
      * @param array<string, string> $fields        Updated Custom Fields.
      *
-     * @see https://developers.convertkit.com/#update-subscriber
+     * @see https://developers.convertkit.com/v4.html#update-a-subscriber
      *
      * @return false|mixed
      */
@@ -902,42 +1026,36 @@ class ConvertKit_API
     }
 
     /**
-     * Unsubscribe an email address from all forms and sequences.
+     * Unsubscribe an email address.
      *
      * @param string $email Email Address.
      *
-     * @see https://developers.convertkit.com/#unsubscribe-subscriber
+     * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
      *
      * @return false|object
      */
     public function unsubscribe(string $email)
     {
-        return $this->put(
-            'unsubscribe',
-            ['email' => $email]
+        return $this->post(
+            sprintf(
+                'subscribers/%s/unsubscribe',
+                $this->get_subscriber_id($email)
+            )
         );
     }
 
     /**
-     * Remove subscription from a form
+     * Unsubscribe the given subscriber ID.
      *
-     * @param array<string, string> $options Array of user data (email).
+     * @param int $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/#unsubscribe-subscriber
+     * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
      *
      * @return false|object
      */
-    public function form_unsubscribe(array $options)
+    public function unsubscribe_by_id(int $subscriber_id)
     {
-        // This function is deprecated in 1.0, as we prefer functions with structured arguments.
-        // This function name is also misleading, as it doesn't just unsubscribe the email
-        // address from forms.
-        trigger_error(
-            'form_unsubscribe() is deprecated in 1.0.  Use unsubscribe($email) instead.',
-            E_USER_NOTICE
-        );
-
-        return $this->put('unsubscribe', $options);
+        return $this->post(sprintf('subscribers/%s/unsubscribe', $subscriber_id));
     }
 
     /**
@@ -945,13 +1063,24 @@ class ConvertKit_API
      *
      * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/#list-tags-for-a-subscriber
+     * @see https://developers.convertkit.com/v4.html#list-tags-for-a-subscriber
      *
      * @return false|array<int,\stdClass>
      */
-    public function get_subscriber_tags(int $subscriber_id)
-    {
-        return $this->get(sprintf('subscribers/%s/tags', $subscriber_id));
+    public function get_subscriber_tags(
+        int $subscriber_id,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        return $this->get(
+            endpoint: sprintf('subscribers/%s/tags', $subscriber_id),
+            args: $this->build_pagination_params(
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
