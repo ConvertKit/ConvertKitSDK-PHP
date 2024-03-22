@@ -1076,20 +1076,6 @@ class ConvertKit_API
     }
 
     /**
-     * Get subscriber by id
-     *
-     * @param integer $subscriber_id Subscriber ID.
-     *
-     * @see https://developers.convertkit.com/v4.html#get-a-subscriber
-     *
-     * @return false|integer
-     */
-    public function get_subscriber(int $subscriber_id)
-    {
-        return $this->get(sprintf('subscribers/%s', $subscriber_id));
-    }
-
-    /**
      * Get the ConvertKit subscriber ID associated with email address if it exists.
      * Return false if subscriber not found.
      *
@@ -1120,6 +1106,20 @@ class ConvertKit_API
 
         // Return the subscriber's ID.
         return $subscribers->subscribers[0]->id;
+    }
+
+    /**
+     * Get subscriber by id
+     *
+     * @param integer $subscriber_id Subscriber ID.
+     *
+     * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+     *
+     * @return false|integer
+     */
+    public function get_subscriber(int $subscriber_id)
+    {
+        return $this->get(sprintf('subscribers/%s', $subscriber_id));
     }
 
     /**
