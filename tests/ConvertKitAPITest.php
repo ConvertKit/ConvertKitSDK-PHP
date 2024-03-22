@@ -2114,17 +2114,17 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that get_subscribers() returns the expected data
-     * when the added_after parameter is used.
+     * when the created_after parameter is used.
      *
      * @since   2.0.0
      *
      * @return void
      */
-    public function testGetSubscribersWithAddedAfterParam()
+    public function testGetSubscribersWithCreatedAfterParam()
     {
         $date = new \DateTime('2024-01-01');
         $result = $this->api->get_subscribers(
-            added_after: $date
+            created_after: $date
         );
 
         // Assert subscribers and pagination exist.
@@ -2134,23 +2134,23 @@ class ConvertKitAPITest extends TestCase
         // Check the correct subscribers were returned.
         $this->assertGreaterThanOrEqual(
             $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
         );
     }
 
     /**
      * Test that get_subscribers() returns the expected data
-     * when the added_before parameter is used.
+     * when the created_before parameter is used.
      *
      * @since   2.0.0
      *
      * @return void
      */
-    public function testGetSubscribersWithAddedBeforeParam()
+    public function testGetSubscribersWithCreatedBeforeParam()
     {
         $date = new \DateTime('2024-01-01');
         $result = $this->api->get_subscribers(
-            added_before: $date
+            created_before: $date
         );
 
         // Assert subscribers and pagination exist.
@@ -2160,7 +2160,7 @@ class ConvertKitAPITest extends TestCase
         // Check the correct subscribers were returned.
         $this->assertLessThanOrEqual(
             $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
         );
     }
 
@@ -2175,19 +2175,13 @@ class ConvertKitAPITest extends TestCase
     public function testGetSubscribersWithUpdatedAfterParam()
     {
         $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_form_subscriptions(
+        $result = $this->api->get_subscribers(
             updated_after: $date
         );
 
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
-        );
     }
 
     /**
@@ -2201,34 +2195,123 @@ class ConvertKitAPITest extends TestCase
     public function testGetSubscribersWithUpdatedBeforeParam()
     {
         $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_form_subscriptions(
+        $result = $this->api->get_subscribers(
             updated_before: $date
         );
 
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
+    }
 
-        // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the sort_field parameter is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithSortFieldParam()
+    {
+        $result = $this->api->get_subscribers(
+            sort_field: 'id'
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert sorting is honored by ID in descending (default) order.
+        $this->assertLessThanOrEqual(
+            $result->subscribers[0]->id,
+            $result->subscribers[1]->id
         );
     }
 
-    public function testGetSubscibersWithSortFieldParam()
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the sort_order parameter is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithSortOrderParam()
     {
-        
+        $result = $this->api->get_subscribers(
+            sort_order: 'asc'
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert sorting is honored by ID (default) in ascending order.
+        $this->assertGreaterThanOrEqual(
+            $result->subscribers[0]->id,
+            $result->subscribers[1]->id
+        );
     }
 
-    public function testGetSubscibersWithSortOrderParam()
-    {
-        
-    }
-
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testGetSubscribersPagination()
     {
+        $result = $this->api->get_subscribers(
+            per_page: 1
+        );
 
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_subscribers(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_subscribers(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     public function testGetSubscribersWithInvalidEmailAddress()
