@@ -2085,7 +2085,7 @@ class ConvertKitAPITest extends TestCase
 
         // Assert correct subscriber returned.
         $this->assertEquals(
-            get_object_vars($result->subscriber)['email_address'],
+            $result->subscribers[0]->email_address,
             $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
         );
     }
@@ -2314,80 +2314,131 @@ class ConvertKitAPITest extends TestCase
         $this->assertTrue($result->pagination->has_next_page);
     }
 
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testGetSubscribersWithInvalidEmailAddress()
     {
-        
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_subscribers(
+            email_address: 'not-an-email-address'
+        );
     }
 
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * subscriber state is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testGetSubscribersWithInvalidSubscriberState()
     {
-
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_subscribers(
+            subscriber_state: 'not-an-valid-state'
+        );
     }
 
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * sort field is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testGetSubscribersWithInvalidSortFieldParam()
     {
-        
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_subscribers(
+            sort_field: 'not-a-valid-sort-field'
+        );
     }
 
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * sort order is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testGetSubscribersWithInvalidSortOrderParam()
     {
-        
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_subscribers(
+            sort_order: 'not-a-valid-sort-order'
+        );
     }
 
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * pagination parameters are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testGetSubscribersWithInvalidPagination()
     {
-        
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_subscribers(
+            after_cursor: 'not-a-valid-cursor'
+        );
     }
 
     /**
      * Test that create_subscriber() returns the expected data.
-     * 
+     *
      * @since   2.0.0
-     * 
+     *
      * @return void
      */
     public function testCreateSubscriber()
     {
-
     }
 
     /**
      * Test that create_subscriber() returns the expected data
      * when a first name is included.
-     * 
+     *
      * @since   2.0.0
-     * 
+     *
      * @return void
      */
     public function testCreateSubscriberWithFirstName()
     {
-
     }
 
     /**
      * Test that create_subscriber() returns the expected data
      * when a subscriber state is included.
-     * 
+     *
      * @since   2.0.0
-     * 
+     *
      * @return void
      */
     public function testCreateSubscriberWithSubscriberState()
     {
-
     }
 
     /**
      * Test that create_subscriber() returns the expected data
      * when custom field data is included.
-     * 
+     *
      * @since   2.0.0
-     * 
+     *
      * @return void
      */
     public function testCreateSubscriberWithCustomFields()
     {
-
     }
 
     /**
@@ -2400,7 +2451,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriberWithInvalidEmailAddress()
     {
-
     }
 
     /**
@@ -2413,22 +2463,18 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriberWithInvalidSubscriberState()
     {
-
     }
 
     public function testCreateSubscribers()
     {
-
     }
 
     public function testCreateSubscribersWithBlankData()
     {
-
     }
 
     public function testCreateSubscribersWithInvalidEmailAddresses()
     {
-
     }
 
     /**
