@@ -1094,12 +1094,7 @@ class ConvertKit_API
             ['email_address' => $email_address]
         );
 
-        if (!$subscribers) {
-            $this->create_log('No subscribers');
-            return false;
-        }
-
-        if ($subscribers->total_subscribers === 0) {
+        if (!count($subscribers->subscribers)) {
             $this->create_log('No subscribers');
             return false;
         }
