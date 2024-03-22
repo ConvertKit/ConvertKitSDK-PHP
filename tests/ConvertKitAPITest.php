@@ -2403,6 +2403,16 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriber()
     {
+        $emailAddress = $this->generateEmailAddress();
+        $result = $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
+        // Assert subscriber exists with correct data.
+        $this->assertEquals($result->subscriber->email_address, $emailAddress);
+
+        // Unsubscribe to cleanup test.
+        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -2415,6 +2425,19 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriberWithFirstName()
     {
+        $firstName = 'FirstName';
+        $emailAddress = $this->generateEmailAddress();
+        $result = $this->api->create_subscriber(
+            email_address: $emailAddress,
+            first_name: $firstName
+        );
+
+        // Assert subscriber exists with correct data.
+        $this->assertEquals($result->subscriber->email_address, $emailAddress);
+        $this->assertEquals($result->subscriber->first_name, $firstName);
+        
+        // Unsubscribe to cleanup test.
+        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -2427,6 +2450,19 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriberWithSubscriberState()
     {
+        $subscriberState = 'inactive';
+        $emailAddress = $this->generateEmailAddress();
+        $result = $this->api->create_subscriber(
+            email_address: $emailAddress,
+            subscriber_state: $subscriberState
+        );
+
+        // Assert subscriber exists with correct data.
+        $this->assertEquals($result->subscriber->email_address, $emailAddress);
+        $this->assertEquals($result->subscriber->state, $subscriberState);
+        
+        // Unsubscribe to cleanup test.
+        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -2439,6 +2475,21 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriberWithCustomFields()
     {
+        $lastName = 'LastName';
+        $emailAddress = $this->generateEmailAddress();
+        $result = $this->api->create_subscriber(
+            email_address: $emailAddress,
+            fields: [
+                'last_name' => $lastName
+            ]
+        );
+
+        // Assert subscriber exists with correct data.
+        $this->assertEquals($result->subscriber->email_address, $emailAddress);
+        $this->assertEquals($result->subscriber->fields->last_name, $lastName);
+        
+        // Unsubscribe to cleanup test.
+        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -2451,6 +2502,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriberWithInvalidEmailAddress()
     {
+        $this->expectException(ClientException::class);
+        $result = $this->api->create_subscriber(
+            email_address: 'not-an-email-address'
+        );
     }
 
     /**
@@ -2463,6 +2518,32 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriberWithInvalidSubscriberState()
     {
+        $this->expectException(ClientException::class);
+        $emailAddress = $this->generateEmailAddress();
+        $result = $this->api->create_subscriber(
+            email_address: $emailAddress,
+            subscriber_state: 'not-a-valid-state'
+        );
+    }
+
+    /**
+     * Test that create_subscriber() throws a ClientException when an invalid
+     * custom field is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testCreateSubscriberWithInvalidCustomFields()
+    {
+
+        $emailAddress = $this->generateEmailAddress();
+        $result = $this->api->create_subscriber(
+            email_address: $emailAddress,
+            fields: [
+                'not_a_custom_field' => 'value'
+            ]
+        );
     }
 
     public function testCreateSubscribers()

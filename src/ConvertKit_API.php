@@ -1028,7 +1028,9 @@ class ConvertKit_API
         array $fields = []
     ) {
         // Build parameters.
-        $options = [];
+        $options = [
+            'email_address' => $email_address,
+        ];
 
         if (!empty($first_name)) {
             $options['first_name'] = $first_name;
