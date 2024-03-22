@@ -305,6 +305,80 @@ class ConvertKit_API
     }
 
     /**
+     * Gets the account's colors
+     *
+     * @see https://developers.convertkit.com/v4.html#list-colors
+     *
+     * @return false|mixed
+     */
+    public function get_account_colors()
+    {
+        return $this->get('account/colors');
+    }
+
+    /**
+     * Gets the account's colors
+     *
+     * @param array<string, string> $colors Hex colors.
+     *
+     * @see https://developers.convertkit.com/v4.html#list-colors
+     *
+     * @return false|mixed
+     */
+    public function update_account_colors(array $colors)
+    {
+        return $this->put(
+            endpoint: 'account/colors',
+            args: ['colors' => $colors]
+        );
+    }
+
+    /**
+     * Gets the Creator Profile
+     *
+     * @see https://developers.convertkit.com/v4.html#get-creator-profile
+     *
+     * @return false|mixed
+     */
+    public function get_creator_profile()
+    {
+        return $this->get('account/creator_profile');
+    }
+
+    /**
+     * Gets email stats
+     *
+     * @see https://developers.convertkit.com/v4.html#get-email-stats
+     *
+     * @return false|mixed
+     */
+    public function get_email_stats()
+    {
+        return $this->get('account/email_stats');
+    }
+
+    /**
+     * Gets growth stats
+     *
+     * @param \DateTime $starting Gets stats for time period beginning on this date. Defaults to 90 days ago.
+     * @param \DateTime $ending   Gets stats for time period ending on this date. Defaults to today.
+     *
+     * @see https://developers.convertkit.com/v4.html#get-growth-stats
+     *
+     * @return false|mixed
+     */
+    public function get_growth_stats(\DateTime $starting = null, \DateTime $ending = null)
+    {
+        return $this->get(
+            'account/growth_stats',
+            [
+                'starting' => (!is_null($starting) ? $starting->format('Y-m-d') : ''),
+                'ending'   => (!is_null($ending) ? $ending->format('Y-m-d') : ''),
+            ]
+        );
+    }
+
+    /**
      * Gets all forms.
      *
      * @since 1.0.0
@@ -333,179 +407,219 @@ class ConvertKit_API
     }
 
     /**
-     * Adds a subscriber to a form.
-     *
-     * @param integer               $form_id Form ID.
-     * @param array<string, string> $options Array of user data (email, name).
-     *
-     * @deprecated 1.0.0 Use add_subscriber_to_form($form_id, $email, $first_name, $fields, $tag_ids).
-     *
-     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
-     *
-     * @see https://developers.convertkit.com/#add-subscriber-to-a-form
-     *
-     * @return false|object
-     */
-    public function form_subscribe(int $form_id, array $options)
-    {
-        // This function is deprecated in 1.0, as we prefer functions with structured arguments.
-        trigger_error(
-            'form_subscribe() is deprecated in 1.0.
-            Use add_subscriber_to_form($form_id, $email, $first_name, $fields, $tag_ids) instead.',
-            E_USER_NOTICE
-        );
-
-        return $this->post(
-            sprintf('forms/%s/subscribe', $form_id),
-            $options
-        );
-    }
-
-    /**
      * Adds a subscriber to a form by email address
      *
-     * @param integer               $form_id    Form ID.
-     * @param string                $email      Email Address.
-     * @param string                $first_name First Name.
-     * @param array<string, string> $fields     Custom Fields.
-     * @param array<string, int>    $tag_ids    Tag ID(s) to subscribe to.
+     * @param integer $form_id Form ID.
+     * @param string  $email   Email Address.
      *
-     * @see https://developers.convertkit.com/#add-subscriber-to-a-form
+     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form-by-email-address
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_form(
-        int $form_id,
-        string $email,
-        string $first_name = '',
-        array $fields = [],
-        array $tag_ids = []
-    ) {
-        // Build parameters.
-        $options = ['email' => $email];
-
-        if (!empty($first_name)) {
-            $options['first_name'] = $first_name;
-        }
-        if (!empty($fields)) {
-            $options['fields'] = $fields;
-        }
-        if (!empty($tag_ids)) {
-            $options['tags'] = $tag_ids;
-        }
-
-        // Send request.
+    public function add_subscriber_to_form(int $form_id, string $email)
+    {
         return $this->post(
-            sprintf('forms/%s/subscribe', $form_id),
-            $options
+            endpoint: sprintf('forms/%s/subscribers', $form_id),
+            args: ['email_address' => $email]
         );
     }
 
     /**
-     * List subscriptions to a form
+     * Adds a subscriber to a form by subscriber ID
      *
-     * @param integer $form_id          Form ID.
-     * @param string  $sort_order       Sort Order (asc|desc).
-     * @param string  $subscriber_state Subscriber State (active,cancelled).
-     * @param integer $page             Page.
+     * @param integer $form_id       Form ID.
+     * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/#list-subscriptions-to-a-form
+     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form
+     *
+     * @since 2.0.0
+     *
+     * @return false|mixed
+     */
+    public function add_subscriber_to_form_by_subscriber_id(int $form_id, int $subscriber_id)
+    {
+        return $this->post(sprintf('forms/%s/subscribers/%s', $form_id, $subscriber_id));
+    }
+
+    /**
+     * List subscribers for a form
+     *
+     * @param integer   $form_id          Form ID.
+     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
+     * @param string    $after_cursor     Return results after the given pagination cursor.
+     * @param string    $before_cursor    Return results before the given pagination cursor.
+     * @param integer   $per_page         Number of results to return.
+     *
+     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-form
      *
      * @return false|mixed
      */
     public function get_form_subscriptions(
         int $form_id,
-        string $sort_order = 'asc',
         string $subscriber_state = 'active',
-        int $page = 1
+        \DateTime $created_after = null,
+        \DateTime $created_before = null,
+        \DateTime $added_after = null,
+        \DateTime $added_before = null,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
     ) {
+        // Build parameters.
+        $options = [];
+
+        if (!empty($subscriber_state)) {
+            $options['status'] = $subscriber_state;
+        }
+        if (!is_null($created_after)) {
+            $options['created_after'] = $created_after->format('Y-m-d');
+        }
+        if (!is_null($created_before)) {
+            $options['created_before'] = $created_before->format('Y-m-d');
+        }
+        if (!is_null($added_after)) {
+            $options['added_after'] = $added_after->format('Y-m-d');
+        }
+        if (!is_null($added_before)) {
+            $options['added_before'] = $added_before->format('Y-m-d');
+        }
+
+        // Build pagination parameters.
+        $options = $this->build_pagination_params(
+            params: $options,
+            after_cursor: $after_cursor,
+            before_cursor: $before_cursor,
+            per_page: $per_page
+        );
+
+        // Send request.
         return $this->get(
-            sprintf('forms/%s/subscriptions', $form_id),
-            [
-                'sort_order'       => $sort_order,
-                'subscriber_state' => $subscriber_state,
-                'page'             => $page,
-            ]
+            endpoint: sprintf('forms/%s/subscribers', $form_id),
+            args: $options
         );
     }
 
     /**
-     * Gets all sequences
+     * Gets sequences
      *
-     * @see https://developers.convertkit.com/#list-sequences
+     * @param string  $after_cursor  Return results after the given pagination cursor.
+     * @param string  $before_cursor Return results before the given pagination cursor.
+     * @param integer $per_page      Number of results to return.
+     *
+     * @see https://developers.convertkit.com/v4.html#list-sequences
      *
      * @return false|mixed
      */
-    public function get_sequences()
+    public function get_sequences(string $after_cursor = '', string $before_cursor = '', int $per_page = 100)
     {
-        return $this->get('sequences');
+        return $this->get(
+            endpoint: 'sequences',
+            args: $this->build_pagination_params(
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
      * Adds a subscriber to a sequence by email address
      *
-     * @param integer               $sequence_id Sequence ID.
-     * @param string                $email       Email Address.
-     * @param string                $first_name  First Name.
-     * @param array<string, string> $fields      Custom Fields.
-     * @param array<string, int>    $tag_ids     Tag ID(s) to subscribe to.
+     * @param integer $sequence_id Sequence ID.
+     * @param string  $email       Email Address.
      *
-     * @see https://developers.convertkit.com/#add-subscriber-to-a-sequence
+     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence-by-email-address
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_sequence(
-        int $sequence_id,
-        string $email,
-        string $first_name = '',
-        array $fields = [],
-        array $tag_ids = []
-    ) {
-        // Build parameters.
-        $options = ['email' => $email];
-
-        if (!empty($first_name)) {
-            $options['first_name'] = $first_name;
-        }
-        if (!empty($fields)) {
-            $options['fields'] = $fields;
-        }
-        if (!empty($tag_ids)) {
-            $options['tags'] = $tag_ids;
-        }
-
-        // Send request.
+    public function add_subscriber_to_sequence(int $sequence_id, string $email)
+    {
         return $this->post(
-            sprintf('sequences/%s/subscribe', $sequence_id),
-            $options
+            endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
+            args: ['email_address' => $email]
         );
     }
 
     /**
-     * Gets subscribers to a sequence
+     * Adds a subscriber to a sequence by subscriber ID
      *
-     * @param integer $sequence_id      Sequence ID.
-     * @param string  $sort_order       Sort Order (asc|desc).
-     * @param string  $subscriber_state Subscriber State (active,cancelled).
-     * @param integer $page             Page.
+     * @param integer $sequence_id   Sequence ID.
+     * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/#list-subscriptions-to-a-sequence
+     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence
+     *
+     * @since 2.0.0
+     *
+     * @return false|mixed
+     */
+    public function add_subscriber_to_sequence_by_subscriber_id(int $sequence_id, int $subscriber_id)
+    {
+        return $this->post(sprintf('sequences/%s/subscribers/%s', $sequence_id, $subscriber_id));
+    }
+
+    /**
+     * List subscribers for a sequence
+     *
+     * @param integer   $sequence_id      Sequence ID.
+     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
+     * @param string    $after_cursor     Return results after the given pagination cursor.
+     * @param string    $before_cursor    Return results before the given pagination cursor.
+     * @param integer   $per_page         Number of results to return.
+     *
+     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-sequence
      *
      * @return false|mixed
      */
     public function get_sequence_subscriptions(
         int $sequence_id,
-        string $sort_order = 'asc',
         string $subscriber_state = 'active',
-        int $page = 1
+        \DateTime $created_after = null,
+        \DateTime $created_before = null,
+        \DateTime $added_after = null,
+        \DateTime $added_before = null,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
     ) {
+        // Build parameters.
+        $options = [];
+
+        if (!empty($subscriber_state)) {
+            $options['status'] = $subscriber_state;
+        }
+        if (!is_null($created_after)) {
+            $options['created_after'] = $created_after->format('Y-m-d');
+        }
+        if (!is_null($created_before)) {
+            $options['created_before'] = $created_before->format('Y-m-d');
+        }
+        if (!is_null($added_after)) {
+            $options['added_after'] = $added_after->format('Y-m-d');
+        }
+        if (!is_null($added_before)) {
+            $options['added_before'] = $added_before->format('Y-m-d');
+        }
+
+        // Build pagination parameters.
+        $options = $this->build_pagination_params(
+            params: $options,
+            after_cursor: $after_cursor,
+            before_cursor: $before_cursor,
+            per_page: $per_page
+        );
+
+        // Send request.
         return $this->get(
-            sprintf('sequences/%s/subscriptions', $sequence_id),
-            [
-                'sort_order'       => $sort_order,
-                'subscriber_state' => $subscriber_state,
-                'page'             => $page,
-            ]
+            endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
+            args: $options
         );
     }
 
