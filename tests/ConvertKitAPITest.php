@@ -2435,7 +2435,7 @@ class ConvertKitAPITest extends TestCase
         // Assert subscriber exists with correct data.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
         $this->assertEquals($result->subscriber->first_name, $firstName);
-        
+
         // Unsubscribe to cleanup test.
         $this->api->unsubscribe_by_id($result->subscriber->id);
     }
@@ -2460,7 +2460,7 @@ class ConvertKitAPITest extends TestCase
         // Assert subscriber exists with correct data.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
         $this->assertEquals($result->subscriber->state, $subscriberState);
-        
+
         // Unsubscribe to cleanup test.
         $this->api->unsubscribe_by_id($result->subscriber->id);
     }
@@ -2487,7 +2487,7 @@ class ConvertKitAPITest extends TestCase
         // Assert subscriber exists with correct data.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
         $this->assertEquals($result->subscriber->fields->last_name, $lastName);
-        
+
         // Unsubscribe to cleanup test.
         $this->api->unsubscribe_by_id($result->subscriber->id);
     }
@@ -2527,8 +2527,8 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that create_subscriber() throws a ClientException when an invalid
-     * custom field is specified.
+     * Test that create_subscriber() returns the expected data
+     * when an invalid custom field is included.
      *
      * @since   2.0.0
      *
@@ -2544,18 +2544,83 @@ class ConvertKitAPITest extends TestCase
                 'not_a_custom_field' => 'value'
             ]
         );
+
+        // Assert subscriber exists with correct data.
+        $this->assertEquals($result->subscriber->email_address, $emailAddress);
+
+        // Unsubscribe to cleanup test.
+        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
+    /**
+     * Test that create_subscribers() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testCreateSubscribers()
     {
+        $subscribers = [
+            [
+                'email_address' => str_replace('@convertkit.com', '-1@convertkit.com', $this->generateEmailAddress()),
+            ],
+            [
+                'email_address' => str_replace('@convertkit.com', '-2@convertkit.com', $this->generateEmailAddress()),
+            ],
+        ];
+        $result = $this->api->create_subscribers($subscribers);
+
+        // Assert no failures.
+        $this->assertCount(0, $result->failures);
+
+        // Assert subscribers exists with correct data.
+        foreach ($result->subscribers as $i => $subscriber) {
+            $this->assertEquals($subscriber->email_address, $subscribers[$i]['email_address']);
+
+            // Unsubscribe to cleanup test.
+            $this->api->unsubscribe_by_id($subscriber->id);
+        }
     }
 
+    /**
+     * Test that create_subscribers() throws a ClientException when no data is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testCreateSubscribersWithBlankData()
     {
+        $this->expectException(ClientException::class);
+        $result = $this->api->create_subscribers([
+            [],
+        ]);
     }
 
+    /**
+     * Test that create_subscribers() returns the expected data when invalid email addresses
+     * are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
     public function testCreateSubscribersWithInvalidEmailAddresses()
     {
+        $subscribers = [
+            [
+                'email_address' => 'not-an-email-address',
+            ],
+            [
+                'email_address' => 'not-an-email-address-again',
+            ],
+        ];
+        $result = $this->api->create_subscribers($subscribers);
+
+        // Assert no subscribers were added.
+        $this->assertCount(0, $result->subscribers);
+        $this->assertCount(2, $result->failures);
     }
 
     /**
