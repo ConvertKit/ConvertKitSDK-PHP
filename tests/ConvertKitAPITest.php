@@ -433,15 +433,191 @@ class ConvertKitAPITest extends TestCase
         $result = $this->api->get_account();
         $this->assertInstanceOf('stdClass', $result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
-        $account = get_object_vars($result['account']);
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('user', $result);
         $this->assertArrayHasKey('account', $result);
+
+        $account = get_object_vars($result['account']);
         $this->assertArrayHasKey('name', $account);
         $this->assertArrayHasKey('plan_type', $account);
         $this->assertArrayHasKey('primary_email_address', $account);
+    }
+
+    /**
+     * Test that get_account_colors() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetAccountColors()
+    {
+        $result = $this->api->get_account_colors();
+        $this->assertInstanceOf('stdClass', $result);
+
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('colors', $result);
+        $this->assertIsArray($result['colors']);
+    }
+
+    /**
+     * Test that update_account_colors() updates the account's colors.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testUpdateAccountColors()
+    {
+        $result = $this->api->update_account_colors([
+            '#111111',
+        ]);
+        $this->assertInstanceOf('stdClass', $result);
+
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('colors', $result);
+        $this->assertIsArray($result['colors']);
+        $this->assertEquals($result['colors'][0], '#111111');
+    }
+
+    /**
+     * Test that get_creator_profile() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetCreatorProfile()
+    {
+        $result = $this->api->get_creator_profile();
+        $this->assertInstanceOf('stdClass', $result);
+
+        $result = get_object_vars($result);
+        $profile = get_object_vars($result['profile']);
+        $this->assertArrayHasKey('name', $profile);
+        $this->assertArrayHasKey('byline', $profile);
+        $this->assertArrayHasKey('bio', $profile);
+        $this->assertArrayHasKey('image_url', $profile);
+        $this->assertArrayHasKey('profile_url', $profile);
+    }
+
+    /**
+     * Test that get_email_stats() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetEmailStats()
+    {
+        $result = $this->api->get_email_stats();
+        $this->assertInstanceOf('stdClass', $result);
+
+        $result = get_object_vars($result);
+        $stats = get_object_vars($result['stats']);
+        $this->assertArrayHasKey('sent', $stats);
+        $this->assertArrayHasKey('clicked', $stats);
+        $this->assertArrayHasKey('opened', $stats);
+        $this->assertArrayHasKey('email_stats_mode', $stats);
+        $this->assertArrayHasKey('open_tracking_enabled', $stats);
+        $this->assertArrayHasKey('click_tracking_enabled', $stats);
+        $this->assertArrayHasKey('starting', $stats);
+        $this->assertArrayHasKey('ending', $stats);
+    }
+
+    /**
+     * Test that get_growth_stats() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetGrowthStats()
+    {
+        $result = $this->api->get_growth_stats();
+        $this->assertInstanceOf('stdClass', $result);
+
+        $result = get_object_vars($result);
+        $stats = get_object_vars($result['stats']);
+        $this->assertArrayHasKey('cancellations', $stats);
+        $this->assertArrayHasKey('net_new_subscribers', $stats);
+        $this->assertArrayHasKey('new_subscribers', $stats);
+        $this->assertArrayHasKey('subscribers', $stats);
+        $this->assertArrayHasKey('starting', $stats);
+        $this->assertArrayHasKey('ending', $stats);
+    }
+
+    /**
+     * Test that get_growth_stats() returns the expected data
+     * when a start date is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetGrowthStatsWithStartDate()
+    {
+        // Define start and end dates.
+        $starting = new DateTime('now');
+        $starting->modify('-7 days');
+        $ending = new DateTime('now');
+
+        // Send request.
+        $result = $this->api->get_growth_stats(
+            starting: $starting
+        );
+        $this->assertInstanceOf('stdClass', $result);
+
+        // Confirm response object contains expected keys.
+        $result = get_object_vars($result);
+        $stats = get_object_vars($result['stats']);
+        $this->assertArrayHasKey('cancellations', $stats);
+        $this->assertArrayHasKey('net_new_subscribers', $stats);
+        $this->assertArrayHasKey('new_subscribers', $stats);
+        $this->assertArrayHasKey('subscribers', $stats);
+        $this->assertArrayHasKey('starting', $stats);
+        $this->assertArrayHasKey('ending', $stats);
+
+        // Assert start and end dates were honored.
+        $this->assertEquals($stats['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
+        $this->assertEquals($stats['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
+    }
+
+    /**
+     * Test that get_growth_stats() returns the expected data
+     * when an end date is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetGrowthStatsWithEndDate()
+    {
+        // Define start and end dates.
+        $starting = new DateTime('now');
+        $starting->modify('-90 days');
+        $ending = new DateTime('now');
+        $ending->modify('-7 days');
+
+        // Send request.
+        $result = $this->api->get_growth_stats(
+            ending: $ending
+        );
+        $this->assertInstanceOf('stdClass', $result);
+
+        // Confirm response object contains expected keys.
+        $result = get_object_vars($result);
+        $stats = get_object_vars($result['stats']);
+        $this->assertArrayHasKey('cancellations', $stats);
+        $this->assertArrayHasKey('net_new_subscribers', $stats);
+        $this->assertArrayHasKey('new_subscribers', $stats);
+        $this->assertArrayHasKey('subscribers', $stats);
+        $this->assertArrayHasKey('starting', $stats);
+        $this->assertArrayHasKey('ending', $stats);
+
+        // Assert start and end dates were honored.
+        $this->assertEquals($stats['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
+        $this->assertEquals($stats['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
     }
 
     /**
