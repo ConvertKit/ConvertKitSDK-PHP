@@ -818,11 +818,11 @@ class ConvertKit_API
         if (!is_null($created_before)) {
             $options['created_before'] = $created_before->format('Y-m-d');
         }
-        if (!is_null($added_after)) {
-            $options['added_after'] = $added_after->format('Y-m-d');
+        if (!is_null($tagged_after)) {
+            $options['tagged_after'] = $tagged_after->format('Y-m-d');
         }
-        if (!is_null($added_before)) {
-            $options['added_before'] = $added_before->format('Y-m-d');
+        if (!is_null($tagged_before)) {
+            $options['tagged_before'] = $tagged_before->format('Y-m-d');
         }
 
         // Build pagination parameters.

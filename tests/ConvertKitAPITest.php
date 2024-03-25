@@ -1781,27 +1781,28 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriber()
     {
-        // Tag the subscriber first.
-        $result = $this->api->tag_subscriber(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
         );
 
-        // Get subscriber ID.
-        $subscriberID = $result->subscriber->id;
+        // Tag subscriber by email.
+        $subscriber = $this->api->tag_subscriber(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $emailAddress,
+        );
 
         // Remove tag from subscriber.
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            subscriber_id: $subscriberID
+            subscriber_id: $subscriber->subscriber->id
         );
 
         // Confirm that the subscriber no longer has the tag.
-        $result = $this->api->get_subscriber_tags($subscriberID);
-        var_dump($result);
-        die();
+        $result = $this->api->get_subscriber_tags($subscriber->subscriber->id);
         $this->assertIsArray($result->tags);
-        $this->assertEmpty($result->tags);
+        $this->assertCount(0, $result->tags);
     }
 
     /**
@@ -1814,12 +1815,23 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidTagID()
     {
-        $this->markTestIncomplete();
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
 
+        // Tag subscriber by email.
+        $subscriber = $this->api->tag_subscriber(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $emailAddress,
+        );
+
+        // Remove tag from subscriber.
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: 12345,
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+            subscriber_id: $subscriber->subscriber->id
         );
     }
 
@@ -1833,8 +1845,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidSubscriberID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
@@ -1851,28 +1861,28 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmail()
     {
-        $this->markTestIncomplete();
-
-        // Tag the subscriber first.
-        $email = $this->generateEmailAddress();
-        $result = $this->api->tag_subscriber(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $email
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
         );
 
-        // Get subscriber ID.
-        $subscriberID = $result->subscription->subscriber->id;
+        // Tag subscriber by email.
+        $subscriber = $this->api->tag_subscriber(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $emailAddress,
+        );
 
         // Remove tag from subscriber.
-        $result = $this->api->remove_tag_from_subscriber_by_email(
+        $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $email
+            subscriber_id: $subscriber->subscriber->id
         );
 
         // Confirm that the subscriber no longer has the tag.
-        $result = $this->api->get_subscriber_tags($subscriberID);
+        $result = $this->api->get_subscriber_tags($subscriber->subscriber->id);
         $this->assertIsArray($result->tags);
-        $this->assertEmpty($result->tags);
+        $this->assertCount(0, $result->tags);
     }
 
     /**
@@ -1885,12 +1895,27 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmailWithInvalidTagID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber_by_email(
             tag_id: 12345,
             email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        );
+    }
+
+    /**
+     * Test that remove_tag_from_subscriber() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testRemoveTagFromSubscriberByEmailWithInvalidEmailAddress()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->remove_tag_from_subscriber_by_email(
+            tag_id: $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: 'not-an-email-address'
         );
     }
 
@@ -1904,55 +1929,13 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptions()
     {
-        $this->markTestIncomplete();
-
-        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID']);
-
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
-
-        // Assert sort order is ascending.
-        $this->assertGreaterThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
-        );
-    }
-
-    /**
-     * Test that get_tag_subscriptions() returns the expected data
-     * when a valid Tag ID is specified and the sort order is descending.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetTagSubscriptionsWithDescSortOrder()
-    {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            sort_order: 'desc'
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID']
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
-
-        // Assert sort order.
-        $this->assertLessThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
-        );
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
     }
 
     /**
@@ -1966,51 +1949,194 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithCancelledSubscriberState()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            sort_order: 'asc',
-            subscriber_state: 'cancelled'
+            subscriber_state: 'bounced'
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertGreaterThan(1, $result['total_subscriptions']);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertEquals($result->subscribers[0]->state, 'bounced');
+    }
+
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the added_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithTaggedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            tagged_after: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->tagged_at))
+        );
     }
 
     /**
      * Test that get_tag_subscriptions() returns the expected data
-     * when a valid Tag ID is specified and the page is set to 2.
+     * when a valid Tag ID is specified and the tagged_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithTaggedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            tagged_before: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->tagged_at))
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the created_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithCreatedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            created_after: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the created_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithCreatedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            created_before: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and pagination parameters
+     * and per_page limits are specified.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetTagSubscriptionsWithPage()
+    public function testGetTagSubscriptionsPagination()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            sort_order: 'asc',
-            subscriber_state: 'active',
-            page: 2
+            per_page: 1
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertEquals($result['page'], 2);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -2021,10 +2147,8 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testGetTagSubscriptionsWithInvalidFormID()
+    public function testGetTagSubscriptionsWithInvalidTagID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->get_tag_subscriptions(12345);
     }
