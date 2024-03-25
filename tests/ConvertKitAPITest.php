@@ -2450,7 +2450,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateSubscriberWithSubscriberState()
     {
-        $subscriberState = 'inactive';
+        $subscriberState = 'cancelled';
         $emailAddress = $this->generateEmailAddress();
         $result = $this->api->create_subscriber(
             email_address: $emailAddress,
