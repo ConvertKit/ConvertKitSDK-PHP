@@ -4,12 +4,9 @@ The ConvertKit PHP SDK provides convinient access to the ConvertKit API from app
 
 It includes a pre-defined set of methods for interacting with the API.
 
-## Version Guidance
+## Requirements
 
-| SDK Version | API Version | API Authentication | PHP Version  |
-|-------------|-------------|--------------------|--------------|
-| 1.x         | v3          | API Key and Secret | 7.4+         |
-| 2.x         | v4          | OAuth              | 8.0+         |
+PHP 7.4 and later.
 
 ## Composer
 
@@ -36,85 +33,6 @@ The PHP SDK require the following extensions in order to work properly:
 If you use Composer, these dependencies should be handled automatically.
 
 ## Getting Started
-
-### 2.x (v4 API, OAuth, PHP 8.0+)
-
-Please reach out to ConvertKit to set up an OAuth application for you. We'll provide you with your Client ID and Secret.
-
-```php
-// Require the autoloader (if you're using a PHP framework, this may already be done for you).
-require_once 'vendor/autoload.php';
-
-// Initialize the API class.
-$api = new \ConvertKit_API\ConvertKit_API(
-    clientID: '<your_oauth_client_id>',
-    clientSecret: '<your_oauth_client_secret>'
-);
-```
-
-To begin the OAuth process, redirect the user to ConvertKit to grant your application access to their ConvertKit account.
-
-```php
-header('Location: '.$api->get_oauth_url('<your_redirect_uri>'));
-```
-
-Once the user grants your application access to their ConvertKit account, they'll be redirected to your Redirect URI with an authorization code. For example:
-
-`your-redirect-uri?code=<auth_code>`
-
-At this point, your application needs to exchange the authorization code for an access token and refresh token.
-
-```php
-$result = $api->get_access_token(
-    authCode: '<auth_code>',
-    redirectURI: '<your_redirect_uri>'
-);
-```
-
-`$result` is an array comprising of:
-- `access_token`: The access token, used to make authenticated requests to the API
-- `refresh_token`: The refresh token, used to fetch a new access token once the current access token has expired
-- `created_at`: When the access token was created
-- `expires_in`: The number of seconds from `created_at` that the access token will expire
-
-Once you have an access token, re-initialize the API class with it:
-
-```php
-// Initialize the API class.
-$api = new \ConvertKit_API\ConvertKit_API(
-    clientID: '<your_oauth_client_id>',
-    clientSecret: '<your_oauth_client_secret>',
-    accessToken: '<your_access_token>'
-);
-```
-
-To refresh an access token:
-
-```php
-$result = $api->refresh_token(
-    refreshToken: '<your_refresh_token>',
-    redirectURI: '<your_redirect_uri>'
-);
-```
-
-`$result` is an array comprising of:
-- `access_token`: The access token, used to make authenticated requests to the API
-- `refresh_token`: The refresh token, used to fetch a new access token once the current access token has expired
-- `created_at`: When the access token was created
-- `expires_in`: The number of seconds from `created_at` that the access token will expire
-
-Once you have refreshed the access token i.e. obtained a new access token, re-initialize the API class with it:
-
-```php
-// Initialize the API class.
-$api = new \ConvertKit_API\ConvertKit_API(
-    clientID: '<your_oauth_client_id>',
-    clientSecret: '<your_oauth_client_secret>',
-    accessToken: '<your_new_access_token>'
-);
-```
-
-### 1.x (v3 API, API Key and Secret, PHP 7.4+)
 
 Get your ConvertKit API Key and API Secret [here](https://app.convertkit.com/account/edit) and set it somewhere in your application.
 

@@ -23,49 +23,28 @@ class ConvertKit_API
      *
      * @var string
      */
-    public const VERSION = '2.0.0';
+    public const VERSION = '1.1.0';
 
     /**
-     * ConvertKit OAuth Application Client ID
+     * ConvertKit API Key
      *
      * @var string
      */
-    protected $client_id = '';
+    protected $api_key;
 
     /**
-     * ConvertKit OAuth Application Client Secret
+     * ConvertKit API Secret
      *
      * @var string
      */
-    protected $client_secret = '';
-
-    /**
-     * Access Token
-     *
-     * @var string
-     */
-    protected $access_token = '';
-
-    /**
-     * OAuth Authorization URL
-     *
-     * @var string
-     */
-    protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
-
-    /**
-     * OAuth Token URL
-     *
-     * @var string
-     */
-    protected $oauth_token_url = 'https://api.convertkit.com/oauth/token';
+    protected $api_secret;
 
     /**
      * Version of ConvertKit API
      *
      * @var string
      */
-    protected $api_version = 'v4';
+    protected $api_version = 'v3';
 
     /**
      * ConvertKit API URL
@@ -99,37 +78,24 @@ class ConvertKit_API
     /**
      * Constructor for ConvertKitAPI instance
      *
-     * @param string  $clientID             OAuth Client ID.
-     * @param string  $clientSecret         OAuth Client Secret.
-     * @param string  $accessToken          OAuth Access Token.
+     * @param string  $api_key              ConvertKit API Key.
+     * @param string  $api_secret           ConvertKit API Secret.
      * @param boolean $debug                Log requests to debugger.
      * @param string  $debugLogFileLocation Path and filename of debug file to write to.
      */
-    public function __construct(
-        string $clientID,
-        string $clientSecret,
-        string $accessToken = '',
-        bool $debug = false,
-        string $debugLogFileLocation = ''
-    ) {
-        $this->client_id     = $clientID;
-        $this->client_secret = $clientSecret;
-        $this->access_token  = $accessToken;
-        $this->debug         = $debug;
-
-        // Set headers.
-        $headers = [
-            'Accept'       => 'application/json',
-            'Content-Type' => 'application/json; charset=utf-8',
-            'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
-        ];
-        if (!empty($this->access_token)) {
-            $headers['Authorization'] = 'Bearer ' . $this->access_token;
-        }
+    public function __construct(string $api_key, string $api_secret, bool $debug = false, string $debugLogFileLocation = '')
+    {
+        $this->api_key    = $api_key;
+        $this->api_secret = $api_secret;
+        $this->debug      = $debug;
 
         // Set the Guzzle client.
         $this->client = new Client(
-            ['headers' => $headers]
+            [
+                'headers' => [
+                    'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                ],
+            ]
         );
 
         if ($debug) {
@@ -174,122 +140,20 @@ class ConvertKit_API
             return;
         }
 
-        // Mask the Client ID, Client Secret and Access Token.
+        // Mask the API Key and Secret.
         $message = str_replace(
-            $this->client_id,
-            str_repeat('*', (strlen($this->client_id) - 4)) . substr($this->client_id, - 4),
+            $this->api_key,
+            str_repeat('*', (strlen($this->api_key) - 4)) . substr($this->api_key, - 4),
             $message
         );
         $message = str_replace(
-            $this->client_secret,
-            str_repeat('*', (strlen($this->client_secret) - 4)) . substr($this->client_secret, - 4),
-            $message
-        );
-        $message = str_replace(
-            $this->access_token,
-            str_repeat('*', (strlen($this->access_token) - 4)) . substr($this->access_token, - 4),
-            $message
-        );
-
-        // Mask email addresses that may be contained within the message.
-        $message = preg_replace_callback(
-            '^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})^',
-            function ($matches) {
-                return preg_replace('/\B[^@.]/', '*', $matches[0]);
-            },
+            $this->api_secret,
+            str_repeat('*', (strlen($this->api_secret) - 4)) . substr($this->api_secret, - 4),
             $message
         );
 
         // Add to log.
-        $this->debug_logger->info((string) $message);
-    }
-
-    /**
-     * Returns the OAuth URL to begin the OAuth process.
-     *
-     * @param string $redirectURI Redirect URI.
-     *
-     * @return string
-     */
-    public function get_oauth_url(string $redirectURI)
-    {
-        return $this->oauth_authorize_url . '?' . http_build_query(
-            [
-                'client_id'     => $this->client_id,
-                'redirect_uri'  => $redirectURI,
-                'response_type' => 'code',
-            ]
-        );
-    }
-
-    /**
-     * Exchanges the given authorization code for an access token and refresh token.
-     *
-     * @param string $authCode    Authorization Code, returned from get_oauth_url() flow.
-     * @param string $redirectURI Redirect URI.
-     *
-     * @return array<string, int|string> API response
-     */
-    public function get_access_token(string $authCode, string $redirectURI)
-    {
-        // Build request.
-        $request = new Request(
-            method: 'POST',
-            uri:    $this->oauth_token_url,
-            body:   (string) json_encode(
-                [
-                    'code'          => $authCode,
-                    'client_id'     => $this->client_id,
-                    'client_secret' => $this->client_secret,
-                    'grant_type'    => 'authorization_code',
-                    'redirect_uri'  => $redirectURI,
-                ]
-            )
-        );
-
-        // Send request.
-        $response = $this->client->send(
-            $request,
-            ['exceptions' => false]
-        );
-
-        // Return response body.
-        return json_decode($response->getBody()->getContents());
-    }
-
-    /**
-     * Fetches a new access token using the supplied refresh token.
-     *
-     * @param string $refreshToken Refresh Token.
-     * @param string $redirectURI  Redirect URI.
-     *
-     * @return array<string, int|string> API response
-     */
-    public function refresh_token(string $refreshToken, string $redirectURI)
-    {
-        // Build request.
-        $request = new Request(
-            method: 'POST',
-            uri: $this->oauth_token_url,
-            body: (string) json_encode(
-                [
-                    'refresh_token' => $refreshToken,
-                    'client_id'     => $this->client_id,
-                    'client_secret' => $this->client_secret,
-                    'grant_type'    => 'refresh_token',
-                    'redirect_uri'  => $redirectURI,
-                ]
-            )
-        );
-
-        // Send request.
-        $response = $this->client->send(
-            $request,
-            ['exceptions' => false]
-        );
-
-        // Return response body.
-        return json_decode($response->getBody()->getContents());
+        $this->debug_logger->info($message);
     }
 
     /**
@@ -301,79 +165,10 @@ class ConvertKit_API
      */
     public function get_account()
     {
-        return $this->get('account');
-    }
-
-    /**
-     * Gets the account's colors
-     *
-     * @see https://developers.convertkit.com/v4.html#list-colors
-     *
-     * @return false|mixed
-     */
-    public function get_account_colors()
-    {
-        return $this->get('account/colors');
-    }
-
-    /**
-     * Gets the account's colors
-     *
-     * @param array<string, string> $colors Hex colors.
-     *
-     * @see https://developers.convertkit.com/v4.html#list-colors
-     *
-     * @return false|mixed
-     */
-    public function update_account_colors(array $colors)
-    {
-        return $this->put(
-            endpoint: 'account/colors',
-            args: ['colors' => $colors]
-        );
-    }
-
-    /**
-     * Gets the Creator Profile
-     *
-     * @see https://developers.convertkit.com/v4.html#get-creator-profile
-     *
-     * @return false|mixed
-     */
-    public function get_creator_profile()
-    {
-        return $this->get('account/creator_profile');
-    }
-
-    /**
-     * Gets email stats
-     *
-     * @see https://developers.convertkit.com/v4.html#get-email-stats
-     *
-     * @return false|mixed
-     */
-    public function get_email_stats()
-    {
-        return $this->get('account/email_stats');
-    }
-
-    /**
-     * Gets growth stats
-     *
-     * @param \DateTime $starting Gets stats for time period beginning on this date. Defaults to 90 days ago.
-     * @param \DateTime $ending   Gets stats for time period ending on this date. Defaults to today.
-     *
-     * @see https://developers.convertkit.com/v4.html#get-growth-stats
-     *
-     * @return false|mixed
-     */
-    public function get_growth_stats(\DateTime $starting = null, \DateTime $ending = null)
-    {
         return $this->get(
-            'account/growth_stats',
+            'account',
             [
-                'starting' => (!is_null($starting) ? $starting->format('Y-m-d') : ''),
-                'ending'   => (!is_null($ending) ? $ending->format('Y-m-d') : ''),
+                'api_secret' => $this->api_secret,
             ]
         );
     }
@@ -407,219 +202,195 @@ class ConvertKit_API
     }
 
     /**
-     * Adds a subscriber to a form by email address
+     * Adds a subscriber to a form.
      *
-     * @param integer $form_id Form ID.
-     * @param string  $email   Email Address.
+     * @param integer               $form_id Form ID.
+     * @param array<string, string> $options Array of user data (email, name).
      *
-     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form-by-email-address
+     * @deprecated 1.0.0 Use add_subscriber_to_form($form_id, $email, $first_name, $fields, $tag_ids).
      *
-     * @return false|mixed
+     * @throws \InvalidArgumentException If the provided arguments are not of the expected type.
+     *
+     * @see https://developers.convertkit.com/#add-subscriber-to-a-form
+     *
+     * @return false|object
      */
-    public function add_subscriber_to_form(int $form_id, string $email)
+    public function form_subscribe(int $form_id, array $options)
     {
+        // This function is deprecated in 1.0, as we prefer functions with structured arguments.
+        trigger_error(
+            'form_subscribe() is deprecated in 1.0.
+            Use add_subscriber_to_form($form_id, $email, $first_name, $fields, $tag_ids) instead.',
+            E_USER_NOTICE
+        );
+
+        // Add API Key to array of options.
+        $options['api_key'] = $this->api_key;
+
         return $this->post(
-            endpoint: sprintf('forms/%s/subscribers', $form_id),
-            args: ['email_address' => $email]
+            sprintf('forms/%s/subscribe', $form_id),
+            $options
         );
     }
 
     /**
-     * Adds a subscriber to a form by subscriber ID
+     * Adds a subscriber to a form by email address
      *
-     * @param integer $form_id       Form ID.
-     * @param integer $subscriber_id Subscriber ID.
+     * @param integer               $form_id    Form ID.
+     * @param string                $email      Email Address.
+     * @param string                $first_name First Name.
+     * @param array<string, string> $fields     Custom Fields.
+     * @param array<string, int>    $tag_ids    Tag ID(s) to subscribe to.
      *
-     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form
-     *
-     * @since 2.0.0
+     * @see https://developers.convertkit.com/#add-subscriber-to-a-form
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_form_by_subscriber_id(int $form_id, int $subscriber_id)
-    {
-        return $this->post(sprintf('forms/%s/subscribers/%s', $form_id, $subscriber_id));
+    public function add_subscriber_to_form(
+        int $form_id,
+        string $email,
+        string $first_name = '',
+        array $fields = [],
+        array $tag_ids = []
+    ) {
+        // Build parameters.
+        $options = [
+            'api_key' => $this->api_key,
+            'email'   => $email,
+        ];
+
+        if (!empty($first_name)) {
+            $options['first_name'] = $first_name;
+        }
+        if (!empty($fields)) {
+            $options['fields'] = $fields;
+        }
+        if (!empty($tag_ids)) {
+            $options['tags'] = $tag_ids;
+        }
+
+        // Send request.
+        return $this->post(
+            sprintf('forms/%s/subscribe', $form_id),
+            $options
+        );
     }
 
     /**
-     * List subscribers for a form
+     * List subscriptions to a form
      *
-     * @param integer   $form_id          Form ID.
-     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
-     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
-     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
-     * @param string    $after_cursor     Return results after the given pagination cursor.
-     * @param string    $before_cursor    Return results before the given pagination cursor.
-     * @param integer   $per_page         Number of results to return.
+     * @param integer $form_id          Form ID.
+     * @param string  $sort_order       Sort Order (asc|desc).
+     * @param string  $subscriber_state Subscriber State (active,cancelled).
+     * @param integer $page             Page.
      *
-     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-form
+     * @see https://developers.convertkit.com/#list-subscriptions-to-a-form
      *
      * @return false|mixed
      */
     public function get_form_subscriptions(
         int $form_id,
+        string $sort_order = 'asc',
         string $subscriber_state = 'active',
-        \DateTime $created_after = null,
-        \DateTime $created_before = null,
-        \DateTime $added_after = null,
-        \DateTime $added_before = null,
-        string $after_cursor = '',
-        string $before_cursor = '',
-        int $per_page = 100
+        int $page = 1
     ) {
-        // Build parameters.
-        $options = [];
-
-        if (!empty($subscriber_state)) {
-            $options['status'] = $subscriber_state;
-        }
-        if (!is_null($created_after)) {
-            $options['created_after'] = $created_after->format('Y-m-d');
-        }
-        if (!is_null($created_before)) {
-            $options['created_before'] = $created_before->format('Y-m-d');
-        }
-        if (!is_null($added_after)) {
-            $options['added_after'] = $added_after->format('Y-m-d');
-        }
-        if (!is_null($added_before)) {
-            $options['added_before'] = $added_before->format('Y-m-d');
-        }
-
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
-        // Send request.
         return $this->get(
-            endpoint: sprintf('forms/%s/subscribers', $form_id),
-            args: $options
+            sprintf('forms/%s/subscriptions', $form_id),
+            [
+                'api_secret'       => $this->api_secret,
+                'sort_order'       => $sort_order,
+                'subscriber_state' => $subscriber_state,
+                'page'             => $page,
+            ]
         );
     }
 
     /**
-     * Gets sequences
+     * Gets all sequences
      *
-     * @param string  $after_cursor  Return results after the given pagination cursor.
-     * @param string  $before_cursor Return results before the given pagination cursor.
-     * @param integer $per_page      Number of results to return.
-     *
-     * @see https://developers.convertkit.com/v4.html#list-sequences
+     * @see https://developers.convertkit.com/#list-sequences
      *
      * @return false|mixed
      */
-    public function get_sequences(string $after_cursor = '', string $before_cursor = '', int $per_page = 100)
+    public function get_sequences()
     {
         return $this->get(
-            endpoint: 'sequences',
-            args: $this->build_pagination_params(
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
-            )
+            'sequences',
+            [
+                'api_key' => $this->api_key,
+            ]
         );
     }
 
     /**
      * Adds a subscriber to a sequence by email address
      *
-     * @param integer $sequence_id Sequence ID.
-     * @param string  $email       Email Address.
+     * @param integer               $sequence_id Sequence ID.
+     * @param string                $email       Email Address.
+     * @param string                $first_name  First Name.
+     * @param array<string, string> $fields      Custom Fields.
+     * @param array<string, int>    $tag_ids     Tag ID(s) to subscribe to.
      *
-     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence-by-email-address
+     * @see https://developers.convertkit.com/#add-subscriber-to-a-sequence
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_sequence(int $sequence_id, string $email)
-    {
+    public function add_subscriber_to_sequence(
+        int $sequence_id,
+        string $email,
+        string $first_name = '',
+        array $fields = [],
+        array $tag_ids = []
+    ) {
+        // Build parameters.
+        $options = [
+            'api_key' => $this->api_key,
+            'email'   => $email,
+        ];
+
+        if (!empty($first_name)) {
+            $options['first_name'] = $first_name;
+        }
+        if (!empty($fields)) {
+            $options['fields'] = $fields;
+        }
+        if (!empty($tag_ids)) {
+            $options['tags'] = $tag_ids;
+        }
+
+        // Send request.
         return $this->post(
-            endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
-            args: ['email_address' => $email]
+            sprintf('sequences/%s/subscribe', $sequence_id),
+            $options
         );
     }
 
     /**
-     * Adds a subscriber to a sequence by subscriber ID
+     * Gets subscribers to a sequence
      *
-     * @param integer $sequence_id   Sequence ID.
-     * @param integer $subscriber_id Subscriber ID.
+     * @param integer $sequence_id      Sequence ID.
+     * @param string  $sort_order       Sort Order (asc|desc).
+     * @param string  $subscriber_state Subscriber State (active,cancelled).
+     * @param integer $page             Page.
      *
-     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence
-     *
-     * @since 2.0.0
-     *
-     * @return false|mixed
-     */
-    public function add_subscriber_to_sequence_by_subscriber_id(int $sequence_id, int $subscriber_id)
-    {
-        return $this->post(sprintf('sequences/%s/subscribers/%s', $sequence_id, $subscriber_id));
-    }
-
-    /**
-     * List subscribers for a sequence
-     *
-     * @param integer   $sequence_id      Sequence ID.
-     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
-     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
-     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
-     * @param string    $after_cursor     Return results after the given pagination cursor.
-     * @param string    $before_cursor    Return results before the given pagination cursor.
-     * @param integer   $per_page         Number of results to return.
-     *
-     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-sequence
+     * @see https://developers.convertkit.com/#list-subscriptions-to-a-sequence
      *
      * @return false|mixed
      */
     public function get_sequence_subscriptions(
         int $sequence_id,
+        string $sort_order = 'asc',
         string $subscriber_state = 'active',
-        \DateTime $created_after = null,
-        \DateTime $created_before = null,
-        \DateTime $added_after = null,
-        \DateTime $added_before = null,
-        string $after_cursor = '',
-        string $before_cursor = '',
-        int $per_page = 100
+        int $page = 1
     ) {
-        // Build parameters.
-        $options = [];
-
-        if (!empty($subscriber_state)) {
-            $options['status'] = $subscriber_state;
-        }
-        if (!is_null($created_after)) {
-            $options['created_after'] = $created_after->format('Y-m-d');
-        }
-        if (!is_null($created_before)) {
-            $options['created_before'] = $created_before->format('Y-m-d');
-        }
-        if (!is_null($added_after)) {
-            $options['added_after'] = $added_after->format('Y-m-d');
-        }
-        if (!is_null($added_before)) {
-            $options['added_before'] = $added_before->format('Y-m-d');
-        }
-
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
-        // Send request.
         return $this->get(
-            endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
-            args: $options
+            sprintf('sequences/%s/subscriptions', $sequence_id),
+            [
+                'api_secret'       => $this->api_secret,
+                'sort_order'       => $sort_order,
+                'subscriber_state' => $subscriber_state,
+                'page'             => $page,
+            ]
         );
     }
 
@@ -653,7 +424,8 @@ class ConvertKit_API
         return $this->post(
             'tags',
             [
-                'tag' => ['name' => $tag],
+                'api_key' => $this->api_key,
+                'tag'     => ['name' => $tag],
             ]
         );
     }
@@ -681,7 +453,10 @@ class ConvertKit_API
 
         return $this->post(
             'tags',
-            ['tag' => $apiTags]
+            [
+                'api_key' => $this->api_key,
+                'tag'     => $apiTags,
+            ]
         );
     }
 
@@ -704,7 +479,10 @@ class ConvertKit_API
         array $fields = []
     ) {
         // Build parameters.
-        $options = ['email' => $email];
+        $options = [
+            'api_secret' => $this->api_secret,
+            'email'      => $email,
+        ];
 
         if (!empty($first_name)) {
             $options['first_name'] = $first_name;
@@ -740,6 +518,9 @@ class ConvertKit_API
             E_USER_NOTICE
         );
 
+        // Add API Key to array of options.
+        $options['api_key'] = $this->api_key;
+
         return $this->post(
             sprintf('tags/%s/subscribe', $tag),
             $options
@@ -760,7 +541,12 @@ class ConvertKit_API
      */
     public function remove_tag_from_subscriber(int $tag_id, int $subscriber_id)
     {
-        return $this->delete(sprintf('subscribers/%s/tags/%s', $subscriber_id, $tag_id));
+        return $this->delete(
+            sprintf('subscribers/%s/tags/%s', $subscriber_id, $tag_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -779,7 +565,10 @@ class ConvertKit_API
     {
         return $this->post(
             sprintf('tags/%s/unsubscribe', $tag_id),
-            ['email' => $email]
+            [
+                'api_secret' => $this->api_secret,
+                'email'      => $email,
+            ]
         );
     }
 
@@ -804,6 +593,7 @@ class ConvertKit_API
         return $this->get(
             sprintf('tags/%s/subscriptions', $tag_id),
             [
+                'api_secret'       => $this->api_secret,
                 'sort_order'       => $sort_order,
                 'subscriber_state' => $subscriber_state,
                 'page'             => $page,
@@ -834,7 +624,12 @@ class ConvertKit_API
         }
 
         // Fetch resources.
-        $resources = $this->get($request);
+        $resources = $this->get(
+            $request,
+            [
+                'api_key' => $this->api_key,
+            ]
+        );
 
         $this->create_log(sprintf('%s response %s', $resource, json_encode($resources)));
 
@@ -946,7 +741,10 @@ class ConvertKit_API
 
         $subscribers = $this->get(
             'subscribers',
-            ['email_address' => $email_address]
+            [
+                'api_secret'    => $this->api_secret,
+                'email_address' => $email_address,
+            ]
         );
 
         if (!$subscribers) {
@@ -974,7 +772,12 @@ class ConvertKit_API
      */
     public function get_subscriber(int $subscriber_id)
     {
-        return $this->get(sprintf('subscribers/%s', $subscriber_id));
+        return $this->get(
+            sprintf('subscribers/%s', $subscriber_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -996,7 +799,9 @@ class ConvertKit_API
         array $fields = []
     ) {
         // Build parameters.
-        $options = [];
+        $options = [
+            'api_secret' => $this->api_secret,
+        ];
 
         if (!empty($first_name)) {
             $options['first_name'] = $first_name;
@@ -1028,7 +833,10 @@ class ConvertKit_API
     {
         return $this->put(
             'unsubscribe',
-            ['email' => $email]
+            [
+                'api_secret' => $this->api_secret,
+                'email'      => $email,
+            ]
         );
     }
 
@@ -1051,6 +859,9 @@ class ConvertKit_API
             E_USER_NOTICE
         );
 
+        // Add API Secret to array of options.
+        $options['api_secret'] = $this->api_secret;
+
         return $this->put('unsubscribe', $options);
     }
 
@@ -1065,7 +876,12 @@ class ConvertKit_API
      */
     public function get_subscriber_tags(int $subscriber_id)
     {
-        return $this->get(sprintf('subscribers/%s/tags', $subscriber_id));
+        return $this->get(
+            sprintf('subscribers/%s/tags', $subscriber_id),
+            [
+                'api_key' => $this->api_key,
+            ]
+        );
     }
 
     /**
@@ -1077,7 +893,12 @@ class ConvertKit_API
      */
     public function get_broadcasts()
     {
-        return $this->get('broadcasts');
+        return $this->get(
+            'broadcasts',
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -1118,6 +939,7 @@ class ConvertKit_API
         string $thumbnail_url = ''
     ) {
         $options = [
+            'api_secret'            => $this->api_secret,
             'content'               => $content,
             'description'           => $description,
             'email_address'         => $email_address,
@@ -1157,7 +979,12 @@ class ConvertKit_API
      */
     public function get_broadcast(int $id)
     {
-        return $this->get(sprintf('broadcasts/%s', $id));
+        return $this->get(
+            sprintf('broadcasts/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -1172,7 +999,12 @@ class ConvertKit_API
      */
     public function get_broadcast_stats(int $id)
     {
-        return $this->get(sprintf('broadcasts/%s/stats', $id));
+        return $this->get(
+            sprintf('broadcasts/%s/stats', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -1215,6 +1047,7 @@ class ConvertKit_API
         string $thumbnail_url = ''
     ) {
         $options = [
+            'api_secret'            => $this->api_secret,
             'content'               => $content,
             'description'           => $description,
             'email_address'         => $email_address,
@@ -1259,7 +1092,12 @@ class ConvertKit_API
      */
     public function destroy_broadcast(int $id)
     {
-        return $this->delete(sprintf('broadcasts/%s', $id));
+        return $this->delete(
+            sprintf('broadcasts/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -1332,6 +1170,7 @@ class ConvertKit_API
         return $this->post(
             'automations/hooks',
             [
+                'api_secret' => $this->api_secret,
                 'target_url' => $url,
                 'event'      => $eventData,
             ]
@@ -1351,7 +1190,12 @@ class ConvertKit_API
      */
     public function destroy_webhook(int $rule_id)
     {
-        return $this->delete(sprintf('automations/hooks/%s', $rule_id));
+        return $this->delete(
+            sprintf('automations/hooks/%s', $rule_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -1365,7 +1209,12 @@ class ConvertKit_API
      */
     public function get_custom_fields()
     {
-        return $this->get('custom_fields');
+        return $this->get(
+            'custom_fields',
+            [
+                'api_key' => $this->api_key,
+            ]
+        );
     }
 
     /**
@@ -1384,7 +1233,8 @@ class ConvertKit_API
         return $this->post(
             'custom_fields',
             [
-                'label' => [$label],
+                'api_secret' => $this->api_secret,
+                'label'      => [$label],
             ]
         );
     }
@@ -1404,7 +1254,10 @@ class ConvertKit_API
     {
         return $this->post(
             'custom_fields',
-            ['label' => $labels]
+            [
+                'api_secret' => $this->api_secret,
+                'label'      => $labels,
+            ]
         );
     }
 
@@ -1424,7 +1277,10 @@ class ConvertKit_API
     {
         return $this->put(
             sprintf('custom_fields/%s', $id),
-            ['label' => $label]
+            [
+                'api_secret' => $this->api_secret,
+                'label'      => $label,
+            ]
         );
     }
 
@@ -1441,7 +1297,12 @@ class ConvertKit_API
      */
     public function delete_custom_field(int $id)
     {
-        return $this->delete(sprintf('custom_fields/%s', $id));
+        return $this->delete(
+            sprintf('custom_fields/%s', $id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -1455,6 +1316,9 @@ class ConvertKit_API
      */
     public function list_purchases(array $options)
     {
+        // Add API Secret to array of options.
+        $options['api_secret'] = $this->api_secret;
+
         return $this->get('purchases', $options);
     }
 
@@ -1469,7 +1333,12 @@ class ConvertKit_API
      */
     public function get_purchase(int $purchase_id)
     {
-        return $this->get(sprintf('purchases/%s', $purchase_id));
+        return $this->get(
+            sprintf('purchases/%s', $purchase_id),
+            [
+                'api_secret' => $this->api_secret,
+            ]
+        );
     }
 
     /**
@@ -1483,6 +1352,9 @@ class ConvertKit_API
      */
     public function create_purchase(array $options)
     {
+        // Add API Secret to array of options.
+        $options['api_secret'] = $this->api_secret;
+
         return $this->post('purchases', $options);
     }
 
@@ -1625,37 +1497,6 @@ class ConvertKit_API
     }
 
     /**
-     * Adds pagination parameters to the given array of existing API parameters.
-     *
-     * @param array<string, string|integer> $params        API parameters.
-     * @param string                        $after_cursor  Return results after the given pagination cursor.
-     * @param string                        $before_cursor Return results before the given pagination cursor.
-     * @param integer                       $per_page      Number of results to return.
-     *
-     * @since 2.0.0
-     *
-     * @return array<string, string|integer>
-     */
-    private function build_pagination_params(
-        array $params = [],
-        string $after_cursor = '',
-        string $before_cursor = '',
-        int $per_page = 100
-    ) {
-        if (!empty($after_cursor)) {
-            $params['after'] = $after_cursor;
-        }
-        if (!empty($before_cursor)) {
-            $params['before'] = $before_cursor;
-        }
-        if (!empty($per_page)) {
-            $params['per_page'] = $per_page;
-        }
-
-        return $params;
-    }
-
-    /**
      * Performs a GET request to the API.
      *
      * @param string                                                     $endpoint API Endpoint.
@@ -1665,6 +1506,10 @@ class ConvertKit_API
      */
     public function get(string $endpoint, array $args = [])
     {
+        // Log if debugging enabled.
+        $this->create_log(sprintf('GET %s: %s', $endpoint, json_encode($args)));
+
+        // Make request and return results.
         return $this->make_request($endpoint, 'GET', $args);
     }
 
@@ -1678,6 +1523,10 @@ class ConvertKit_API
      */
     public function post(string $endpoint, array $args = [])
     {
+        // Log if debugging enabled.
+        $this->create_log(sprintf('POST %s: %s', $endpoint, json_encode($args)));
+
+        // Make request and return results.
         return $this->make_request($endpoint, 'POST', $args);
     }
 
@@ -1691,6 +1540,10 @@ class ConvertKit_API
      */
     public function put(string $endpoint, array $args = [])
     {
+        // Log if debugging enabled.
+        $this->create_log(sprintf('PUT %s: %s', $endpoint, json_encode($args)));
+
+        // Make request and return results.
         return $this->make_request($endpoint, 'PUT', $args);
     }
 
@@ -1704,6 +1557,10 @@ class ConvertKit_API
      */
     public function delete(string $endpoint, array $args = [])
     {
+        // Log if debugging enabled.
+        $this->create_log(sprintf('DELETE %s: %s', $endpoint, json_encode($args)));
+
+        // Make request and return results.
         return $this->make_request($endpoint, 'DELETE', $args);
     }
 
@@ -1723,30 +1580,34 @@ class ConvertKit_API
         // Build URL.
         $url = $this->api_url_base . $this->api_version . '/' . $endpoint;
 
-        // Log request.
-        $this->create_log(sprintf('%s %s', $method, $endpoint));
-        $this->create_log(sprintf('%s', json_encode($args)));
+        $this->create_log(sprintf('Making request on %s.', $url));
 
-        // Build request.
-        switch ($method) {
-            case 'GET':
-                if ($args) {
-                    $url .= '?' . http_build_query($args);
-                }
+        // Build request body.
+        $request_body = json_encode($args);
 
-                $request = new Request(
-                    method: $method,
-                    uri: $url
-                );
-                break;
+        $this->create_log(sprintf('%s, Request body: %s', $method, $request_body));
 
-            default:
-                $request = new Request(
-                    method: $method,
-                    uri:    $url,
-                    body:   (string) json_encode($args),
-                );
-                break;
+        // Bail if an error occured encoind the arguments.
+        if (!$request_body) {
+            throw new \Exception('Error encoding arguments');
+        }
+
+        if ($method === 'GET') {
+            if ($args) {
+                $url .= '?' . http_build_query($args);
+            }
+
+            $request = new Request($method, $url);
+        } else {
+            $request = new Request(
+                $method,
+                $url,
+                [
+                    'Content-Type'   => 'application/json',
+                    'Content-Length' => strlen($request_body),
+                ],
+                $request_body
+            );
         }
 
         // Send request.
@@ -1756,15 +1617,23 @@ class ConvertKit_API
         );
 
         // Inspect response.
-        $status_code   = $response->getStatusCode();
-        $response_body = $response->getBody()->getContents();
+        $status_code = $response->getStatusCode();
 
-        // Log response.
-        $this->create_log(sprintf('Response Status Code: %s', $response->getStatusCode()));
-        $this->create_log(sprintf('Response Body: %s', $response->getBody()->getContents()));
-        $this->create_log('Finish request successfully');
+        // If not between 200 and 300.
+        if (!preg_match('/^[2-3][0-9]{2}/', (string) $status_code)) {
+            $this->create_log(sprintf('Response code is %s.', $status_code));
+            return false;
+        }
 
-        // Return response.
-        return json_decode($response_body);
+        // Inspect response body.
+        $response_body = json_decode($response->getBody()->getContents());
+
+        if ($response_body) {
+            $this->create_log('Finish request successfully.');
+            return $response_body;
+        }
+
+        $this->create_log('Failed to finish request.');
+        return false;
     }
 }

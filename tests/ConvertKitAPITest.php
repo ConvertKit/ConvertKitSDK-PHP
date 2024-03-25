@@ -8,7 +8,6 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\ServerException;
 use Dotenv\Dotenv;
 use ConvertKit_API\ConvertKit_API;
 
@@ -54,11 +53,7 @@ class ConvertKitAPITest extends TestCase
         $this->deleteLogFile();
 
         // Setup API.
-        $this->api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
-            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
-        );
+        $this->api = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET']);
     }
 
     /**
@@ -107,12 +102,7 @@ class ConvertKitAPITest extends TestCase
     public function testDebugEnabled()
     {
         // Setup API with debugging enabled.
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
-            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
-            debug: true
-        );
+        $api = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true);
         $result = $api->get_account();
 
         // Confirm that the log includes expected data.
@@ -135,11 +125,10 @@ class ConvertKitAPITest extends TestCase
 
         // Setup API with debugging enabled.
         $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
-            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
-            debug: true,
-            debugLogFileLocation: $this->logFile
+            $_ENV['CONVERTKIT_API_KEY'],
+            $_ENV['CONVERTKIT_API_SECRET'],
+            true,
+            $this->logFile
         );
         $result = $api->get_account();
 
@@ -152,62 +141,42 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that debug logging works when enabled and an API call is made, with email addresses and credentials
+     * Test that debug logging works when enabled and an API call is made, with the API Key and Secret
      * masked in the log file.
      *
-     * @since   2.0.0
+     * @since   1.3.0
      *
      * @return  void
      */
-    public function testDebugCredentialsAndEmailsAreMasked()
+    public function testDebugAPIKeyAndSecretAreMasked()
     {
         // Setup API with debugging enabled.
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
-            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
-            debug: true
+        $api = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true);
+
+        // Make requests that utilizes both the API Key and Secret.
+        $api->get_forms(); // API Key.
+        $api->get_account(); // API Secret.
+
+        // Define masked versions of API Key and Secret that we expect to see in the log file.
+        $maskedAPIKey = str_replace(
+            $_ENV['CONVERTKIT_API_KEY'],
+            str_repeat('*', strlen($_ENV['CONVERTKIT_API_KEY']) - 4) . substr($_ENV['CONVERTKIT_API_KEY'], - 4),
+            $_ENV['CONVERTKIT_API_KEY']
+        );
+        $maskedAPISecret = str_replace(
+            $_ENV['CONVERTKIT_API_SECRET'],
+            str_repeat('*', strlen($_ENV['CONVERTKIT_API_SECRET']) - 4) . substr($_ENV['CONVERTKIT_API_SECRET'], - 4),
+            $_ENV['CONVERTKIT_API_SECRET']
         );
 
-        // Create log entries with Client ID, Client Secret, Access Token and Email Address, as if an API method
-        // were to log this sensitive data.
-        $this->callPrivateMethod($api, 'create_log', ['Client ID: ' . $_ENV['CONVERTKIT_OAUTH_CLIENT_ID']]);
-        $this->callPrivateMethod($api, 'create_log', ['Client Secret: ' . $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']]);
-        $this->callPrivateMethod($api, 'create_log', ['Access Token: ' . $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']]);
-        $this->callPrivateMethod($api, 'create_log', ['Email: ' . $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']]);
 
-        // Confirm that the log includes the masked Client ID, Secret, Access Token and Email Address.
-        $this->assertStringContainsString(
-            str_repeat(
-                '*',
-                (strlen($_ENV['CONVERTKIT_OAUTH_CLIENT_ID']) - 4)
-            ) . substr($_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], -4),
-            $this->getLogFileContents()
-        );
-        $this->assertStringContainsString(
-            str_repeat(
-                '*',
-                (strlen($_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']) - 4)
-            ) . substr($_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'], -4),
-            $this->getLogFileContents()
-        );
-        $this->assertStringContainsString(
-            str_repeat(
-                '*',
-                (strlen($_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']) - 4)
-            ) . substr($_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'], -4),
-            $this->getLogFileContents()
-        );
-        $this->assertStringContainsString(
-            'o****@n********.c**',
-            $this->getLogFileContents()
-        );
+        // Confirm that the log includes the masked API Key and Secret.
+        $this->assertStringContainsString($maskedAPIKey, $this->getLogFileContents());
+        $this->assertStringContainsString($maskedAPISecret, $this->getLogFileContents());
 
-        // Confirm that the log does not include the unmasked Client ID, Secret, Access Token or Email Address.
-        $this->assertStringNotContainsString($_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $this->getLogFileContents());
-        $this->assertStringNotContainsString($_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'], $this->getLogFileContents());
-        $this->assertStringNotContainsString($_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'], $this->getLogFileContents());
-        $this->assertStringNotContainsString($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], $this->getLogFileContents());
+        // Confirm that the log does not include the unmasked API Key and Secret.
+        $this->assertStringNotContainsString($_ENV['CONVERTKIT_API_KEY'], $this->getLogFileContents());
+        $this->assertStringNotContainsString($_ENV['CONVERTKIT_API_SECRET'], $this->getLogFileContents());
     }
 
     /**
@@ -220,177 +189,13 @@ class ConvertKitAPITest extends TestCase
     public function testDebugDisabled()
     {
         $result = $this->api->get_account();
+
+        // Confirm that the log is empty / doesn't exist.
         $this->assertEmpty($this->getLogFileContents());
     }
 
     /**
-     * Test that get_oauth_url() returns the correct URL to begin the OAuth process.
-     *
-     * @since   2.0.0
-     *
-     * @return  void
-     */
-    public function testGetOAuthURL()
-    {
-        // Confirm the OAuth URL returned is correct.
-        $this->assertEquals(
-            $this->api->get_oauth_url($_ENV['CONVERTKIT_OAUTH_REDIRECT_URI']),
-            'https://app.convertkit.com/oauth/authorize?' . http_build_query([
-                'client_id' => $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-                'redirect_uri' => $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
-                'response_type' => 'code',
-            ])
-        );
-    }
-
-    /**
-     * Test that get_access_token() returns the expected data.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetAccessToken()
-    {
-        // Initialize API.
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']
-        );
-
-        // Define response parameters.
-        $params = [
-            'access_token'  => 'example-access-token',
-            'refresh_token' => 'example-refresh-token',
-            'token_type'    => 'Bearer',
-            'created_at'    => strtotime('now'),
-            'expires_in'    => strtotime('+3 days'),
-            'scope'         => 'public',
-        ];
-
-        // Add mock handler for this API request.
-        $api = $this->mockResponse(
-            api: $api,
-            responseBody: $params,
-        );
-
-        // Send request.
-        $result = $api->get_access_token(
-            authCode: 'auth-code',
-            redirectURI: $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
-        );
-
-        // Inspect response.
-        $result = get_object_vars($result);
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('access_token', $result);
-        $this->assertArrayHasKey('refresh_token', $result);
-        $this->assertArrayHasKey('token_type', $result);
-        $this->assertArrayHasKey('created_at', $result);
-        $this->assertArrayHasKey('expires_in', $result);
-        $this->assertArrayHasKey('scope', $result);
-        $this->assertEquals($result['access_token'], $params['access_token']);
-        $this->assertEquals($result['refresh_token'], $params['refresh_token']);
-        $this->assertEquals($result['created_at'], $params['created_at']);
-        $this->assertEquals($result['expires_in'], $params['expires_in']);
-    }
-
-    /**
-     * Test that a ClientException is thrown when an invalid auth code is supplied
-     * when fetching an access token.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetAccessTokenWithInvalidAuthCode()
-    {
-        $this->expectException(ClientException::class);
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']
-        );
-        $result = $api->get_access_token(
-            authCode: 'not-a-real-auth-code',
-            redirectURI: $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
-        );
-    }
-
-    /**
-     * Test that refresh_token() returns the expected data.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testRefreshToken()
-    {
-        // Initialize API.
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']
-        );
-
-        // Define response parameters.
-        $params = [
-            'access_token'  => 'new-example-access-token',
-            'refresh_token' => 'new-example-refresh-token',
-            'token_type'    => 'Bearer',
-            'created_at'    => strtotime('now'),
-            'expires_in'    => strtotime('+3 days'),
-            'scope'         => 'public',
-        ];
-
-        // Add mock handler for this API request.
-        $api = $this->mockResponse(
-            api: $api,
-            responseBody: $params,
-        );
-
-        // Send request.
-        $result = $api->refresh_token(
-            refreshToken: 'refresh-token',
-            redirectURI: $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
-        );
-
-        // Inspect response.
-        $result = get_object_vars($result);
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('access_token', $result);
-        $this->assertArrayHasKey('refresh_token', $result);
-        $this->assertArrayHasKey('token_type', $result);
-        $this->assertArrayHasKey('created_at', $result);
-        $this->assertArrayHasKey('expires_in', $result);
-        $this->assertArrayHasKey('scope', $result);
-        $this->assertEquals($result['access_token'], $params['access_token']);
-        $this->assertEquals($result['refresh_token'], $params['refresh_token']);
-        $this->assertEquals($result['created_at'], $params['created_at']);
-        $this->assertEquals($result['expires_in'], $params['expires_in']);
-    }
-
-    /**
-     * Test that a ServerException is thrown when an invalid refresh token is supplied
-     * when refreshing an access token.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testRefreshTokenWithInvalidToken()
-    {
-        $this->expectException(ServerException::class);
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET']
-        );
-        $result = $api->refresh_token(
-            refreshToken: 'not-a-real-refresh-token',
-            redirectURI: $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
-        );
-    }
-
-    /**
-     * Test that a ClientException is thrown when an invalid access token is supplied.
+     * Test that a ClientException is thrown when invalid API credentials are supplied.
      *
      * @since   1.0.0
      *
@@ -399,25 +204,7 @@ class ConvertKitAPITest extends TestCase
     public function testInvalidAPICredentials()
     {
         $this->expectException(ClientException::class);
-        $api = new ConvertKit_API(
-            clientID: 'fakeClientID',
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
-            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
-        );
-        $result = $api->get_account();
-
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: 'fakeClientSecret',
-            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
-        );
-        $result = $api->get_account();
-
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
-            accessToken: 'fakeAccessToken'
-        );
+        $api = new ConvertKit_API('fakeApiKey', 'fakeApiSecret');
         $result = $api->get_account();
     }
 
@@ -433,191 +220,11 @@ class ConvertKitAPITest extends TestCase
         $result = $this->api->get_account();
         $this->assertInstanceOf('stdClass', $result);
 
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
         $result = get_object_vars($result);
-        $this->assertArrayHasKey('user', $result);
-        $this->assertArrayHasKey('account', $result);
-
-        $account = get_object_vars($result['account']);
-        $this->assertArrayHasKey('name', $account);
-        $this->assertArrayHasKey('plan_type', $account);
-        $this->assertArrayHasKey('primary_email_address', $account);
-    }
-
-    /**
-     * Test that get_account_colors() returns the expected data.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetAccountColors()
-    {
-        $result = $this->api->get_account_colors();
-        $this->assertInstanceOf('stdClass', $result);
-
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('colors', $result);
-        $this->assertIsArray($result['colors']);
-    }
-
-    /**
-     * Test that update_account_colors() updates the account's colors.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testUpdateAccountColors()
-    {
-        $result = $this->api->update_account_colors([
-            '#111111',
-        ]);
-        $this->assertInstanceOf('stdClass', $result);
-
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('colors', $result);
-        $this->assertIsArray($result['colors']);
-        $this->assertEquals($result['colors'][0], '#111111');
-    }
-
-    /**
-     * Test that get_creator_profile() returns the expected data.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetCreatorProfile()
-    {
-        $result = $this->api->get_creator_profile();
-        $this->assertInstanceOf('stdClass', $result);
-
-        $result = get_object_vars($result);
-        $profile = get_object_vars($result['profile']);
-        $this->assertArrayHasKey('name', $profile);
-        $this->assertArrayHasKey('byline', $profile);
-        $this->assertArrayHasKey('bio', $profile);
-        $this->assertArrayHasKey('image_url', $profile);
-        $this->assertArrayHasKey('profile_url', $profile);
-    }
-
-    /**
-     * Test that get_email_stats() returns the expected data.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetEmailStats()
-    {
-        $result = $this->api->get_email_stats();
-        $this->assertInstanceOf('stdClass', $result);
-
-        $result = get_object_vars($result);
-        $stats = get_object_vars($result['stats']);
-        $this->assertArrayHasKey('sent', $stats);
-        $this->assertArrayHasKey('clicked', $stats);
-        $this->assertArrayHasKey('opened', $stats);
-        $this->assertArrayHasKey('email_stats_mode', $stats);
-        $this->assertArrayHasKey('open_tracking_enabled', $stats);
-        $this->assertArrayHasKey('click_tracking_enabled', $stats);
-        $this->assertArrayHasKey('starting', $stats);
-        $this->assertArrayHasKey('ending', $stats);
-    }
-
-    /**
-     * Test that get_growth_stats() returns the expected data.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetGrowthStats()
-    {
-        $result = $this->api->get_growth_stats();
-        $this->assertInstanceOf('stdClass', $result);
-
-        $result = get_object_vars($result);
-        $stats = get_object_vars($result['stats']);
-        $this->assertArrayHasKey('cancellations', $stats);
-        $this->assertArrayHasKey('net_new_subscribers', $stats);
-        $this->assertArrayHasKey('new_subscribers', $stats);
-        $this->assertArrayHasKey('subscribers', $stats);
-        $this->assertArrayHasKey('starting', $stats);
-        $this->assertArrayHasKey('ending', $stats);
-    }
-
-    /**
-     * Test that get_growth_stats() returns the expected data
-     * when a start date is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetGrowthStatsWithStartDate()
-    {
-        // Define start and end dates.
-        $starting = new DateTime('now');
-        $starting->modify('-7 days');
-        $ending = new DateTime('now');
-
-        // Send request.
-        $result = $this->api->get_growth_stats(
-            starting: $starting
-        );
-        $this->assertInstanceOf('stdClass', $result);
-
-        // Confirm response object contains expected keys.
-        $result = get_object_vars($result);
-        $stats = get_object_vars($result['stats']);
-        $this->assertArrayHasKey('cancellations', $stats);
-        $this->assertArrayHasKey('net_new_subscribers', $stats);
-        $this->assertArrayHasKey('new_subscribers', $stats);
-        $this->assertArrayHasKey('subscribers', $stats);
-        $this->assertArrayHasKey('starting', $stats);
-        $this->assertArrayHasKey('ending', $stats);
-
-        // Assert start and end dates were honored.
-        $this->assertEquals($stats['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
-        $this->assertEquals($stats['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
-    }
-
-    /**
-     * Test that get_growth_stats() returns the expected data
-     * when an end date is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetGrowthStatsWithEndDate()
-    {
-        // Define start and end dates.
-        $starting = new DateTime('now');
-        $starting->modify('-90 days');
-        $ending = new DateTime('now');
-        $ending->modify('-7 days');
-
-        // Send request.
-        $result = $this->api->get_growth_stats(
-            ending: $ending
-        );
-        $this->assertInstanceOf('stdClass', $result);
-
-        // Confirm response object contains expected keys.
-        $result = get_object_vars($result);
-        $stats = get_object_vars($result['stats']);
-        $this->assertArrayHasKey('cancellations', $stats);
-        $this->assertArrayHasKey('net_new_subscribers', $stats);
-        $this->assertArrayHasKey('new_subscribers', $stats);
-        $this->assertArrayHasKey('subscribers', $stats);
-        $this->assertArrayHasKey('starting', $stats);
-        $this->assertArrayHasKey('ending', $stats);
-
-        // Assert start and end dates were honored.
-        $this->assertEquals($stats['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
-        $this->assertEquals($stats['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
+        $this->assertArrayHasKey('name', $result);
+        $this->assertArrayHasKey('plan_type', $result);
+        $this->assertArrayHasKey('primary_email_address', $result);
     }
 
     /**
@@ -683,9 +290,49 @@ class ConvertKitAPITest extends TestCase
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID']
         );
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order is ascending.
+        $this->assertGreaterThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified and the sort order is descending.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithDescSortOrder()
+    {
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            sort_order: 'desc'
+        );
+
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order.
+        $this->assertLessThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
     }
 
     /**
@@ -697,200 +344,54 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testGetFormSubscriptionsWithBouncedSubscriberState()
+    public function testGetFormSubscriptionsWithCancelledSubscriberState()
     {
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            subscriber_state: 'bounced'
+            sort_order: 'asc',
+            subscriber_state: 'cancelled'
         );
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertEquals($result->subscribers[0]->state, 'bounced');
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertEquals($result['total_subscriptions'], 0);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
     }
 
     /**
      * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified and the added_after parameter
-     * is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetFormSubscriptionsWithAddedAfterParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            added_after: $date
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
-        );
-    }
-
-    /**
-     * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified and the added_before parameter
-     * is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetFormSubscriptionsWithAddedBeforeParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            added_before: $date
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertLessThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
-        );
-    }
-
-    /**
-     * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified and the created_after parameter
-     * is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetFormSubscriptionsWithCreatedAfterParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            created_after: $date
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
-        );
-    }
-
-    /**
-     * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified and the created_before parameter
-     * is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetFormSubscriptionsWithCreatedBeforeParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            created_before: $date
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertLessThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
-        );
-    }
-
-    /**
-     * Test that get_form_subscriptions() returns the expected data
-     * when a valid Form ID is specified and pagination parameters
-     * and per_page limits are specified.
+     * when a valid Form ID is specified and the page is set to 2.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetFormSubscriptionsPagination()
+    public function testGetFormSubscriptionsWithPage()
     {
         $result = $this->api->get_form_subscriptions(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            per_page: 1
+            sort_order: 'asc',
+            subscriber_state: 'active',
+            page: 2
         );
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
-
-        // Use pagination to fetch next page.
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            per_page: 1,
-            after_cursor: $result->pagination->end_cursor
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertTrue($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
-
-        // Use pagination to fetch previous page.
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            per_page: 1,
-            before_cursor: $result->pagination->start_cursor
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
+        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertEquals($result['page'], 2);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+        $this->assertIsArray($result['subscriptions']);
     }
 
     /**
-     * Test that get_form_subscriptions() throws a ClientException when an invalid
-     * Form ID is specified.
+     * Test that get_form_subscriptions() returns the expected data
+     * when a valid Form ID is specified.
      *
      * @since   1.0.0
      *
@@ -899,43 +400,7 @@ class ConvertKitAPITest extends TestCase
     public function testGetFormSubscriptionsWithInvalidFormID()
     {
         $this->expectException(ClientException::class);
-        $result = $this->api->get_form_subscriptions(
-            form_id: 12345
-        );
-    }
-
-    /**
-     * Test that get_form_subscriptions() throws a ClientException when an invalid
-     * subscriber state is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetFormSubscriptionsWithInvalidSubscriberState()
-    {
-        $this->expectException(ClientException::class);
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            subscriber_state: 'not-a-valid-state'
-        );
-    }
-
-    /**
-     * Test that get_form_subscriptions() throws a ClientException when invalid
-     * pagination parameters are specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetFormSubscriptionsWithInvalidPagination()
-    {
-        $this->expectException(ClientException::class);
-        $result = $this->api->get_form_subscriptions(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            after_cursor: 'not-a-valid-cursor'
-        );
+        $result = $this->api->get_form_subscriptions(12345);
     }
 
     /**
@@ -948,78 +413,15 @@ class ConvertKitAPITest extends TestCase
     public function testGetSequences()
     {
         $result = $this->api->get_sequences();
-
-        // Assert sequences and pagination exist.
-        $this->assertDataExists($result, 'sequences');
-        $this->assertPaginationExists($result);
+        $this->assertInstanceOf('stdClass', $result);
 
         // Check first sequence in resultset has expected data.
-        $sequence = get_object_vars($result->sequences[0]);
+        $sequence = get_object_vars($result->courses[0]);
         $this->assertArrayHasKey('id', $sequence);
         $this->assertArrayHasKey('name', $sequence);
         $this->assertArrayHasKey('hold', $sequence);
         $this->assertArrayHasKey('repeat', $sequence);
         $this->assertArrayHasKey('created_at', $sequence);
-    }
-
-    /**
-     * Test that get_sequences() returns the expected data when
-     * pagination parameters and per_page limits are specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSequencesPagination()
-    {
-        $result = $this->api->get_sequences(
-            per_page: 1
-        );
-
-        // Assert sequences and pagination exist.
-        $this->assertDataExists($result, 'sequences');
-        $this->assertPaginationExists($result);
-
-        // Assert a single sequence was returned.
-        $this->assertCount(1, $result->sequences);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
-
-        // Use pagination to fetch next page.
-        $result = $this->api->get_sequences(
-            per_page: 1,
-            after_cursor: $result->pagination->end_cursor
-        );
-
-        // Assert sequences and pagination exist.
-        $this->assertDataExists($result, 'sequences');
-        $this->assertPaginationExists($result);
-
-        // Assert a single sequence was returned.
-        $this->assertCount(1, $result->sequences);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertTrue($result->pagination->has_previous_page);
-        $this->assertFalse($result->pagination->has_next_page);
-
-        // Use pagination to fetch previous page.
-        $result = $this->api->get_sequences(
-            per_page: 1,
-            before_cursor: $result->pagination->start_cursor
-        );
-
-        // Assert sequences and pagination exist.
-        $this->assertDataExists($result, 'sequences');
-        $this->assertPaginationExists($result);
-
-        // Assert a single sequence was returned.
-        $this->assertCount(1, $result->sequences);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -1033,15 +435,10 @@ class ConvertKitAPITest extends TestCase
     {
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            email: $this->generateEmailAddress()
         );
         $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscriber', get_object_vars($result));
-        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(
-            get_object_vars($result->subscriber)['email_address'],
-            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
-        );
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
     }
 
     /**
@@ -1057,7 +454,7 @@ class ConvertKitAPITest extends TestCase
         $this->expectException(ClientException::class);
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: 12345,
-            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            email: $this->generateEmailAddress()
         );
     }
 
@@ -1079,56 +476,86 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_subscriber_to_sequence_by_subscriber_id() returns the expected data.
+     * Test that add_subscriber_to_sequence() returns the expected data
+     * when a first_name parameter is included.
      *
-     * @since   2.0.0
+     * @since   1.0.0
      *
      * @return void
      */
-    public function testAddSubscriberToSequenceByID()
+    public function testAddSubscriberToSequenceWithFirstName()
     {
-        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+        $emailAddress = $this->generateEmailAddress();
+        $firstName = 'First Name';
+        $result = $this->api->add_subscriber_to_sequence(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $emailAddress,
+            first_name: $firstName
         );
+
         $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscriber', get_object_vars($result));
-        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the first name was saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
+        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
     }
 
     /**
-     * Test that add_subscriber_to_sequence_by_subscriber_id() throws a ClientException when an invalid
-     * sequence ID is specified.
+     * Test that add_subscriber_to_sequence() returns the expected data
+     * when custom field data is included.
      *
-     * @since   2.0.0
+     * @since   1.0.0
      *
      * @return void
      */
-    public function testAddSubscriberToSequenceByIDWithInvalidSequenceID()
+    public function testAddSubscriberToSequenceWithCustomFields()
     {
-        $this->expectException(ClientException::class);
-        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
-            sequence_id: 12345,
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+        $result = $this->api->add_subscriber_to_sequence(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            fields: [
+                'last_name' => 'Last Name',
+            ]
         );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the custom fields were saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
     }
 
     /**
-     * Test that add_subscriber_to_sequence_by_subscriber_id() throws a ClientException when an invalid
-     * email address is specified.
+     * Test that add_subscriber_to_sequence() returns the expected data
+     * when custom field data is included.
      *
-     * @since   2.0.0
+     * @since   1.0.0
      *
      * @return void
      */
-    public function testAddSubscriberToSequenceByIDWithInvalidSubscriberID()
+    public function testAddSubscriberToSequenceWithTagID()
     {
-        $this->expectException(ClientException::class);
-        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
-            sequence_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
-            subscriber_id: 12345
+        $result = $this->api->add_subscriber_to_sequence(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            tag_ids: [
+                (int) $_ENV['CONVERTKIT_API_TAG_ID']
+            ]
         );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber tags from API to confirm the tag saved.
+        $subscriberTags = $this->api->get_subscriber_tags($result->subscription->subscriber->id);
+        $this->assertEquals($subscriberTags->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
     /**
@@ -1140,218 +567,77 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSequenceSubscriptions()
     {
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID']
-        );
+        $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID']);
+        $this->assertInstanceOf('stdClass', $result);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+        // Assert expected keys exist.
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
+
+        // Assert subscriptions exist.
+        $this->assertIsArray($result['subscriptions']);
+
+        // Assert sort order is ascending.
+        $this->assertGreaterThanOrEqual(
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
+        );
     }
 
     /**
-     * Test that get_sequence_subscriptions() returns the expected data
-     * when a valid Sequence ID is specified and the subscription status
-     * is cancelled.
+     * Test that get_sequence_subscriptions() returns the expected data in descending order.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetSequenceSubscriptionsWithBouncedSubscriberState()
+    public function testGetSequenceSubscriptionsWithDescSortOrder()
     {
         $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            subscriber_state: 'bounced'
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            sort_order: 'desc'
         );
+        $this->assertInstanceOf('stdClass', $result);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+        $result = get_object_vars($result);
+        $this->assertArrayHasKey('total_subscriptions', $result);
+        $this->assertArrayHasKey('page', $result);
+        $this->assertArrayHasKey('total_pages', $result);
+        $this->assertArrayHasKey('subscriptions', $result);
 
-        // Check the correct subscribers were returned.
-        $this->assertEquals($result->subscribers[0]->state, 'bounced');
-    }
+        // Assert subscriptions exist.
+        $this->assertIsArray($result['subscriptions']);
 
-    /**
-     * Test that get_sequence_subscriptions() returns the expected data
-     * when a valid Sequence ID is specified and the added_after parameter
-     * is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSequenceSubscriptionsWithAddedAfterParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            added_after: $date
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
-        );
-    }
-
-    /**
-     * Test that get_sequence_subscriptions() returns the expected data
-     * when a valid Sequence ID is specified and the added_before parameter
-     * is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSequenceSubscriptionsWithAddedBeforeParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            added_before: $date
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
+        // Assert sort order.
         $this->assertLessThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->added_at))
+            $result['subscriptions'][0]->created_at,
+            $result['subscriptions'][1]->created_at
         );
-    }
-
-    /**
-     * Test that get_sequence_subscriptions() returns the expected data
-     * when a valid Sequence ID is specified and the created_after parameter
-     * is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSequenceSubscriptionsWithCreatedAfterParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            created_after: $date
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
-        );
-    }
-
-    /**
-     * Test that get_sequence_subscriptions() returns the expected data
-     * when a valid Sequence ID is specified and the created_before parameter
-     * is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSequenceSubscriptionsWithCreatedBeforeParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            created_before: $date
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Check the correct subscribers were returned.
-        $this->assertLessThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
-        );
-    }
-
-    /**
-     * Test that get_sequence_subscriptions() returns the expected data
-     * when a valid Sequence ID is specified and pagination parameters
-     * and per_page limits are specified.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetSequenceSubscriptionsPagination()
-    {
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            per_page: 1
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
-
-        // Use pagination to fetch next page.
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            per_page: 1,
-            after_cursor: $result->pagination->end_cursor
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertTrue($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
-
-        // Use pagination to fetch previous page.
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            per_page: 1,
-            before_cursor: $result->pagination->start_cursor
-        );
-
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
      * Test that get_sequence_subscriptions() throws a ClientException when an invalid
-     * Sequence ID is specified.
+     * sort order is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithInvalidSortOrder()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            sort_order: 'invalidSortOrder'
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() throws a ClientException when an invalid
+     * sequence ID is specified.
      *
      * @since   1.0.0
      *
@@ -1360,43 +646,7 @@ class ConvertKitAPITest extends TestCase
     public function testGetSequenceSubscriptionsWithInvalidSequenceID()
     {
         $this->expectException(ClientException::class);
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: 12345
-        );
-    }
-
-    /**
-     * Test that get_sequence_subscriptions() throws a ClientException when an invalid
-     * subscriber state is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSequenceSubscriptionsWithInvalidSubscriberState()
-    {
-        $this->expectException(ClientException::class);
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            subscriber_state: 'not-a-valid-state'
-        );
-    }
-
-    /**
-     * Test that get_sequence_subscriptions() throws a ClientException when invalid
-     * pagination parameters are specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSequenceSubscriptionsWithInvalidPagination()
-    {
-        $this->expectException(ClientException::class);
-        $result = $this->api->get_sequence_subscriptions(
-            sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            after_cursor: 'not-a-valid-cursor'
-        );
+        $result = $this->api->get_sequence_subscriptions(12345);
     }
 
     /**
@@ -1408,8 +658,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTags()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tags();
         $this->assertIsArray($result);
 
@@ -1429,8 +677,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTag()
     {
-        $this->markTestIncomplete();
-
         $tagName = 'Tag Test ' . mt_rand();
         $result = $this->api->create_tag($tagName);
 
@@ -1452,8 +698,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagBlank()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tag('');
     }
@@ -1468,8 +712,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagThatExists()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tag($_ENV['CONVERTKIT_API_TAG_NAME']);
     }
@@ -1483,8 +725,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTags()
     {
-        $this->markTestIncomplete();
-
         $tagNames = [
             'Tag Test ' . mt_rand(),
             'Tag Test ' . mt_rand(),
@@ -1512,8 +752,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsBlank()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             '',
@@ -1531,8 +769,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsThatExist()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             $_ENV['CONVERTKIT_API_TAG_NAME'],
@@ -1549,8 +785,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriber()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             email: $this->generateEmailAddress()
@@ -1569,8 +803,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriberWithFirstName()
     {
-        $this->markTestIncomplete();
-
         $emailAddress = $this->generateEmailAddress();
         $firstName = 'First Name';
         $result = $this->api->tag_subscriber(
@@ -1598,8 +830,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriberWithCustomFields()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             email: $this->generateEmailAddress(),
@@ -1627,8 +857,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriber()
     {
-        $this->markTestIncomplete();
-
         // Tag the subscriber first.
         $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
@@ -1660,8 +888,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidTagID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: 12345,
@@ -1679,8 +905,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidSubscriberID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
@@ -1697,8 +921,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmail()
     {
-        $this->markTestIncomplete();
-
         // Tag the subscriber first.
         $email = $this->generateEmailAddress();
         $result = $this->api->tag_subscriber(
@@ -1731,8 +953,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmailWithInvalidTagID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber_by_email(
             tag_id: 12345,
@@ -1750,8 +970,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptions()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID']);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
@@ -1779,8 +997,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithDescSortOrder()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             sort_order: 'desc'
@@ -1812,8 +1028,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithCancelledSubscriberState()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             sort_order: 'asc',
@@ -1840,8 +1054,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithPage()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             sort_order: 'asc',
@@ -1869,11 +1081,13 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptionsWithInvalidFormID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->get_tag_subscriptions(12345);
     }
+
+
+
+    ///
 
     /**
      * Test that get_resources() for Forms returns the expected data.
@@ -1910,7 +1124,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourcesSubscriptionForms()
     {
-        $this->markTestIncomplete();
         $result = $this->api->get_resources('subscription_forms');
         $this->assertIsArray($result);
     }
@@ -1952,14 +1165,18 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToForm()
     {
+        $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_form(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            email: $email
         );
         $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscriber', get_object_vars($result));
-        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscription));
+        $this->assertEquals(get_object_vars($result->subscription)['subscribable_id'], $_ENV['CONVERTKIT_API_FORM_ID']);
+
+        // Unsubscribe.
+        $this->api->unsubscribe($email);
     }
 
     /**
@@ -1997,56 +1214,86 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_subscriber_to_form_by_subscriber_id() returns the expected data.
+     * Test that add_subscriber_to_form() returns the expected data
+     * when a first_name parameter is included.
      *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testAddSubscriberToFormByID()
-    {
-        $result = $this->api->add_subscriber_to_form_by_subscriber_id(
-            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
-        );
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscriber', get_object_vars($result));
-        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
-    }
-
-    /**
-     * Test that add_subscriber_to_form_by_subscriber_id() throws a ClientException when an invalid
-     * form ID is specified.
-     *
-     * @since   2.0.0
+     * @since   1.0.0
      *
      * @return void
      */
-    public function testAddSubscriberToFormByIDWithInvalidFormID()
+    public function testAddSubscriberToFormWithFirstName()
     {
-        $this->expectException(ClientException::class);
-        $result = $this->api->add_subscriber_to_form_by_subscriber_id(
-            form_id: 12345,
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
-        );
-    }
-
-    /**
-     * Test that add_subscriber_to_form_by_subscriber_id() throws a ClientException when an invalid
-     * email address is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testAddSubscriberToFormByIDWithInvalidSubscriberID()
-    {
-        $this->expectException(ClientException::class);
-        $result = $this->api->add_subscriber_to_form_by_subscriber_id(
+        $emailAddress = $this->generateEmailAddress();
+        $firstName = 'First Name';
+        $result = $this->api->add_subscriber_to_form(
             form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
-            subscriber_id: 12345
+            email: $emailAddress,
+            first_name: $firstName
         );
+
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the first name was saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
+        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
+    }
+
+    /**
+     * Test that add_subscriber_to_form() returns the expected data
+     * when custom field data is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToFormWithCustomFields()
+    {
+        $result = $this->api->add_subscriber_to_form(
+            form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            fields: [
+                'last_name' => 'Last Name',
+            ]
+        );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber from API to confirm the custom fields were saved.
+        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
+        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
+    }
+
+    /**
+     * Test that add_subscriber_to_form() returns the expected data
+     * when custom field data is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToFormWithTagID()
+    {
+        $result = $this->api->add_subscriber_to_form(
+            form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
+            email: $this->generateEmailAddress(),
+            first_name: 'First Name',
+            tag_ids: [
+                (int) $_ENV['CONVERTKIT_API_TAG_ID']
+            ]
+        );
+
+        // Check subscription object returned.
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertArrayHasKey('subscription', get_object_vars($result));
+
+        // Fetch subscriber tags from API to confirm the tag saved.
+        $subscriberTags = $this->api->get_subscriber_tags($result->subscription->subscriber->id);
+        $this->assertEquals($subscriberTags->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
     /**
@@ -2058,8 +1305,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberID()
     {
-        $this->markTestIncomplete();
-
         $subscriber_id = $this->api->get_subscriber_id($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
         $this->assertIsInt($subscriber_id);
         $this->assertEquals($subscriber_id, (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
@@ -2075,8 +1320,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberIDWithInvalidEmailAddress()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(InvalidArgumentException::class);
         $result = $this->api->get_subscriber_id('not-an-email-address');
     }
@@ -2091,8 +1334,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberIDWithNotSubscribedEmailAddress()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_subscriber_id('not-a-subscriber@test.com');
         $this->assertFalse($result);
     }
@@ -2106,8 +1347,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriber()
     {
-        $this->markTestIncomplete();
-
         $subscriber = $this->api->get_subscriber((int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
         $this->assertInstanceOf('stdClass', $subscriber);
         $this->assertArrayHasKey('subscriber', get_object_vars($subscriber));
@@ -2128,8 +1367,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberWithInvalidSubscriberID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $subscriber = $this->api->get_subscriber(12345);
     }
@@ -2143,8 +1380,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberWithNoChanges()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->update_subscriber($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscriber', get_object_vars($result));
@@ -2161,8 +1396,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberFirstName()
     {
-        $this->markTestIncomplete();
-
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
@@ -2199,8 +1432,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberEmailAddress()
     {
-        $this->markTestIncomplete();
-
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
@@ -2238,8 +1469,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberCustomFields()
     {
-        $this->markTestIncomplete();
-
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
@@ -2279,8 +1508,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateSubscriberWithInvalidSubscriberID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $subscriber = $this->api->update_subscriber(12345);
     }
@@ -2294,8 +1521,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUnsubscribe()
     {
-        $this->markTestIncomplete();
-
         // Add a subscriber.
         $email = $this->generateEmailAddress();
         $result = $this->api->add_subscriber_to_sequence(
@@ -2323,8 +1548,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUnsubscribeWithNotSubscribedEmailAddress()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $subscriber = $this->api->unsubscribe('not-subscribed@convertkit.com');
     }
@@ -2339,8 +1562,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUnsubscribeWithInvalidEmailAddress()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $subscriber = $this->api->unsubscribe('invalid-email');
     }
@@ -2354,8 +1575,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberTags()
     {
-        $this->markTestIncomplete();
-
         $subscriber = $this->api->get_subscriber_tags((int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
         $this->assertInstanceOf('stdClass', $subscriber);
         $this->assertArrayHasKey('tags', get_object_vars($subscriber));
@@ -2371,8 +1590,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetSubscriberTagsWithInvalidSubscriberID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $subscriber = $this->api->get_subscriber_tags(12345);
     }
@@ -2391,8 +1608,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateUpdateAndDestroyDraftBroadcast()
     {
-        $this->markTestIncomplete();
-
         // Create a broadcast first.
         $result = $this->api->create_broadcast(
             subject: 'Test Subject',
@@ -2445,8 +1660,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateAndDestroyPublicBroadcastWithValidDates()
     {
-        $this->markTestIncomplete();
-
         // Create DateTime object.
         $publishedAt = new DateTime('now');
         $publishedAt->modify('+7 days');
@@ -2492,8 +1705,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcast()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_broadcast($_ENV['CONVERTKIT_API_BROADCAST_ID']);
         $result = get_object_vars($result->broadcast);
         $this->assertEquals($result['id'], $_ENV['CONVERTKIT_API_BROADCAST_ID']);
@@ -2509,8 +1720,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcastWithInvalidBroadcastID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->get_broadcast(12345);
     }
@@ -2524,8 +1733,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcastStats()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_broadcast_stats($_ENV['CONVERTKIT_API_BROADCAST_ID']);
         $result = get_object_vars($result->broadcast);
         $this->assertArrayHasKey('id', $result);
@@ -2547,8 +1754,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetBroadcastStatsWithInvalidBroadcastID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->get_broadcast_stats(12345);
     }
@@ -2563,8 +1768,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateBroadcastWithInvalidBroadcastID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->update_broadcast(12345);
     }
@@ -2579,8 +1782,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDestroyBroadcastWithInvalidBroadcastID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->destroy_broadcast(12345);
     }
@@ -2597,8 +1798,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateAndDestroyWebhook()
     {
-        $this->markTestIncomplete();
-
         // Create a webhook first.
         $result = $this->api->create_webhook(
             url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
@@ -2623,8 +1822,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateAndDestroyWebhookWithEventParameter()
     {
-        $this->markTestIncomplete();
-
         // Create a webhook first.
         $result = $this->api->create_webhook(
             url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
@@ -2648,8 +1845,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateWebhookWithInvalidEvent()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(InvalidArgumentException::class);
         $this->api->create_webhook(
             url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
@@ -2667,8 +1862,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDestroyWebhookWithInvalidRuleID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->destroy_webhook(12345);
     }
@@ -2682,8 +1875,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetCustomFields()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_custom_fields();
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('custom_fields', get_object_vars($result));
@@ -2705,8 +1896,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomField()
     {
-        $this->markTestIncomplete();
-
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
 
@@ -2731,8 +1920,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFieldWithBlankLabel()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->create_custom_field('');
     }
@@ -2746,8 +1933,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFields()
     {
-        $this->markTestIncomplete();
-
         $labels = [
             'Custom Field ' . mt_rand(),
             'Custom Field ' . mt_rand(),
@@ -2781,8 +1966,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomField()
     {
-        $this->markTestIncomplete();
-
         // Create custom field.
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
@@ -2814,8 +1997,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomFieldWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->update_custom_field(12345, 'Something');
     }
@@ -2829,8 +2010,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomField()
     {
-        $this->markTestIncomplete();
-
         // Create custom field.
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
@@ -2856,8 +2035,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomFieldWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->delete_custom_field(12345);
     }
@@ -2871,8 +2048,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testListPurchases()
     {
-        $this->markTestIncomplete();
-
         $purchases = $this->api->list_purchases([
             'page' => 1,
         ]);
@@ -2892,8 +2067,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetPurchase()
     {
-        $this->markTestIncomplete();
-
         // Get ID of first purchase.
         $purchases = $this->api->list_purchases([
             'page' => 1,
@@ -2916,8 +2089,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetPurchaseWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->get_purchase(12345);
     }
@@ -2931,8 +2102,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreatePurchase()
     {
-        $this->markTestIncomplete();
-
         $purchase = $this->api->create_purchase([
             'purchase' => [
                 'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
@@ -2980,8 +2149,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreatePurchaseWithMissingData()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->create_purchase([
             'invalid-key' => [
@@ -2999,8 +2166,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLegacyForm()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_FORM_URL']);
 
         // Assert that the markup is HTML.
@@ -3019,8 +2184,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLandingPage()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 
         // Assert that the markup is HTML.
@@ -3039,8 +2202,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLegacyLandingPage()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
 
         // Assert that the markup is HTML.
@@ -3060,8 +2221,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInvalidURL()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(InvalidArgumentException::class);
         $markup = $this->api->get_resource('not-a-url');
     }
@@ -3076,8 +2235,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInaccessibleURL()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $markup = $this->api->get_resource('https://convertkit.com/a/url/that/does/not/exist');
     }
@@ -3115,23 +2272,6 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Helper method to call a class' private method.
-     *
-     * @since   2.0.0
-     *
-     * @param   mixed  $obj  Class Object.
-     * @param   string $name Method Name.
-     * @param   array  $args Method Arguments.
-     */
-    private function callPrivateMethod($obj, $name, array $args)
-    {
-        $class = new \ReflectionClass($obj);
-        $method = $class->getMethod($name);
-        $method->setAccessible(true);
-        return $method->invokeArgs($obj, $args);
-    }
-
-    /**
      * Generates a unique email address for use in a test, comprising of a prefix,
      * date + time and PHP version number.
      *
@@ -3160,70 +2300,5 @@ class ConvertKitAPITest extends TestCase
     private function isHtml($string)
     {
         return preg_match("/<[^<]+>/", $string, $m) != 0;
-    }
-
-    /**
-     * Helper method to mock an API response.
-     *
-     * @since   2.0.0
-     *
-     * @param   ConvertKitAPI $api  ConvertKit API Class.
-     * @param   null|array    $responseBody     Response to return when API call is made.
-     * @param   int           $httpCode         HTTP Code to return when API call is made.
-     */
-    private function mockResponse(ConvertKit_API $api, $responseBody = null, int $httpCode = 200)
-    {
-        // Setup API with a mock Guzzle client, returning the data
-        // as if we successfully swapped an auth code for an access token.
-        $mock = new MockHandler([
-            new Response(
-                status: $httpCode,
-                body: json_encode($responseBody)
-            ),
-        ]);
-
-        // Define client with mock handler.
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        // Set Client to use for the API.
-        $api->set_http_client($client);
-
-        // Return API object.
-        return $api;
-    }
-
-    /**
-     * Helper method to assert the given key exists as an array
-     * in the API response.
-     *
-     * @since   2.0.0
-     *
-     * @param   array   $result     API Result.
-     */
-    private function assertDataExists($result, $key)
-    {
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey($key, $result);
-        $this->assertIsArray($result[$key]);
-    }
-
-    /**
-     * Helper method to assert pagination object exists in response.
-     *
-     * @since   2.0.0
-     *
-     * @param   array   $result     API Result.
-     */
-    private function assertPaginationExists($result)
-    {
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('pagination', $result);
-        $pagination = get_object_vars($result['pagination']);
-        $this->assertArrayHasKey('has_previous_page', $pagination);
-        $this->assertArrayHasKey('has_next_page', $pagination);
-        $this->assertArrayHasKey('start_cursor', $pagination);
-        $this->assertArrayHasKey('end_cursor', $pagination);
-        $this->assertArrayHasKey('per_page', $pagination);
     }
 }
