@@ -114,6 +114,26 @@ $api = new \ConvertKit_API\ConvertKit_API(
 );
 ```
 
+API requests may then be performed:
+
+```php
+$result = $api->add_subscriber_to_form(12345, 'joe.bloggs@convertkit.com');
+```
+
+To determine whether a new entity / relationship was created, or an existing entity / relationship updated, inspect the HTTP code of the last request:
+
+```php
+$result = $api->add_subscriber_to_form(12345, 'joe.bloggs@convertkit.com');
+$code = $api->getResponseInterface()->getStatusCode(); // 200 OK if e.g. a subscriber already added to the specified form, 201 Created if the subscriber added to the specified form for the first time.
+```
+
+The PSR-7 response can be fetched and further inspected, if required - for example, to check if a header exists:
+
+```php
+$result = $api->add_subscriber_to_form(12345, 'joe.bloggs@convertkit.com');
+$api->getResponseInterface()->hasHeader('Content-Length'); // Check if the last API request included a `Content-Length` header
+```
+
 ### 1.x (v3 API, API Key and Secret, PHP 7.4+)
 
 Get your ConvertKit API Key and API Secret [here](https://app.convertkit.com/account/edit) and set it somewhere in your application.
