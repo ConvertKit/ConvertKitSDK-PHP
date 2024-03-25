@@ -1451,6 +1451,66 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_tags() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagsPagination()
+    {
+        $result = $this->api->get_tags(
+            per_page: 1
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert a single tag was returned.
+        $this->assertCount(1, $result->tags);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_tags(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->tags);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_tags(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->tags);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+    }
+
+    /**
      * Test that create_tag() returns the expected data.
      *
      * @since   1.0.0
@@ -1567,17 +1627,32 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriber()
     {
-        $result = $this->api->tag_subscriber(
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
+        // Tag subscriber by email.
+        $subscriber = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            email: $emailAddress,
         );
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscriber', get_object_vars($result));
-        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(
-            get_object_vars($result->subscriber)['email_address'],
-            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        $this->assertArrayHasKey('subscriber', get_object_vars($subscriber));
+        $this->assertArrayHasKey('id', get_object_vars($subscriber->subscriber));
+        $this->assertArrayHasKey('tagged_at', get_object_vars($subscriber->subscriber));
+        
+        // Confirm the subscriber is tagged.
+        $result = $this->api->get_subscriber_tags(
+            subscriber_id: $subscriber->subscriber->id
         );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert correct tag was assigned.
+        $this->assertEquals($result->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
     /**
@@ -1590,10 +1665,16 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriberWithInvalidTagID()
     {
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
         $this->expectException(ClientException::class);
         $result = $this->api->tag_subscriber(
             tag_id: 12345,
-            email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            email: $emailAddress
         );
     }
 
@@ -1623,14 +1704,32 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriberByID()
     {
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $subscriber = $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
+        // Tag subscriber by email.
         $result = $this->api->tag_subscriber_by_subscriber_id(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+            subscriber_id: $subscriber->subscriber->id,
         );
-        $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscriber', get_object_vars($result));
         $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertArrayHasKey('tagged_at', get_object_vars($result->subscriber));
+        
+        // Confirm the subscriber is tagged.
+        $result = $this->api->get_subscriber_tags(
+            subscriber_id: $result->subscriber->id
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert correct tag was assigned.
+        $this->assertEquals($result->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
     /**
@@ -1643,10 +1742,16 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriberByIDWithInvalidTagID()
     {
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $subscriber = $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
         $this->expectException(ClientException::class);
         $result = $this->api->tag_subscriber_by_subscriber_id(
             tag_id: 12345,
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+            subscriber_id: $subscriber->subscriber->id
         );
     }
 
@@ -1662,7 +1767,7 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(ClientException::class);
         $result = $this->api->tag_subscriber_by_subscriber_id(
-            tag_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+            tag_id: $_ENV['CONVERTKIT_API_TAG_ID'],
             subscriber_id: 12345
         );
     }
