@@ -1527,7 +1527,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
         $this->assertArrayHasKey('created_at', $tag);
-        $this->assertEquals($tag['name'], $tagName);  
+        $this->assertEquals($tag['name'], $tagName);
     }
 
     /**
@@ -1641,7 +1641,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertArrayHasKey('subscriber', get_object_vars($subscriber));
         $this->assertArrayHasKey('id', get_object_vars($subscriber->subscriber));
         $this->assertArrayHasKey('tagged_at', get_object_vars($subscriber->subscriber));
-        
+
         // Confirm the subscriber is tagged.
         $result = $this->api->get_subscriber_tags(
             subscriber_id: $subscriber->subscriber->id
@@ -1718,7 +1718,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertArrayHasKey('subscriber', get_object_vars($result));
         $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
         $this->assertArrayHasKey('tagged_at', get_object_vars($result->subscriber));
-        
+
         // Confirm the subscriber is tagged.
         $result = $this->api->get_subscriber_tags(
             subscriber_id: $result->subscriber->id

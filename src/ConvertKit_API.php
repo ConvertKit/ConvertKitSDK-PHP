@@ -668,17 +668,15 @@ class ConvertKit_API
     {
         return $this->post(
             endpoint: 'tags',
-            args: [
-                'name' => $tag,
-            ]
+            args: ['name' => $tag]
         );
     }
 
     /**
      * Creates multiple tags.
      *
-     * @param array<int,string> $tags Tag Names.
-     * @param string $callback_url    URL to notify for large batch size when async processing complete.
+     * @param array<int,string> $tags         Tag Names.
+     * @param string            $callback_url URL to notify for large batch size when async processing complete.
      *
      * @since 1.1.0
      *
@@ -712,14 +710,15 @@ class ConvertKit_API
     /**
      * Tags a subscriber with the given existing Tag.
      *
-     * @param integer               $tag_id     Tag ID.
-     * @param string                $email      Email Address.
+     * @param integer $tag_id Tag ID.
+     * @param string  $email  Email Address.
      *
      * @see https://developers.convertkit.com/v4.html#tag-a-subscriber-by-email-address
      *
      * @return false|mixed
      */
-    public function tag_subscriber(int $tag_id, string $email) {
+    public function tag_subscriber(int $tag_id, string $email)
+    {
         return $this->post(
             endpoint: sprintf('tags/%s/subscribers', $tag_id),
             args: ['email_address' => $email]
@@ -729,8 +728,8 @@ class ConvertKit_API
     /**
      * Tags a subscriber by subscriber ID with the given existing Tag.
      *
-     * @param integer               $tag_id     Tag ID.
-     * @param string                $email      Email Address.
+     * @param integer $tag_id        Tag ID.
+     * @param integer $subscriber_id Subscriber ID.
      *
      * @see https://developers.convertkit.com/v4.html#tag-a-subscriber
      *
