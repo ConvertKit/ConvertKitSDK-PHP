@@ -1945,8 +1945,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string                                                                                $endpoint API Endpoint.
-     * @param array<string, bool|integer|string|array<int|string, int|string|array<string|string>>> $args     Request arguments.
+     * @param string                                                                                                $endpoint API Endpoint.
+     * @param array<string, bool|integer|float|string|array<int|string, float|integer|string|array<string|string>>> $args     Request arguments.
      *
      * @return false|mixed
      */
@@ -1984,9 +1984,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string                                                                                $endpoint API Endpoint.
-     * @param string                                                                                $method   Request method.
-     * @param array<string, bool|integer|string|array<int|string, int|string|array<string|string>>> $args     Request arguments.
+     * @param string                                                                                                $endpoint API Endpoint.
+     * @param string                                                                                                $method   Request method.
+     * @param array<string, bool|integer|float|string|array<int|string, float|integer|string|array<string|string>>> $args     Request arguments.
      *
      * @throws \Exception If JSON encoding arguments failed.
      *
