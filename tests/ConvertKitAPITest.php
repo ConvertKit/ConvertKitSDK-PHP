@@ -3515,12 +3515,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomField()
     {
-        $this->markTestIncomplete();
-
         // Create custom field.
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
-        $id = $result->id;
+        $id = $result->custom_field->id;
 
         // Change label.
         $newLabel = 'Custom Field ' . mt_rand();
@@ -3548,8 +3546,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomFieldWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->update_custom_field(12345, 'Something');
     }
@@ -3563,12 +3559,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomField()
     {
-        $this->markTestIncomplete();
-
         // Create custom field.
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
-        $id = $result->id;
+        $id = $result->custom_field->id;
 
         // Delete custom field as tests passed.
         $this->api->delete_custom_field($id);
@@ -3590,8 +3584,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomFieldWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->delete_custom_field(12345);
     }

@@ -1511,13 +1511,13 @@ class ConvertKit_API
 
     /**
      * List custom fields.
-     * 
-     * @since 1.0.0
      *
-     * @param bool      $include_total_count  To include the total count of records in the response, use true. 
-     * @param string    $after_cursor         Return results after the given pagination cursor.
-     * @param string    $before_cursor        Return results before the given pagination cursor.
-     * @param integer   $per_page             Number of results to return.
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
+     *
+     * @since 1.0.0
      *
      * @see https://developers.convertkit.com/v4.html#list-custom-fields
      *
@@ -1530,9 +1530,7 @@ class ConvertKit_API
         int $per_page = 100
     ) {
         // Build parameters.
-        $options = [
-            'include_total_count' => $include_total_count,
-        ];
+        $options = ['include_total_count' => $include_total_count];
 
         // Build pagination parameters.
         $options = $this->build_pagination_params(
@@ -1564,9 +1562,7 @@ class ConvertKit_API
     {
         return $this->post(
             endpoint: 'custom_fields',
-            args: [
-                'label' => $label,
-            ]
+            args: ['label' => $label]
         );
     }
 
@@ -1824,14 +1820,14 @@ class ConvertKit_API
     /**
      * Adds pagination parameters to the given array of existing API parameters.
      *
-     * @param array<string, string|integer> $params        API parameters.
-     * @param string                        $after_cursor  Return results after the given pagination cursor.
-     * @param string                        $before_cursor Return results before the given pagination cursor.
-     * @param integer                       $per_page      Number of results to return.
+     * @param array<string, string|integer|bool> $params        API parameters.
+     * @param string                             $after_cursor  Return results after the given pagination cursor.
+     * @param string                             $before_cursor Return results before the given pagination cursor.
+     * @param integer                            $per_page      Number of results to return.
      *
      * @since 2.0.0
      *
-     * @return array<string, string|integer>
+     * @return array<string, string|integer|bool>
      */
     private function build_pagination_params(
         array $params = [],
@@ -1855,8 +1851,8 @@ class ConvertKit_API
     /**
      * Performs a GET request to the API.
      *
-     * @param string                                                     $endpoint API Endpoint.
-     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
+     * @param string                                                             $endpoint API Endpoint.
+     * @param array<string, int|string|boolean|array<string, int|string>|string> $args     Request arguments.
      *
      * @return false|mixed
      */
