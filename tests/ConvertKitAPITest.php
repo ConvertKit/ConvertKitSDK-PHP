@@ -3343,18 +3343,94 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetCustomFields()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_custom_fields();
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('custom_fields', get_object_vars($result));
 
-        // Inspect first custom field.
-        $customField = get_object_vars($result->custom_fields[0]);
-        $this->assertArrayHasKey('id', $customField);
-        $this->assertArrayHasKey('name', $customField);
-        $this->assertArrayHasKey('key', $customField);
-        $this->assertArrayHasKey('label', $customField);
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_custom_fields() returns the expected data
+     * when the total count is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetCustomFieldsWithTotalCount()
+    {
+        $result = $this->api->get_custom_fields(
+            include_total_count: true
+        );
+
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_custom_fields() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetCustomFieldsPagination()
+    {
+        $result = $this->api->get_custom_fields(
+            per_page: 1
+        );
+
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+
+        // Assert a single custom field was returned.
+        $this->assertCount(1, $result->custom_fields);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_custom_fields(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+
+        // Assert a single custom field was returned.
+        $this->assertCount(1, $result->custom_fields);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_custom_fields(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+
+        // Assert a single custom field was returned.
+        $this->assertCount(1, $result->custom_fields);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -3366,12 +3442,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomField()
     {
-        $this->markTestIncomplete();
-
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
 
-        $result = get_object_vars($result);
+        $result = get_object_vars($result->custom_field);
         $this->assertArrayHasKey('id', $result);
         $this->assertArrayHasKey('name', $result);
         $this->assertArrayHasKey('key', $result);
@@ -3392,8 +3466,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFieldWithBlankLabel()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->create_custom_field('');
     }
@@ -3407,17 +3479,18 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFields()
     {
-        $this->markTestIncomplete();
-
         $labels = [
             'Custom Field ' . mt_rand(),
             'Custom Field ' . mt_rand(),
         ];
         $result = $this->api->create_custom_fields($labels);
 
+        // Assert no failures.
+        $this->assertCount(0, $result->failures);
+
         // Confirm result is an array comprising of each custom field that was created.
-        $this->assertIsArray($result);
-        foreach ($result as $index => $customField) {
+        $this->assertIsArray($result->custom_fields);
+        foreach ($result->custom_fields as $index => $customField) {
             // Confirm individual custom field.
             $customField = get_object_vars($customField);
             $this->assertArrayHasKey('id', $customField);
