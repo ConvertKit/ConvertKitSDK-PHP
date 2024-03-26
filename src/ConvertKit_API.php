@@ -302,7 +302,7 @@ class ConvertKit_API
     /**
      * Gets the current account
      *
-     * @see https://developers.convertkit.com/#account
+     * @see https://developers.convertkit.com/v4.html#get-current-account
      *
      * @return false|mixed
      */
@@ -390,7 +390,7 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#forms
+     * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
      *
      * @return false|mixed
      */
@@ -404,7 +404,7 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#forms
+     * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
      *
      * @return false|mixed
      */
