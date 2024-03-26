@@ -1938,13 +1938,13 @@ class ConvertKitAPITest extends TestCase
     /**
      * Test that get_tag_subscriptions() returns the expected data
      * when a valid Tag ID is specified and the subscription status
-     * is cancelled.
+     * is bounced.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetTagSubscriptionsWithCancelledSubscriberState()
+    public function testGetTagSubscriptionsWithBouncedSubscriberState()
     {
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
