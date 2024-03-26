@@ -1512,15 +1512,39 @@ class ConvertKit_API
     /**
      * List custom fields.
      *
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
+     *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#list-fields
+     * @see https://developers.convertkit.com/v4.html#list-custom-fields
      *
-     * @return false|object
+     * @return false|mixed
      */
-    public function get_custom_fields()
-    {
-        return $this->get('custom_fields');
+    public function get_custom_fields(
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        // Build parameters.
+        $options = ['include_total_count' => $include_total_count];
+
+        // Build pagination parameters.
+        $options = $this->build_pagination_params(
+            params: $options,
+            after_cursor: $after_cursor,
+            before_cursor: $before_cursor,
+            per_page: $per_page
+        );
+
+        // Send request.
+        return $this->get(
+            endpoint: 'custom_fields',
+            args: $options
+        );
     }
 
     /**
@@ -1530,36 +1554,50 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#create-field
+     * @see https://developers.convertkit.com/v4.html#create-a-custom-field
      *
      * @return false|object
      */
     public function create_custom_field(string $label)
     {
         return $this->post(
-            'custom_fields',
-            [
-                'label' => [$label],
-            ]
+            endpoint: 'custom_fields',
+            args: ['label' => $label]
         );
     }
 
     /**
      * Creates multiple custom fields.
      *
-     * @param array<string> $labels Custom Fields labels.
+     * @param array<string> $labels       Custom Fields labels.
+     * @param string        $callback_url URL to notify for large batch size when async processing complete.
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#create-field
+     * @see https://developers.convertkit.com/v4.html#bulk-create-custom-fields
      *
      * @return false|object
      */
-    public function create_custom_fields(array $labels)
+    public function create_custom_fields(array $labels, string $callback_url = '')
     {
+        // Build parameters.
+        $options = [
+            'custom_fields' => [],
+        ];
+        foreach ($labels as $i => $label) {
+            $options['custom_fields'][] = [
+                'label' => (string) $label,
+            ];
+        }
+
+        if (!empty($callback_url)) {
+            $options['callback_url'] = $callback_url;
+        }
+
+        // Send request.
         return $this->post(
-            'custom_fields',
-            ['label' => $labels]
+            endpoint: 'bulk/custom_fields',
+            args: $options
         );
     }
 
@@ -1571,15 +1609,15 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#update-field
+     * @see https://developers.convertkit.com/v4.html#update-a-custom-field
      *
      * @return false|object
      */
     public function update_custom_field(int $id, string $label)
     {
         return $this->put(
-            sprintf('custom_fields/%s', $id),
-            ['label' => $label]
+            endpoint: sprintf('custom_fields/%s', $id),
+            args: ['label' => $label]
         );
     }
 
@@ -1782,14 +1820,14 @@ class ConvertKit_API
     /**
      * Adds pagination parameters to the given array of existing API parameters.
      *
-     * @param array<string, string|integer> $params        API parameters.
-     * @param string                        $after_cursor  Return results after the given pagination cursor.
-     * @param string                        $before_cursor Return results before the given pagination cursor.
-     * @param integer                       $per_page      Number of results to return.
+     * @param array<string, string|integer|bool> $params        API parameters.
+     * @param string                             $after_cursor  Return results after the given pagination cursor.
+     * @param string                             $before_cursor Return results before the given pagination cursor.
+     * @param integer                            $per_page      Number of results to return.
      *
      * @since 2.0.0
      *
-     * @return array<string, string|integer>
+     * @return array<string, string|integer|bool>
      */
     private function build_pagination_params(
         array $params = [],
@@ -1813,8 +1851,8 @@ class ConvertKit_API
     /**
      * Performs a GET request to the API.
      *
-     * @param string                                                     $endpoint API Endpoint.
-     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
+     * @param string                                                             $endpoint API Endpoint.
+     * @param array<string, int|string|boolean|array<string, int|string>|string> $args     Request arguments.
      *
      * @return false|mixed
      */
