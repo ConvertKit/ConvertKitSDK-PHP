@@ -3640,7 +3640,7 @@ class ConvertKitAPITest extends TestCase
         // Get purchase.
         $result = $this->api->get_purchase($id);
         $this->assertInstanceOf('stdClass', $result);
-        $this->assertEquals($result->id, $id);
+        $this->assertEquals($purchases->purchases[0]->id, $id);
     }
 
     /**
@@ -3684,23 +3684,19 @@ class ConvertKitAPITest extends TestCase
                     'lid' => 7777,
                     'quantity' => 2,
                     'unit_price' => 5.00,
-                    
                 ],
                 [
                     'name' => 'Telephone Cord (data)',
                     'pid' => 5555,
                     'lid' => 7778,
-                    'quantity' => 1
+                    'quantity' => 1,
                     'unit_price' => 10.00,
-                    
                 ],
             ],
         );
-        var_dump($purchase);
-        die();
     
         $this->assertInstanceOf('stdClass', $purchase);
-        $this->assertArrayHasKey('transaction_id', get_object_vars($purchase));
+        $this->assertArrayHasKey('transaction_id', get_object_vars($purchase->purchase));
     }
 
     /**
@@ -3711,16 +3707,14 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testCreatePurchaseWithMissingData()
+    public function testCreatePurchaseWithInvalidData()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
-        $this->api->create_purchase([
-            'invalid-key' => [
-                'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
-            ],
-        ]);
+        $this->api->create_purchase(
+            email_address: 'not-an-email-address',
+            transaction_id: str_shuffle('wfervdrtgsdewrafvwefds'),
+            status: 'paid'
+        );
     }
 
     /**

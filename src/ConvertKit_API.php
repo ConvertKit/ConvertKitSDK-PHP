@@ -1694,7 +1694,7 @@ class ConvertKit_API
             'discount'         => $discount,
             'total'            => $total,
             'currency'         => $currency,
-            'transaction_time' => $transaction_time->format('Y-m-d H:i:s'),
+            'transaction_time' => (!is_null($transaction_time) ? $transaction_time->format('Y-m-d H:i:s') : ''),
             'products'         => $products,
         ];
 
