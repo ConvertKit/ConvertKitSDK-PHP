@@ -416,18 +416,18 @@ class ConvertKit_API
     /**
      * Adds a subscriber to a form by email address
      *
-     * @param integer $form_id Form ID.
-     * @param string  $email   Email Address.
+     * @param integer $form_id       Form ID.
+     * @param string  $email_address Email Address.
      *
      * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form-by-email-address
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_form(int $form_id, string $email)
+    public function add_subscriber_to_form_by_email(int $form_id, string $email_address)
     {
         return $this->post(
             endpoint: sprintf('forms/%s/subscribers', $form_id),
-            args: ['email_address' => $email]
+            args: ['email_address' => $email_address]
         );
     }
 
@@ -443,7 +443,7 @@ class ConvertKit_API
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_form_by_subscriber_id(int $form_id, int $subscriber_id)
+    public function add_subscriber_to_form(int $form_id, int $subscriber_id)
     {
         return $this->post(sprintf('forms/%s/subscribers/%s', $form_id, $subscriber_id));
     }
@@ -536,18 +536,18 @@ class ConvertKit_API
     /**
      * Adds a subscriber to a sequence by email address
      *
-     * @param integer $sequence_id Sequence ID.
-     * @param string  $email       Email Address.
+     * @param integer $sequence_id   Sequence ID.
+     * @param string  $email_address Email Address.
      *
      * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence-by-email-address
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_sequence(int $sequence_id, string $email)
+    public function add_subscriber_to_sequence_by_email(int $sequence_id, string $email_address)
     {
         return $this->post(
             endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
-            args: ['email_address' => $email]
+            args: ['email_address' => $email_address]
         );
     }
 
@@ -563,7 +563,7 @@ class ConvertKit_API
      *
      * @return false|mixed
      */
-    public function add_subscriber_to_sequence_by_subscriber_id(int $sequence_id, int $subscriber_id)
+    public function add_subscriber_to_sequence(int $sequence_id, int $subscriber_id)
     {
         return $this->post(sprintf('sequences/%s/subscribers/%s', $sequence_id, $subscriber_id));
     }
@@ -710,18 +710,18 @@ class ConvertKit_API
     /**
      * Tags a subscriber with the given existing Tag.
      *
-     * @param integer $tag_id Tag ID.
-     * @param string  $email  Email Address.
+     * @param integer $tag_id        Tag ID.
+     * @param string  $email_address Email Address.
      *
      * @see https://developers.convertkit.com/v4.html#tag-a-subscriber-by-email-address
      *
      * @return false|mixed
      */
-    public function tag_subscriber(int $tag_id, string $email)
+    public function tag_subscriber_by_email(int $tag_id, string $email_address)
     {
         return $this->post(
             endpoint: sprintf('tags/%s/subscribers', $tag_id),
-            args: ['email_address' => $email]
+            args: ['email_address' => $email_address]
         );
     }
 
@@ -735,7 +735,7 @@ class ConvertKit_API
      *
      * @return false|mixed
      */
-    public function tag_subscriber_by_subscriber_id(int $tag_id, int $subscriber_id)
+    public function tag_subscriber(int $tag_id, int $subscriber_id)
     {
         return $this->post(sprintf('tags/%s/subscribers/%s', $tag_id, $subscriber_id));
     }
@@ -760,8 +760,8 @@ class ConvertKit_API
     /**
      * Removes a tag from a subscriber by email address.
      *
-     * @param integer $tag_id Tag ID.
-     * @param string  $email  Subscriber email address.
+     * @param integer $tag_id        Tag ID.
+     * @param string  $email_address Subscriber email address.
      *
      * @since 1.0.0
      *
@@ -769,11 +769,11 @@ class ConvertKit_API
      *
      * @return false|mixed
      */
-    public function remove_tag_from_subscriber_by_email(int $tag_id, string $email)
+    public function remove_tag_from_subscriber_by_email(int $tag_id, string $email_address)
     {
         return $this->delete(
             sprintf('tags/%s/subscribers', $tag_id),
-            ['email_address' => $email]
+            ['email_address' => $email_address]
         );
     }
 
@@ -1186,18 +1186,18 @@ class ConvertKit_API
     /**
      * Unsubscribe an email address.
      *
-     * @param string $email Email Address.
+     * @param string $email_address Email Address.
      *
      * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
      *
      * @return false|object
      */
-    public function unsubscribe(string $email)
+    public function unsubscribe_by_email(string $email_address)
     {
         return $this->post(
             sprintf(
                 'subscribers/%s/unsubscribe',
-                $this->get_subscriber_id($email)
+                $this->get_subscriber_id($email_address)
             )
         );
     }
@@ -1211,7 +1211,7 @@ class ConvertKit_API
      *
      * @return false|object
      */
-    public function unsubscribe_by_id(int $subscriber_id)
+    public function unsubscribe(int $subscriber_id)
     {
         return $this->post(sprintf('subscribers/%s/unsubscribe', $subscriber_id));
     }

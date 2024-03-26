@@ -1108,7 +1108,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_subscriber_to_sequence_by_subscriber_id() returns the expected data.
+     * Test that add_subscriber_to_sequence() returns the expected data.
      *
      * @since   2.0.0
      *
@@ -1116,7 +1116,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceByID()
     {
-        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
+        $result = $this->api->add_subscriber_to_sequence(
             sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
             subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
         );
@@ -1127,7 +1127,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_subscriber_to_sequence_by_subscriber_id() throws a ClientException when an invalid
+     * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
      * sequence ID is specified.
      *
      * @since   2.0.0
@@ -1137,14 +1137,14 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToSequenceByIDWithInvalidSequenceID()
     {
         $this->expectException(ClientException::class);
-        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
+        $result = $this->api->add_subscriber_to_sequence(
             sequence_id: 12345,
             subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
         );
     }
 
     /**
-     * Test that add_subscriber_to_sequence_by_subscriber_id() throws a ClientException when an invalid
+     * Test that add_subscriber_to_sequence() throws a ClientException when an invalid
      * email address is specified.
      *
      * @since   2.0.0
@@ -1154,7 +1154,7 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToSequenceByIDWithInvalidSubscriberID()
     {
         $this->expectException(ClientException::class);
-        $result = $this->api->add_subscriber_to_sequence_by_subscriber_id(
+        $result = $this->api->add_subscriber_to_sequence(
             sequence_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
             subscriber_id: 12345
         );
@@ -1693,7 +1693,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that tag_subscriber_by_subscriber_id() returns the expected data.
+     * Test that tag_subscriber() returns the expected data.
      *
      * @since   2.0.0
      *
@@ -1708,7 +1708,7 @@ class ConvertKitAPITest extends TestCase
         );
 
         // Tag subscriber by email.
-        $result = $this->api->tag_subscriber_by_subscriber_id(
+        $result = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             subscriber_id: $subscriber->subscriber->id,
         );
@@ -1730,7 +1730,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that tag_subscriber_by_subscriber_id() throws a ClientException when an invalid
+     * Test that tag_subscriber() throws a ClientException when an invalid
      * sequence ID is specified.
      *
      * @since   2.0.0
@@ -1746,14 +1746,14 @@ class ConvertKitAPITest extends TestCase
         );
 
         $this->expectException(ClientException::class);
-        $result = $this->api->tag_subscriber_by_subscriber_id(
+        $result = $this->api->tag_subscriber(
             tag_id: 12345,
             subscriber_id: $subscriber->subscriber->id
         );
     }
 
     /**
-     * Test that tag_subscriber_by_subscriber_id() throws a ClientException when an invalid
+     * Test that tag_subscriber() throws a ClientException when an invalid
      * email address is specified.
      *
      * @since   2.0.0
@@ -1763,7 +1763,7 @@ class ConvertKitAPITest extends TestCase
     public function testTagSubscriberByIDWithInvalidSubscriberID()
     {
         $this->expectException(ClientException::class);
-        $result = $this->api->tag_subscriber_by_subscriber_id(
+        $result = $this->api->tag_subscriber(
             tag_id: $_ENV['CONVERTKIT_API_TAG_ID'],
             subscriber_id: 12345
         );
@@ -2272,7 +2272,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_subscriber_to_form_by_subscriber_id() returns the expected data.
+     * Test that add_subscriber_to_form() returns the expected data.
      *
      * @since   2.0.0
      *
@@ -2280,7 +2280,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormByID()
     {
-        $result = $this->api->add_subscriber_to_form_by_subscriber_id(
+        $result = $this->api->add_subscriber_to_form(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
             subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
         );
@@ -2291,7 +2291,7 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that add_subscriber_to_form_by_subscriber_id() throws a ClientException when an invalid
+     * Test that add_subscriber_to_form() throws a ClientException when an invalid
      * form ID is specified.
      *
      * @since   2.0.0
@@ -2301,14 +2301,14 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToFormByIDWithInvalidFormID()
     {
         $this->expectException(ClientException::class);
-        $result = $this->api->add_subscriber_to_form_by_subscriber_id(
+        $result = $this->api->add_subscriber_to_form(
             form_id: 12345,
             subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
         );
     }
 
     /**
-     * Test that add_subscriber_to_form_by_subscriber_id() throws a ClientException when an invalid
+     * Test that add_subscriber_to_form() throws a ClientException when an invalid
      * email address is specified.
      *
      * @since   2.0.0
@@ -2318,7 +2318,7 @@ class ConvertKitAPITest extends TestCase
     public function testAddSubscriberToFormByIDWithInvalidSubscriberID()
     {
         $this->expectException(ClientException::class);
-        $result = $this->api->add_subscriber_to_form_by_subscriber_id(
+        $result = $this->api->add_subscriber_to_form(
             form_id: $_ENV['CONVERTKIT_API_FORM_ID'],
             subscriber_id: 12345
         );
@@ -2687,7 +2687,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
 
         // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        $this->api->unsubscribe($result->subscriber->id);
     }
 
     /**
@@ -2712,7 +2712,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($result->subscriber->first_name, $firstName);
 
         // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        $this->api->unsubscribe($result->subscriber->id);
     }
 
     /**
@@ -2737,7 +2737,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($result->subscriber->state, $subscriberState);
 
         // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        $this->api->unsubscribe($result->subscriber->id);
     }
 
     /**
@@ -2764,7 +2764,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($result->subscriber->fields->last_name, $lastName);
 
         // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        $this->api->unsubscribe($result->subscriber->id);
     }
 
     /**
@@ -2824,7 +2824,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
 
         // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        $this->api->unsubscribe($result->subscriber->id);
     }
 
     /**
@@ -2854,7 +2854,7 @@ class ConvertKitAPITest extends TestCase
             $this->assertEquals($subscriber->email_address, $subscribers[$i]['email_address']);
 
             // Unsubscribe to cleanup test.
-            $this->api->unsubscribe_by_id($subscriber->id);
+            $this->api->unsubscribe($subscriber->id);
         }
     }
 
@@ -3019,7 +3019,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($result->subscriber->first_name, $firstName);
 
         // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        $this->api->unsubscribe($result->subscriber->id);
     }
 
     /**
@@ -3055,7 +3055,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($result->subscriber->email_address, $newEmail);
 
         // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        $this->api->unsubscribe($result->subscriber->id);
     }
 
     /**
@@ -3093,7 +3093,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertEquals($result->subscriber->fields->last_name, $lastName);
 
         // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        $this->api->unsubscribe($result->subscriber->id);
     }
 
     /**
@@ -3173,7 +3173,7 @@ class ConvertKitAPITest extends TestCase
         );
 
         // Unsubscribe.
-        $this->assertNull($this->api->unsubscribe_by_id($result->subscriber->id));
+        $this->assertNull($this->api->unsubscribe($result->subscriber->id));
     }
 
     /**
@@ -3187,7 +3187,7 @@ class ConvertKitAPITest extends TestCase
     public function testUnsubscribeByIDWithInvalidSubscriberID()
     {
         $this->expectException(ClientException::class);
-        $subscriber = $this->api->unsubscribe_by_id(12345);
+        $subscriber = $this->api->unsubscribe(12345);
     }
 
     /**
