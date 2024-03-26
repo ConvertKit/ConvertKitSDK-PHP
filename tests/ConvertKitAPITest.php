@@ -3532,16 +3532,94 @@ class ConvertKitAPITest extends TestCase
      */
     public function testListPurchases()
     {
-        $this->markTestIncomplete();
+        $result = $this->api->list_purchases();
 
-        $purchases = $this->api->list_purchases([
-            'page' => 1,
-        ]);
-        $this->assertInstanceOf('stdClass', $purchases);
-        $this->assertArrayHasKey('total_purchases', get_object_vars($purchases));
-        $this->assertArrayHasKey('page', get_object_vars($purchases));
-        $this->assertArrayHasKey('total_pages', get_object_vars($purchases));
-        $this->assertArrayHasKey('purchases', get_object_vars($purchases));
+        // Assert purchases and pagination exist.
+        $this->assertDataExists($result, 'purchases');
+        $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that list_purchases() returns the expected data
+     * when the total count is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testListPurchasesWithTotalCount()
+    {
+        $result = $this->api->list_purchases(
+            include_total_count: true
+        );
+
+        // Assert purchases and pagination exist.
+        $this->assertDataExists($result, 'purchases');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that list_purchases() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testListPurchasesPagination()
+    {
+        $result = $this->api->list_purchases(
+            per_page: 1
+        );
+
+        // Assert purchases and pagination exist.
+        $this->assertDataExists($result, 'purchases');
+        $this->assertPaginationExists($result);
+
+        // Assert a single purchase was returned.
+        $this->assertCount(1, $result->purchases);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->list_purchases(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert purchases and pagination exist.
+        $this->assertDataExists($result, 'purchases');
+        $this->assertPaginationExists($result);
+
+        // Assert a single purchase was returned.
+        $this->assertCount(1, $result->purchases);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->list_purchases(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert purchases and pagination exist.
+        $this->assertDataExists($result, 'purchases');
+        $this->assertPaginationExists($result);
+
+        // Assert a single purchase was returned.
+        $this->assertCount(1, $result->purchases);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -3553,12 +3631,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetPurchase()
     {
-        $this->markTestIncomplete();
-
         // Get ID of first purchase.
-        $purchases = $this->api->list_purchases([
-            'page' => 1,
-        ]);
+        $purchases = $this->api->list_purchases(
+            per_page: 1
+        );
         $id = $purchases->purchases[0]->id;
 
         // Get purchase.
@@ -3577,8 +3653,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetPurchaseWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->get_purchase(12345);
     }
@@ -3592,41 +3666,39 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreatePurchase()
     {
-        $this->markTestIncomplete();
-
-        $purchase = $this->api->create_purchase([
-            'purchase' => [
-                'transaction_id' => str_shuffle('wfervdrtgsdewrafvwefds'),
-                'email_address'  => $this->generateEmailAddress(),
-                'first_name'     => 'John',
-                'currency'       => 'usd',
-                'transaction_time' => date('Y-m-d H:i:s'),
-                'subtotal'       => 20.00,
-                'tax'            => 2.00,
-                'shipping'       => 2.00,
-                'discount'       => 3.00,
-                'total'          => 21.00,
-                'status'         => 'paid',
-                'products'       => [
-                    [
-                        'pid' => 9999,
-                        'lid' => 7777,
-                        'name' => 'Floppy Disk (512k)',
-                        'sku' => '7890-ijkl',
-                        'unit_price' => 5.00,
-                        'quantity' => 2
-                    ],
-                    [
-                        'pid' => 5555,
-                        'lid' => 7778,
-                        'name' => 'Telephone Cord (data)',
-                        'sku' => 'mnop-1234',
-                        'unit_price' => 10.00,
-                        'quantity' => 1
-                    ],
+        $purchase = $this->api->create_purchase(
+            email_address: $this->generateEmailAddress(),
+            transaction_id: str_shuffle('wfervdrtgsdewrafvwefds'),
+            status: 'paid',
+            subtotal: 20.00,
+            tax: 2.00,
+            shipping: 2.00,
+            discount: 3.00,
+            total: 21.00,
+            currency: 'usd',
+            transaction_time: new DateTime('now'),
+            products: [
+                [
+                    'name' => 'Floppy Disk (512k)',
+                    'pid' => 9999,
+                    'lid' => 7777,
+                    'quantity' => 2,
+                    'unit_price' => 5.00,
+                    
+                ],
+                [
+                    'name' => 'Telephone Cord (data)',
+                    'pid' => 5555,
+                    'lid' => 7778,
+                    'quantity' => 1
+                    'unit_price' => 10.00,
+                    
                 ],
             ],
-        ]);
+        );
+        var_dump($purchase);
+        die();
+    
         $this->assertInstanceOf('stdClass', $purchase);
         $this->assertArrayHasKey('transaction_id', get_object_vars($purchase));
     }

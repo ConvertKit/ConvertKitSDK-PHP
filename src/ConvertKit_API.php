@@ -1602,15 +1602,39 @@ class ConvertKit_API
     /**
      * List purchases.
      *
-     * @param array<string, string> $options Request options.
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
-     * @see https://developers.convertkit.com/#list-purchases
+     * @since 1.0.0
      *
-     * @return false|object
+     * @see https://developers.convertkit.com/v4.html#list-purchases
+     *
+     * @return false|mixed
      */
-    public function list_purchases(array $options)
-    {
-        return $this->get('purchases', $options);
+    public function list_purchases(
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        // Build parameters.
+        $options = ['include_total_count' => $include_total_count];
+
+        // Build pagination parameters.
+        $options = $this->build_pagination_params(
+            params: $options,
+            after_cursor: $after_cursor,
+            before_cursor: $before_cursor,
+            per_page: $per_page
+        );
+
+        // Send request.
+        return $this->get(
+            endpoint: 'purchases',
+            args: $options
+        );
     }
 
     /**
@@ -1618,7 +1642,7 @@ class ConvertKit_API
      *
      * @param integer $purchase_id Purchase ID.
      *
-     * @see https://developers.convertkit.com/#retrieve-a-specific-purchase
+     * @see https://developers.convertkit.com/v4.html#get-a-purchase
      *
      * @return false|object
      */
@@ -1630,14 +1654,50 @@ class ConvertKit_API
     /**
      * Creates a purchase.
      *
-     * @param array<string, string> $options Purchase data.
+     * @param string                         $email_address    Email Address.
+     * @param string                         $transaction_id   Transaction ID.
+     * @param string                         $status           Order Status.
+     * @param float                          $subtotal         Subtotal.
+     * @param float                          $tax              Tax.
+     * @param float                          $shipping         Shipping.
+     * @param float                          $discount         Discount.
+     * @param float                          $total            Total.
+     * @param string                         $currency         ISO Currency Code.
+     * @param \DateTime                      $transaction_time Transaction date and time.
+     * @param array<string,int|float|string> $products         Products.
      *
-     * @see https://developers.convertkit.com/#create-a-purchase
+     * @see https://developers.convertkit.com/v4.html#create-a-purchase
      *
      * @return false|object
      */
-    public function create_purchase(array $options)
-    {
+    public function create_purchase(
+        string $email_address,
+        string $transaction_id,
+        string $status,
+        float $subtotal = 0,
+        float $tax = 0,
+        float $shipping = 0,
+        float $discount = 0,
+        float $total = 0,
+        string $currency = 'usd',
+        \DateTime $transaction_time = null,
+        array $products = []
+    ) {
+        // Build parameters.
+        $options = [
+            'email_address'    => $email_address,
+            'transaction_id'   => $transaction_id,
+            'status'           => $status,
+            'subtotal'         => $subtotal,
+            'tax'              => $tax,
+            'shipping'         => $shipping,
+            'discount'         => $discount,
+            'total'            => $total,
+            'currency'         => $currency,
+            'transaction_time' => $transaction_time->format('Y-m-d H:i:s'),
+            'products'         => $products,
+        ];
+
         return $this->post('purchases', $options);
     }
 
