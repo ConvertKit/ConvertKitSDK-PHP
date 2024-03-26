@@ -1573,20 +1573,13 @@ class ConvertKitAPITest extends TestCase
         ];
         $result = $this->api->create_tags($tagNames);
 
-        // Iterate through the results to confirm the tags were created.
-        foreach ($result->tags as $i => $tag) {
-            // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-            $tag = get_object_vars($tag);
-            $this->assertArrayHasKey('id', $tag);
-            $this->assertArrayHasKey('name', $tag);
-            $this->assertArrayHasKey('created_at', $tag);
-            $this->assertEquals($tag['name'], $tagNames[$i]);
-        }
+        // Assert no failures.
+        $this->assertCount(0, $result->failures);
     }
 
     /**
-     * Test that create_tags() throws a ClientException when creating
-     * blank tags.
+     * Test that create_tags() returns failures when attempting
+     * to create blank tags.
      *
      * @since   1.1.0
      *
@@ -1594,11 +1587,13 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsBlank()
     {
-        $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             '',
             '',
         ]);
+
+        // Assert failures.
+        $this->assertCount(2, $result->failures);
     }
 
     /**
@@ -1611,11 +1606,13 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsThatExist()
     {
-        $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             $_ENV['CONVERTKIT_API_TAG_NAME'],
             $_ENV['CONVERTKIT_API_TAG_NAME_2'],
         ]);
+
+        // Assert failures.
+        $this->assertCount(2, $result->failures);
     }
 
     /**

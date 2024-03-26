@@ -691,7 +691,7 @@ class ConvertKit_API
             'tags' => [],
         ];
         foreach ($tags as $i => $tag) {
-            $options['tags'] = [
+            $options['tags'][] = [
                 'name' => (string) $tag,
             ];
         }
