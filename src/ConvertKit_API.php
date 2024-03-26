@@ -1842,14 +1842,14 @@ class ConvertKit_API
     /**
      * Adds pagination parameters to the given array of existing API parameters.
      *
-     * @param array<string, string|integer> $params        API parameters.
-     * @param string                        $after_cursor  Return results after the given pagination cursor.
-     * @param string                        $before_cursor Return results before the given pagination cursor.
-     * @param integer                       $per_page      Number of results to return.
+     * @param array<string, string|integer|bool> $params        API parameters.
+     * @param string                             $after_cursor  Return results after the given pagination cursor.
+     * @param string                             $before_cursor Return results before the given pagination cursor.
+     * @param integer                            $per_page      Number of results to return.
      *
      * @since 2.0.0
      *
-     * @return array<string, string|integer>
+     * @return array<string, string|integer|bool>
      */
     private function build_pagination_params(
         array $params = [],

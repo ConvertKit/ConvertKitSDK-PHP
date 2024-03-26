@@ -3694,7 +3694,7 @@ class ConvertKitAPITest extends TestCase
                 ],
             ],
         );
-    
+
         $this->assertInstanceOf('stdClass', $purchase);
         $this->assertArrayHasKey('transaction_id', get_object_vars($purchase->purchase));
     }
