@@ -631,17 +631,26 @@ class ConvertKit_API
     }
 
     /**
-     * Gets all tags.
+     * Gets tags
      *
-     * @since 1.0.0
+     * @param string  $after_cursor  Return results after the given pagination cursor.
+     * @param string  $before_cursor Return results before the given pagination cursor.
+     * @param integer $per_page      Number of results to return.
      *
-     * @see https://developers.convertkit.com/#list-tags
+     * @see https://developers.convertkit.com/v4.html#list-tags
      *
      * @return false|mixed
      */
-    public function get_tags()
+    public function get_tags(string $after_cursor = '', string $before_cursor = '', int $per_page = 100)
     {
-        return $this->get_resources('tags');
+        return $this->get(
+            endpoint: 'tags',
+            args: $this->build_pagination_params(
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
@@ -651,106 +660,84 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#create-a-tag
+     * @see https://developers.convertkit.com/v4.html#create-a-tag
      *
      * @return false|mixed
      */
     public function create_tag(string $tag)
     {
         return $this->post(
-            'tags',
-            [
-                'tag' => ['name' => $tag],
-            ]
+            endpoint: 'tags',
+            args: ['name' => $tag]
         );
     }
 
     /**
      * Creates multiple tags.
      *
-     * @param array<int,string> $tags Tag Names.
+     * @param array<int,string> $tags         Tag Names.
+     * @param string            $callback_url URL to notify for large batch size when async processing complete.
      *
      * @since 1.1.0
      *
-     * @see https://developers.convertkit.com/#create-a-tag
+     * @see https://developers.convertkit.com/v4.html#bulk-create-tags
      *
      * @return false|mixed
      */
-    public function create_tags(array $tags)
+    public function create_tags(array $tags, string $callback_url = '')
     {
-        // Build API compatible array of tags.
-        $apiTags = [];
+        // Build parameters.
+        $options = [
+            'tags' => [],
+        ];
         foreach ($tags as $i => $tag) {
-            $apiTags[] = [
+            $options['tags'][] = [
                 'name' => (string) $tag,
             ];
         }
 
+        if (!empty($callback_url)) {
+            $options['callback_url'] = $callback_url;
+        }
+
+        // Send request.
         return $this->post(
-            'tags',
-            ['tag' => $apiTags]
+            endpoint: 'bulk/tags',
+            args: $options
         );
     }
 
     /**
      * Tags a subscriber with the given existing Tag.
      *
-     * @param integer               $tag_id     Tag ID.
-     * @param string                $email      Email Address.
-     * @param string                $first_name First Name.
-     * @param array<string, string> $fields     Custom Fields.
+     * @param integer $tag_id Tag ID.
+     * @param string  $email  Email Address.
      *
-     * @see https://developers.convertkit.com/#tag-a-subscriber
+     * @see https://developers.convertkit.com/v4.html#tag-a-subscriber-by-email-address
      *
      * @return false|mixed
      */
-    public function tag_subscriber(
-        int $tag_id,
-        string $email,
-        string $first_name = '',
-        array $fields = []
-    ) {
-        // Build parameters.
-        $options = ['email' => $email];
-
-        if (!empty($first_name)) {
-            $options['first_name'] = $first_name;
-        }
-        if (!empty($fields)) {
-            $options['fields'] = $fields;
-        }
-
-        // Send request.
+    public function tag_subscriber(int $tag_id, string $email)
+    {
         return $this->post(
-            sprintf('tags/%s/subscribe', $tag_id),
-            $options
+            endpoint: sprintf('tags/%s/subscribers', $tag_id),
+            args: ['email_address' => $email]
         );
     }
 
     /**
-     * Adds a tag to a subscriber.
+     * Tags a subscriber by subscriber ID with the given existing Tag.
      *
-     * @param integer              $tag     Tag ID.
-     * @param array<string, mixed> $options Array of user data.
+     * @param integer $tag_id        Tag ID.
+     * @param integer $subscriber_id Subscriber ID.
      *
-     * @deprecated 1.0.0 Use tag_subscriber($tag_id, $email, $first_name, $fields).
+     * @see https://developers.convertkit.com/v4.html#tag-a-subscriber
      *
-     * @see https://developers.convertkit.com/#tag-a-subscriber
-     *
-     * @return false|object
+     * @return false|mixed
      */
-    public function add_tag(int $tag, array $options)
+    public function tag_subscriber_by_subscriber_id(int $tag_id, int $subscriber_id)
     {
-        // This function is deprecated in 1.0, as we prefer functions with structured arguments.
-        trigger_error(
-            'add_tag() is deprecated in 1.0.  Use tag_subscribe($tag_id, $email, $first_name, $fields) instead.',
-            E_USER_NOTICE
-        );
-
-        return $this->post(
-            sprintf('tags/%s/subscribe', $tag),
-            $options
-        );
+        return $this->post(sprintf('tags/%s/subscribers/%s', $tag_id, $subscriber_id));
     }
 
     /**
@@ -761,13 +748,13 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber
+     * @see https://developers.convertkit.com/v4.html#remove-tag-from-subscriber
      *
      * @return false|mixed
      */
     public function remove_tag_from_subscriber(int $tag_id, int $subscriber_id)
     {
-        return $this->delete(sprintf('subscribers/%s/tags/%s', $subscriber_id, $tag_id));
+        return $this->delete(sprintf('tags/%s/subscribers/%s', $tag_id, $subscriber_id));
     }
 
     /**
@@ -778,43 +765,77 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#remove-tag-from-a-subscriber-by-email
+     * @see https://developers.convertkit.com/v4.html#remove-tag-from-subscriber-by-email-address
      *
      * @return false|mixed
      */
     public function remove_tag_from_subscriber_by_email(int $tag_id, string $email)
     {
-        return $this->post(
-            sprintf('tags/%s/unsubscribe', $tag_id),
-            ['email' => $email]
+        return $this->delete(
+            sprintf('tags/%s/subscribers', $tag_id),
+            ['email_address' => $email]
         );
     }
 
     /**
-     * List subscriptions to a tag
+     * List subscribers for a tag
      *
-     * @param integer $tag_id           Tag ID.
-     * @param string  $sort_order       Sort Order (asc|desc).
-     * @param string  $subscriber_state Subscriber State (active,cancelled).
-     * @param integer $page             Page.
+     * @param integer   $tag_id           Tag ID.
+     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
+     * @param \DateTime $tagged_after     Filter subscribers who have been tagged after this date.
+     * @param \DateTime $tagged_before    Filter subscribers who have been tagged before this date.
+     * @param string    $after_cursor     Return results after the given pagination cursor.
+     * @param string    $before_cursor    Return results before the given pagination cursor.
+     * @param integer   $per_page         Number of results to return.
      *
-     * @see https://developers.convertkit.com/#list-subscriptions-to-a-tag
+     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-tag
      *
      * @return false|mixed
      */
     public function get_tag_subscriptions(
         int $tag_id,
-        string $sort_order = 'asc',
         string $subscriber_state = 'active',
-        int $page = 1
+        \DateTime $created_after = null,
+        \DateTime $created_before = null,
+        \DateTime $tagged_after = null,
+        \DateTime $tagged_before = null,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
     ) {
+        // Build parameters.
+        $options = [];
+
+        if (!empty($subscriber_state)) {
+            $options['status'] = $subscriber_state;
+        }
+        if (!is_null($created_after)) {
+            $options['created_after'] = $created_after->format('Y-m-d');
+        }
+        if (!is_null($created_before)) {
+            $options['created_before'] = $created_before->format('Y-m-d');
+        }
+        if (!is_null($tagged_after)) {
+            $options['tagged_after'] = $tagged_after->format('Y-m-d');
+        }
+        if (!is_null($tagged_before)) {
+            $options['tagged_before'] = $tagged_before->format('Y-m-d');
+        }
+
+        // Build pagination parameters.
+        $options = $this->build_pagination_params(
+            params: $options,
+            after_cursor: $after_cursor,
+            before_cursor: $before_cursor,
+            per_page: $per_page
+        );
+
+        // Send request.
         return $this->get(
-            sprintf('tags/%s/subscriptions', $tag_id),
-            [
-                'sort_order'       => $sort_order,
-                'subscriber_state' => $subscriber_state,
-                'page'             => $page,
-            ]
+            endpoint: sprintf('tags/%s/subscribers', $tag_id),
+            args: $options
         );
     }
 
@@ -1512,15 +1533,39 @@ class ConvertKit_API
     /**
      * List custom fields.
      *
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
+     *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#list-fields
+     * @see https://developers.convertkit.com/v4.html#list-custom-fields
      *
-     * @return false|object
+     * @return false|mixed
      */
-    public function get_custom_fields()
-    {
-        return $this->get('custom_fields');
+    public function get_custom_fields(
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        // Build parameters.
+        $options = ['include_total_count' => $include_total_count];
+
+        // Build pagination parameters.
+        $options = $this->build_pagination_params(
+            params: $options,
+            after_cursor: $after_cursor,
+            before_cursor: $before_cursor,
+            per_page: $per_page
+        );
+
+        // Send request.
+        return $this->get(
+            endpoint: 'custom_fields',
+            args: $options
+        );
     }
 
     /**
@@ -1530,36 +1575,50 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#create-field
+     * @see https://developers.convertkit.com/v4.html#create-a-custom-field
      *
      * @return false|object
      */
     public function create_custom_field(string $label)
     {
         return $this->post(
-            'custom_fields',
-            [
-                'label' => [$label],
-            ]
+            endpoint: 'custom_fields',
+            args: ['label' => $label]
         );
     }
 
     /**
      * Creates multiple custom fields.
      *
-     * @param array<string> $labels Custom Fields labels.
+     * @param array<string> $labels       Custom Fields labels.
+     * @param string        $callback_url URL to notify for large batch size when async processing complete.
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#create-field
+     * @see https://developers.convertkit.com/v4.html#bulk-create-custom-fields
      *
      * @return false|object
      */
-    public function create_custom_fields(array $labels)
+    public function create_custom_fields(array $labels, string $callback_url = '')
     {
+        // Build parameters.
+        $options = [
+            'custom_fields' => [],
+        ];
+        foreach ($labels as $i => $label) {
+            $options['custom_fields'][] = [
+                'label' => (string) $label,
+            ];
+        }
+
+        if (!empty($callback_url)) {
+            $options['callback_url'] = $callback_url;
+        }
+
+        // Send request.
         return $this->post(
-            'custom_fields',
-            ['label' => $labels]
+            endpoint: 'bulk/custom_fields',
+            args: $options
         );
     }
 
@@ -1571,15 +1630,15 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#update-field
+     * @see https://developers.convertkit.com/v4.html#update-a-custom-field
      *
      * @return false|object
      */
     public function update_custom_field(int $id, string $label)
     {
         return $this->put(
-            sprintf('custom_fields/%s', $id),
-            ['label' => $label]
+            endpoint: sprintf('custom_fields/%s', $id),
+            args: ['label' => $label]
         );
     }
 
@@ -1873,8 +1932,8 @@ class ConvertKit_API
     /**
      * Performs a GET request to the API.
      *
-     * @param string                                                     $endpoint API Endpoint.
-     * @param array<string, int|string|array<string, int|string>|string> $args     Request arguments.
+     * @param string                                                             $endpoint API Endpoint.
+     * @param array<string, int|string|boolean|array<string, int|string>|string> $args     Request arguments.
      *
      * @return false|mixed
      */

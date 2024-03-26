@@ -1437,16 +1437,77 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTags()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tags();
-        $this->assertIsArray($result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $tag = get_object_vars($result[0]);
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Check first tag in resultset has expected data.
+        $tag = get_object_vars($result->tags[0]);
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
         $this->assertArrayHasKey('created_at', $tag);
+    }
+
+    /**
+     * Test that get_tags() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagsPagination()
+    {
+        $result = $this->api->get_tags(
+            per_page: 1
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert a single tag was returned.
+        $this->assertCount(1, $result->tags);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_tags(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->tags);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_tags(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->tags);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -1458,13 +1519,11 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTag()
     {
-        $this->markTestIncomplete();
-
         $tagName = 'Tag Test ' . mt_rand();
         $result = $this->api->create_tag($tagName);
 
         // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $tag = get_object_vars($result);
+        $tag = get_object_vars($result->tag);
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
         $this->assertArrayHasKey('created_at', $tag);
@@ -1481,8 +1540,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagBlank()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tag('');
     }
@@ -1497,8 +1554,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagThatExists()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->create_tag($_ENV['CONVERTKIT_API_TAG_NAME']);
     }
@@ -1512,28 +1567,19 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTags()
     {
-        $this->markTestIncomplete();
-
         $tagNames = [
             'Tag Test ' . mt_rand(),
             'Tag Test ' . mt_rand(),
         ];
         $result = $this->api->create_tags($tagNames);
 
-        // Iterate through the results to confirm the tags were created.
-        foreach ($result as $i => $tag) {
-            // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-            $tag = get_object_vars($tag);
-            $this->assertArrayHasKey('id', $tag);
-            $this->assertArrayHasKey('name', $tag);
-            $this->assertArrayHasKey('created_at', $tag);
-            $this->assertEquals($tag['name'], $tagNames[$i]);
-        }
+        // Assert no failures.
+        $this->assertCount(0, $result->failures);
     }
 
     /**
-     * Test that create_tags() throws a ClientException when creating
-     * blank tags.
+     * Test that create_tags() returns failures when attempting
+     * to create blank tags.
      *
      * @since   1.1.0
      *
@@ -1541,13 +1587,13 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsBlank()
     {
-        $this->markTestIncomplete();
-
-        $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             '',
             '',
         ]);
+
+        // Assert failures.
+        $this->assertCount(2, $result->failures);
     }
 
     /**
@@ -1560,13 +1606,13 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateTagsThatExist()
     {
-        $this->markTestIncomplete();
-
-        $this->expectException(ClientException::class);
         $result = $this->api->create_tags([
             $_ENV['CONVERTKIT_API_TAG_NAME'],
             $_ENV['CONVERTKIT_API_TAG_NAME_2'],
         ]);
+
+        // Assert failures.
+        $this->assertCount(2, $result->failures);
     }
 
     /**
@@ -1578,73 +1624,149 @@ class ConvertKitAPITest extends TestCase
      */
     public function testTagSubscriber()
     {
-        $this->markTestIncomplete();
-
-        $result = $this->api->tag_subscriber(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $this->generateEmailAddress()
-        );
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
-    }
-
-    /**
-     * Test that tag_subscriber() returns the expected data
-     * when a first_name parameter is included.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testTagSubscriberWithFirstName()
-    {
-        $this->markTestIncomplete();
-
+        // Create subscriber.
         $emailAddress = $this->generateEmailAddress();
-        $firstName = 'First Name';
-        $result = $this->api->tag_subscriber(
+        $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
+        // Tag subscriber by email.
+        $subscriber = $this->api->tag_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
             email: $emailAddress,
-            first_name: $firstName
+        );
+        $this->assertArrayHasKey('subscriber', get_object_vars($subscriber));
+        $this->assertArrayHasKey('id', get_object_vars($subscriber->subscriber));
+        $this->assertArrayHasKey('tagged_at', get_object_vars($subscriber->subscriber));
+
+        // Confirm the subscriber is tagged.
+        $result = $this->api->get_subscriber_tags(
+            subscriber_id: $subscriber->subscriber->id
         );
 
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
 
-        // Fetch subscriber from API to confirm the first name was saved.
-        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
-        $this->assertEquals($subscriber->subscriber->email_address, $emailAddress);
-        $this->assertEquals($subscriber->subscriber->first_name, $firstName);
+        // Assert correct tag was assigned.
+        $this->assertEquals($result->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
     }
 
     /**
-     * Test that tag_subscriber() returns the expected data
-     * when custom field data is included.
+     * Test that tag_subscriber() throws a ClientException when an invalid
+     * tag is specified.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testTagSubscriberWithCustomFields()
+    public function testTagSubscriberWithInvalidTagID()
     {
-        $this->markTestIncomplete();
-
-        $result = $this->api->tag_subscriber(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $this->generateEmailAddress(),
-            first_name: 'First Name',
-            fields: [
-                'last_name' => 'Last Name',
-            ]
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
         );
 
-        // Check subscription object returned.
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('subscription', get_object_vars($result));
+        $this->expectException(ClientException::class);
+        $result = $this->api->tag_subscriber(
+            tag_id: 12345,
+            email: $emailAddress
+        );
+    }
 
-        // Fetch subscriber from API to confirm the custom fields were saved.
-        $subscriber = $this->api->get_subscriber($result->subscription->subscriber->id);
-        $this->assertEquals($subscriber->subscriber->fields->last_name, 'Last Name');
+    /**
+     * Test that tag_subscriber() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberWithInvalidEmailAddress()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->tag_subscriber(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: 'not-an-email-address'
+        );
+    }
+
+    /**
+     * Test that tag_subscriber_by_subscriber_id() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberByID()
+    {
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $subscriber = $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
+        // Tag subscriber by email.
+        $result = $this->api->tag_subscriber_by_subscriber_id(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            subscriber_id: $subscriber->subscriber->id,
+        );
+        $this->assertArrayHasKey('subscriber', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
+        $this->assertArrayHasKey('tagged_at', get_object_vars($result->subscriber));
+
+        // Confirm the subscriber is tagged.
+        $result = $this->api->get_subscriber_tags(
+            subscriber_id: $result->subscriber->id
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert correct tag was assigned.
+        $this->assertEquals($result->tags[0]->id, $_ENV['CONVERTKIT_API_TAG_ID']);
+    }
+
+    /**
+     * Test that tag_subscriber_by_subscriber_id() throws a ClientException when an invalid
+     * sequence ID is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberByIDWithInvalidTagID()
+    {
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $subscriber = $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
+        $this->expectException(ClientException::class);
+        $result = $this->api->tag_subscriber_by_subscriber_id(
+            tag_id: 12345,
+            subscriber_id: $subscriber->subscriber->id
+        );
+    }
+
+    /**
+     * Test that tag_subscriber_by_subscriber_id() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testTagSubscriberByIDWithInvalidSubscriberID()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->tag_subscriber_by_subscriber_id(
+            tag_id: $_ENV['CONVERTKIT_API_TAG_ID'],
+            subscriber_id: 12345
+        );
     }
 
     /**
@@ -1656,27 +1778,28 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriber()
     {
-        $this->markTestIncomplete();
-
-        // Tag the subscriber first.
-        $result = $this->api->tag_subscriber(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $this->generateEmailAddress()
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
         );
 
-        // Get subscriber ID.
-        $subscriberID = $result->subscription->subscriber->id;
+        // Tag subscriber by email.
+        $subscriber = $this->api->tag_subscriber(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $emailAddress,
+        );
 
         // Remove tag from subscriber.
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            subscriber_id: $subscriberID
+            subscriber_id: $subscriber->subscriber->id
         );
 
         // Confirm that the subscriber no longer has the tag.
-        $result = $this->api->get_subscriber_tags($subscriberID);
+        $result = $this->api->get_subscriber_tags($subscriber->subscriber->id);
         $this->assertIsArray($result->tags);
-        $this->assertEmpty($result->tags);
+        $this->assertCount(0, $result->tags);
     }
 
     /**
@@ -1689,12 +1812,23 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidTagID()
     {
-        $this->markTestIncomplete();
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
 
+        // Tag subscriber by email.
+        $subscriber = $this->api->tag_subscriber(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $emailAddress,
+        );
+
+        // Remove tag from subscriber.
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: 12345,
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+            subscriber_id: $subscriber->subscriber->id
         );
     }
 
@@ -1708,8 +1842,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberWithInvalidSubscriberID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
@@ -1726,28 +1858,28 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmail()
     {
-        $this->markTestIncomplete();
-
-        // Tag the subscriber first.
-        $email = $this->generateEmailAddress();
-        $result = $this->api->tag_subscriber(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $email
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $this->api->create_subscriber(
+            email_address: $emailAddress
         );
 
-        // Get subscriber ID.
-        $subscriberID = $result->subscription->subscriber->id;
+        // Tag subscriber by email.
+        $subscriber = $this->api->tag_subscriber(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: $emailAddress,
+        );
 
         // Remove tag from subscriber.
-        $result = $this->api->remove_tag_from_subscriber_by_email(
+        $result = $this->api->remove_tag_from_subscriber(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            email: $email
+            subscriber_id: $subscriber->subscriber->id
         );
 
         // Confirm that the subscriber no longer has the tag.
-        $result = $this->api->get_subscriber_tags($subscriberID);
+        $result = $this->api->get_subscriber_tags($subscriber->subscriber->id);
         $this->assertIsArray($result->tags);
-        $this->assertEmpty($result->tags);
+        $this->assertCount(0, $result->tags);
     }
 
     /**
@@ -1760,12 +1892,27 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRemoveTagFromSubscriberByEmailWithInvalidTagID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->remove_tag_from_subscriber_by_email(
             tag_id: 12345,
             email: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        );
+    }
+
+    /**
+     * Test that remove_tag_from_subscriber() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testRemoveTagFromSubscriberByEmailWithInvalidEmailAddress()
+    {
+        $this->expectException(ClientException::class);
+        $result = $this->api->remove_tag_from_subscriber_by_email(
+            tag_id: $_ENV['CONVERTKIT_API_TAG_ID'],
+            email: 'not-an-email-address'
         );
     }
 
@@ -1779,113 +1926,214 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetTagSubscriptions()
     {
-        $this->markTestIncomplete();
-
-        $result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID']);
-
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
-
-        // Assert sort order is ascending.
-        $this->assertGreaterThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
-        );
-    }
-
-    /**
-     * Test that get_tag_subscriptions() returns the expected data
-     * when a valid Tag ID is specified and the sort order is descending.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetTagSubscriptionsWithDescSortOrder()
-    {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
-            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            sort_order: 'desc'
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID']
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
-
-        // Assert sort order.
-        $this->assertLessThanOrEqual(
-            $result['subscriptions'][0]->created_at,
-            $result['subscriptions'][1]->created_at
-        );
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
     }
 
     /**
      * Test that get_tag_subscriptions() returns the expected data
      * when a valid Tag ID is specified and the subscription status
-     * is cancelled.
+     * is bounced.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetTagSubscriptionsWithCancelledSubscriberState()
+    public function testGetTagSubscriptionsWithBouncedSubscriberState()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            sort_order: 'asc',
-            subscriber_state: 'cancelled'
+            subscriber_state: 'bounced'
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertGreaterThan(1, $result['total_subscriptions']);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertEquals($result->subscribers[0]->state, 'bounced');
+    }
+
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the added_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithTaggedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            tagged_after: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->tagged_at))
+        );
     }
 
     /**
      * Test that get_tag_subscriptions() returns the expected data
-     * when a valid Tag ID is specified and the page is set to 2.
+     * when a valid Tag ID is specified and the tagged_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithTaggedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            tagged_before: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->tagged_at))
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the created_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithCreatedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            created_after: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and the created_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithCreatedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            created_before: $date
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result->subscribers[0]->created_at))
+        );
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when a valid Tag ID is specified and pagination parameters
+     * and per_page limits are specified.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testGetTagSubscriptionsWithPage()
+    public function testGetTagSubscriptionsPagination()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_tag_subscriptions(
             tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
-            sort_order: 'asc',
-            subscriber_state: 'active',
-            page: 2
+            per_page: 1
         );
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $result = get_object_vars($result);
-        $this->assertArrayHasKey('total_subscriptions', $result);
-        $this->assertArrayHasKey('page', $result);
-        $this->assertEquals($result['page'], 2);
-        $this->assertArrayHasKey('total_pages', $result);
-        $this->assertArrayHasKey('subscriptions', $result);
-        $this->assertIsArray($result['subscriptions']);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result->subscribers);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -1896,10 +2144,8 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testGetTagSubscriptionsWithInvalidFormID()
+    public function testGetTagSubscriptionsWithInvalidTagID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $result = $this->api->get_tag_subscriptions(12345);
     }
@@ -3343,18 +3589,94 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetCustomFields()
     {
-        $this->markTestIncomplete();
-
         $result = $this->api->get_custom_fields();
-        $this->assertInstanceOf('stdClass', $result);
-        $this->assertArrayHasKey('custom_fields', get_object_vars($result));
 
-        // Inspect first custom field.
-        $customField = get_object_vars($result->custom_fields[0]);
-        $this->assertArrayHasKey('id', $customField);
-        $this->assertArrayHasKey('name', $customField);
-        $this->assertArrayHasKey('key', $customField);
-        $this->assertArrayHasKey('label', $customField);
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_custom_fields() returns the expected data
+     * when the total count is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetCustomFieldsWithTotalCount()
+    {
+        $result = $this->api->get_custom_fields(
+            include_total_count: true
+        );
+
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_custom_fields() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetCustomFieldsPagination()
+    {
+        $result = $this->api->get_custom_fields(
+            per_page: 1
+        );
+
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+
+        // Assert a single custom field was returned.
+        $this->assertCount(1, $result->custom_fields);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_custom_fields(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+
+        // Assert a single custom field was returned.
+        $this->assertCount(1, $result->custom_fields);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_custom_fields(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert custom fields and pagination exist.
+        $this->assertDataExists($result, 'custom_fields');
+        $this->assertPaginationExists($result);
+
+        // Assert a single custom field was returned.
+        $this->assertCount(1, $result->custom_fields);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -3366,12 +3688,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomField()
     {
-        $this->markTestIncomplete();
-
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
 
-        $result = get_object_vars($result);
+        $result = get_object_vars($result->custom_field);
         $this->assertArrayHasKey('id', $result);
         $this->assertArrayHasKey('name', $result);
         $this->assertArrayHasKey('key', $result);
@@ -3392,8 +3712,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFieldWithBlankLabel()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->create_custom_field('');
     }
@@ -3407,17 +3725,18 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateCustomFields()
     {
-        $this->markTestIncomplete();
-
         $labels = [
             'Custom Field ' . mt_rand(),
             'Custom Field ' . mt_rand(),
         ];
         $result = $this->api->create_custom_fields($labels);
 
+        // Assert no failures.
+        $this->assertCount(0, $result->failures);
+
         // Confirm result is an array comprising of each custom field that was created.
-        $this->assertIsArray($result);
-        foreach ($result as $index => $customField) {
+        $this->assertIsArray($result->custom_fields);
+        foreach ($result->custom_fields as $index => $customField) {
             // Confirm individual custom field.
             $customField = get_object_vars($customField);
             $this->assertArrayHasKey('id', $customField);
@@ -3442,12 +3761,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomField()
     {
-        $this->markTestIncomplete();
-
         // Create custom field.
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
-        $id = $result->id;
+        $id = $result->custom_field->id;
 
         // Change label.
         $newLabel = 'Custom Field ' . mt_rand();
@@ -3475,8 +3792,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testUpdateCustomFieldWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->update_custom_field(12345, 'Something');
     }
@@ -3490,12 +3805,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomField()
     {
-        $this->markTestIncomplete();
-
         // Create custom field.
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
-        $id = $result->id;
+        $id = $result->custom_field->id;
 
         // Delete custom field as tests passed.
         $this->api->delete_custom_field($id);
@@ -3517,8 +3830,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testDeleteCustomFieldWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $this->api->delete_custom_field(12345);
     }
