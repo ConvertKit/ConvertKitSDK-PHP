@@ -1613,7 +1613,7 @@ class ConvertKit_API
      *
      * @return false|mixed
      */
-    public function list_purchases(
+    public function get_purchases(
         bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',

@@ -3524,15 +3524,15 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that list_purchases() returns the expected data.
+     * Test that get_purchases() returns the expected data.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testListPurchases()
+    public function testGetPurchases()
     {
-        $result = $this->api->list_purchases();
+        $result = $this->api->get_purchases();
 
         // Assert purchases and pagination exist.
         $this->assertDataExists($result, 'purchases');
@@ -3540,16 +3540,16 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that list_purchases() returns the expected data
+     * Test that get_purchases() returns the expected data
      * when the total count is included.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testListPurchasesWithTotalCount()
+    public function testGetPurchasesWithTotalCount()
     {
-        $result = $this->api->list_purchases(
+        $result = $this->api->get_purchases(
             include_total_count: true
         );
 
@@ -3563,16 +3563,16 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that list_purchases() returns the expected data
+     * Test that get_purchases() returns the expected data
      * when pagination parameters and per_page limits are specified.
      *
      * @since   2.0.0
      *
      * @return void
      */
-    public function testListPurchasesPagination()
+    public function testGetPurchasesPagination()
     {
-        $result = $this->api->list_purchases(
+        $result = $this->api->get_purchases(
             per_page: 1
         );
 
@@ -3588,7 +3588,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertTrue($result->pagination->has_next_page);
 
         // Use pagination to fetch next page.
-        $result = $this->api->list_purchases(
+        $result = $this->api->get_purchases(
             per_page: 1,
             after_cursor: $result->pagination->end_cursor
         );
@@ -3605,7 +3605,7 @@ class ConvertKitAPITest extends TestCase
         $this->assertTrue($result->pagination->has_next_page);
 
         // Use pagination to fetch previous page.
-        $result = $this->api->list_purchases(
+        $result = $this->api->get_purchases(
             per_page: 1,
             before_cursor: $result->pagination->start_cursor
         );
@@ -3632,7 +3632,7 @@ class ConvertKitAPITest extends TestCase
     public function testGetPurchase()
     {
         // Get ID of first purchase.
-        $purchases = $this->api->list_purchases(
+        $purchases = $this->api->get_purchases(
             per_page: 1
         );
         $id = $purchases->purchases[0]->id;
