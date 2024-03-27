@@ -34,6 +34,24 @@ class ConvertKitAPITest extends TestCase
     protected $logFile = '';
 
     /**
+     * Custom Field IDs to delete on teardown of a test.
+     * 
+     * @since   2.0.0
+     * 
+     * @var     array<int, int>
+     */
+    protected $custom_field_ids = [];
+
+    /**
+     * Subscriber IDs to unsubscribe on teardown of a test.
+     * 
+     * @since   2.0.0
+     * 
+     * @var     array<int, int>
+     */
+    protected $subscriber_ids = [];
+
+    /**
      * Load .env configuration into $_ENV superglobal, and initialize the API
      * class before each test.
      *
@@ -59,6 +77,26 @@ class ConvertKitAPITest extends TestCase
             clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
             accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
         );
+    }
+
+    /**
+     * Cleanup data from the ConvertKit account on a test pass/fail, such as unsubscribing, deleting custom fields etc
+     *
+     * @since   2.0.0
+     *
+     * @return  void
+     */
+    protected function tearDown(): void
+    {
+        // Delete any Custom Fields.
+        foreach($this->custom_field_ids as $id) {
+            $this->api->delete_custom_field($id);
+        }
+
+        // Unsubscribe any Subscribers.
+        foreach($this->subscriber_ids as $id) {
+            $this->api->unsubscribe_by_id($id);
+        }
     }
 
     /**
@@ -2683,11 +2721,11 @@ class ConvertKitAPITest extends TestCase
             email_address: $emailAddress
         );
 
-        // Assert subscriber exists with correct data.
-        $this->assertEquals($result->subscriber->email_address, $emailAddress);
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $result->subscriber->id;
 
-        // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
+        // Assert subscriber exists with correct data.
+        $this->assertEquals($result->subscriber->email_address, $emailAddress); 
     }
 
     /**
@@ -2707,12 +2745,12 @@ class ConvertKitAPITest extends TestCase
             first_name: $firstName
         );
 
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $result->subscriber->id;
+
         // Assert subscriber exists with correct data.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
         $this->assertEquals($result->subscriber->first_name, $firstName);
-
-        // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -2732,12 +2770,12 @@ class ConvertKitAPITest extends TestCase
             subscriber_state: $subscriberState
         );
 
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $result->subscriber->id;
+
         // Assert subscriber exists with correct data.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
         $this->assertEquals($result->subscriber->state, $subscriberState);
-
-        // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -2759,12 +2797,12 @@ class ConvertKitAPITest extends TestCase
             ]
         );
 
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $result->subscriber->id;
+
         // Assert subscriber exists with correct data.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
         $this->assertEquals($result->subscriber->fields->last_name, $lastName);
-
-        // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -2820,11 +2858,11 @@ class ConvertKitAPITest extends TestCase
             ]
         );
 
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $result->subscriber->id;
+
         // Assert subscriber exists with correct data.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
-
-        // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -2846,15 +2884,17 @@ class ConvertKitAPITest extends TestCase
         ];
         $result = $this->api->create_subscribers($subscribers);
 
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        foreach ($result->subscribers as $i => $subscriber) {
+            $this->subscriber_ids[] = $subscriber->id;
+        }
+
         // Assert no failures.
         $this->assertCount(0, $result->failures);
 
         // Assert subscribers exists with correct data.
         foreach ($result->subscribers as $i => $subscriber) {
             $this->assertEquals($subscriber->email_address, $subscribers[$i]['email_address']);
-
-            // Unsubscribe to cleanup test.
-            $this->api->unsubscribe_by_id($subscriber->id);
         }
     }
 
@@ -3002,6 +3042,9 @@ class ConvertKitAPITest extends TestCase
             email_address: $emailAddress
         );
 
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $result->subscriber->id;
+
         // Assert subscriber created with no first name.
         $this->assertNull($result->subscriber->first_name);
 
@@ -3017,9 +3060,6 @@ class ConvertKitAPITest extends TestCase
         // Assert changes were made.
         $this->assertEquals($result->subscriber->id, $subscriberID);
         $this->assertEquals($result->subscriber->first_name, $firstName);
-
-        // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -3037,6 +3077,9 @@ class ConvertKitAPITest extends TestCase
             email_address: $emailAddress
         );
 
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $result->subscriber->id;
+
         // Assert subscriber created.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
 
@@ -3053,9 +3096,6 @@ class ConvertKitAPITest extends TestCase
         // Assert changes were made.
         $this->assertEquals($result->subscriber->id, $subscriberID);
         $this->assertEquals($result->subscriber->email_address, $newEmail);
-
-        // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -3074,6 +3114,9 @@ class ConvertKitAPITest extends TestCase
             email_address: $emailAddress
         );
 
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $result->subscriber->id;
+
         // Assert subscriber created.
         $this->assertEquals($result->subscriber->email_address, $emailAddress);
 
@@ -3091,9 +3134,6 @@ class ConvertKitAPITest extends TestCase
         // Assert changes were made.
         $this->assertEquals($result->subscriber->id, $subscriberID);
         $this->assertEquals($result->subscriber->fields->last_name, $lastName);
-
-        // Unsubscribe to cleanup test.
-        $this->api->unsubscribe_by_id($result->subscriber->id);
     }
 
     /**
@@ -3691,15 +3731,15 @@ class ConvertKitAPITest extends TestCase
         $label = 'Custom Field ' . mt_rand();
         $result = $this->api->create_custom_field($label);
 
+        // Set custom_field_ids to ensure custom fields are deleted after test.
+        $this->custom_field_ids[] = $result->custom_field->id;
+
         $result = get_object_vars($result->custom_field);
         $this->assertArrayHasKey('id', $result);
         $this->assertArrayHasKey('name', $result);
         $this->assertArrayHasKey('key', $result);
         $this->assertArrayHasKey('label', $result);
         $this->assertEquals($result['label'], $label);
-
-        // Delete custom field.
-        $this->api->delete_custom_field($result['id']);
     }
 
     /**
@@ -3731,25 +3771,16 @@ class ConvertKitAPITest extends TestCase
         ];
         $result = $this->api->create_custom_fields($labels);
 
+        // Set custom_field_ids to ensure custom fields are deleted after test.
+        foreach ($result->custom_fields as $index => $customField) {
+            $this->custom_field_ids[] = $customField->id;
+        }
+
         // Assert no failures.
         $this->assertCount(0, $result->failures);
 
         // Confirm result is an array comprising of each custom field that was created.
         $this->assertIsArray($result->custom_fields);
-        foreach ($result->custom_fields as $index => $customField) {
-            // Confirm individual custom field.
-            $customField = get_object_vars($customField);
-            $this->assertArrayHasKey('id', $customField);
-            $this->assertArrayHasKey('name', $customField);
-            $this->assertArrayHasKey('key', $customField);
-            $this->assertArrayHasKey('label', $customField);
-
-            // Confirm label is correct.
-            $this->assertEquals($labels[$index], $customField['label']);
-
-            // Delete custom field as tests passed.
-            $this->api->delete_custom_field($customField['id']);
-        }
     }
 
     /**
@@ -3766,6 +3797,9 @@ class ConvertKitAPITest extends TestCase
         $result = $this->api->create_custom_field($label);
         $id = $result->custom_field->id;
 
+        // Set custom_field_ids to ensure custom fields are deleted after test.
+        $this->custom_field_ids[] = $result->custom_field->id;
+
         // Change label.
         $newLabel = 'Custom Field ' . mt_rand();
         $this->api->update_custom_field($id, $newLabel);
@@ -3777,9 +3811,6 @@ class ConvertKitAPITest extends TestCase
                 $this->assertEquals($customField->label, $newLabel);
             }
         }
-
-        // Delete custom field as tests passed.
-        $this->api->delete_custom_field($id);
     }
 
     /**
