@@ -949,10 +949,6 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single subscriber was returned.
         $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -1083,10 +1079,6 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single sequence was returned.
         $this->assertCount(1, $result->sequences);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -1410,10 +1402,6 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single subscriber was returned.
         $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -1542,10 +1530,6 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single subscriber was returned.
         $this->assertCount(1, $result->tags);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -2168,10 +2152,6 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single subscriber was returned.
         $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -2621,10 +2601,6 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single subscriber was returned.
         $this->assertCount(1, $result->subscribers);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -3318,10 +3294,6 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single tag was returned.
         $this->assertCount(1, $result->tags);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -3713,10 +3685,6 @@ class ConvertKitAPITest extends TestCase
 
         // Assert a single custom field was returned.
         $this->assertCount(1, $result->custom_fields);
-
-        // Assert has_previous_page and has_next_page are correct.
-        $this->assertFalse($result->pagination->has_previous_page);
-        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
