@@ -95,7 +95,7 @@ class ConvertKitAPITest extends TestCase
 
         // Unsubscribe any Subscribers.
         foreach ($this->subscriber_ids as $id) {
-            $this->api->unsubscribe_by_id($id);
+            $this->api->unsubscribe($id);
         }
     }
 
