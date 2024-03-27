@@ -35,18 +35,18 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Custom Field IDs to delete on teardown of a test.
-     * 
+     *
      * @since   2.0.0
-     * 
+     *
      * @var     array<int, int>
      */
     protected $custom_field_ids = [];
 
     /**
      * Subscriber IDs to unsubscribe on teardown of a test.
-     * 
+     *
      * @since   2.0.0
-     * 
+     *
      * @var     array<int, int>
      */
     protected $subscriber_ids = [];
@@ -89,12 +89,12 @@ class ConvertKitAPITest extends TestCase
     protected function tearDown(): void
     {
         // Delete any Custom Fields.
-        foreach($this->custom_field_ids as $id) {
+        foreach ($this->custom_field_ids as $id) {
             $this->api->delete_custom_field($id);
         }
 
         // Unsubscribe any Subscribers.
-        foreach($this->subscriber_ids as $id) {
+        foreach ($this->subscriber_ids as $id) {
             $this->api->unsubscribe_by_id($id);
         }
     }
@@ -2725,7 +2725,7 @@ class ConvertKitAPITest extends TestCase
         $this->subscriber_ids[] = $result->subscriber->id;
 
         // Assert subscriber exists with correct data.
-        $this->assertEquals($result->subscriber->email_address, $emailAddress); 
+        $this->assertEquals($result->subscriber->email_address, $emailAddress);
     }
 
     /**
