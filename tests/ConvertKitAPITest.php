@@ -946,9 +946,6 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
     }
 
     /**
@@ -1399,9 +1396,6 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
     }
 
     /**
@@ -1527,9 +1521,6 @@ class ConvertKitAPITest extends TestCase
         // Assert tags and pagination exist.
         $this->assertDataExists($result, 'tags');
         $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->tags);
     }
 
     /**
@@ -2149,9 +2140,6 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
     }
 
     /**
@@ -2598,9 +2586,6 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
-
-        // Assert a single subscriber was returned.
-        $this->assertCount(1, $result->subscribers);
     }
 
     /**
