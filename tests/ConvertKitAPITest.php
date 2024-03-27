@@ -3282,6 +3282,105 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_email_templates() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetEmailTemplates()
+    {
+        $result = $this->api->get_email_templates();
+
+        // Assert email templates and pagination exist.
+        $this->assertDataExists($result, 'email_templates');
+        $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_email_templates() returns the expected data
+     * when the total count is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetEmailTemplatesWithTotalCount()
+    {
+        $result = $this->api->get_email_templates(
+            include_total_count: true
+        );
+
+        // Assert email templates and pagination exist.
+        $this->assertDataExists($result, 'email_templates');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_email_templates() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetEmailTemplatesPagination()
+    {
+        $result = $this->api->get_email_templates(
+            per_page: 1
+        );
+
+        // Assert email templates and pagination exist.
+        $this->assertDataExists($result, 'email_templates');
+        $this->assertPaginationExists($result);
+
+        // Assert a single email template was returned.
+        $this->assertCount(1, $result->email_templates);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_email_templates(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert email templates and pagination exist.
+        $this->assertDataExists($result, 'email_templates');
+        $this->assertPaginationExists($result);
+
+        // Assert a single email template was returned.
+        $this->assertCount(1, $result->email_templates);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_email_templates(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert email templates and pagination exist.
+        $this->assertDataExists($result, 'email_templates');
+        $this->assertPaginationExists($result);
+
+        // Assert a single email template was returned.
+        $this->assertCount(1, $result->email_templates);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+    }
+
+    /**
      * Test that create_broadcast(), update_broadcast() and destroy_broadcast() works
      * when specifying valid published_at and send_at values.
      *
