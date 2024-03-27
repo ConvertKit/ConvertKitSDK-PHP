@@ -3963,6 +3963,105 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_segments() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSegments()
+    {
+        $result = $this->api->get_segments();
+
+        // Assert segments and pagination exist.
+        $this->assertDataExists($result, 'segments');
+        $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_segments() returns the expected data
+     * when the total count is included.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSegmentsWithTotalCount()
+    {
+        $result = $this->api->get_segments(
+            include_total_count: true
+        );
+
+        // Assert segments and pagination exist.
+        $this->assertDataExists($result, 'segments');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_segments() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSegmentsPagination()
+    {
+        $result = $this->api->get_segments(
+            per_page: 1
+        );
+
+        // Assert segments and pagination exist.
+        $this->assertDataExists($result, 'segments');
+        $this->assertPaginationExists($result);
+
+        // Assert a single segment was returned.
+        $this->assertCount(1, $result->segments);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_segments(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert segments and pagination exist.
+        $this->assertDataExists($result, 'segments');
+        $this->assertPaginationExists($result);
+
+        // Assert a single segment was returned.
+        $this->assertCount(1, $result->segments);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_segments(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert segments and pagination exist.
+        $this->assertDataExists($result, 'segments');
+        $this->assertPaginationExists($result);
+
+        // Assert a single segment was returned.
+        $this->assertCount(1, $result->segments);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+    }
+
+    /**
      * Test that fetching a legacy form's markup works.
      *
      * @since   1.0.0
