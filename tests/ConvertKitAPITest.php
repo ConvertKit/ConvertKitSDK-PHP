@@ -757,6 +757,30 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that get_form_subscriptions() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithTotalCount()
+    {
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            include_total_count: true
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
      * when a valid Form ID is specified and the subscription status
      * is cancelled.
      *
@@ -1023,6 +1047,29 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_sequences() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequencesWithTotalCount()
+    {
+        $result = $this->api->get_sequences(
+            include_total_count: true
+        );
+
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'sequences');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
      * Test that get_sequences() returns the expected data when
      * pagination parameters and per_page limits are specified.
      *
@@ -1203,6 +1250,30 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithTotalCount()
+    {
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            include_total_count: true
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
     }
 
     /**
@@ -1468,6 +1539,29 @@ class ConvertKitAPITest extends TestCase
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
         $this->assertArrayHasKey('created_at', $tag);
+    }
+
+    /**
+     * Test that get_tags() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagsWithTotalCount()
+    {
+        $result = $this->api->get_tags(
+            include_total_count: true
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
     }
 
     /**
@@ -1950,6 +2044,30 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that get_tag_subscriptions() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithTotalCount()
+    {
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            include_total_count: true
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
      * when a valid Tag ID is specified and the subscription status
      * is bounced.
      *
@@ -2344,6 +2462,29 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithTotalCount()
+    {
+        $result = $this->api->get_subscribers(
+            include_total_count: true
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
     }
 
     /**
@@ -3205,6 +3346,30 @@ class ConvertKitAPITest extends TestCase
         // Assert tags and pagination exist.
         $this->assertDataExists($result, 'tags');
         $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_subscriber_tags() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberTagsWithTotalCount()
+    {
+        $result = $this->api->get_subscriber_tags(
+            subscriber_id: (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+            include_total_count: true
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
     }
 
     /**
