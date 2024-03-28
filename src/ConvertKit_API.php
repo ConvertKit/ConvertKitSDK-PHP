@@ -628,6 +628,7 @@ class ConvertKit_API
             endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
             args: $this->build_total_count_and_pagination_params(
                 params: $options,
+                include_total_count: $include_total_count,
                 after_cursor: $after_cursor,
                 before_cursor: $before_cursor,
                 per_page: $per_page

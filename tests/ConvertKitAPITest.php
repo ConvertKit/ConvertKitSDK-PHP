@@ -1260,7 +1260,7 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testGetSequencesWithTotalCount()
+    public function testGetSequenceSubscriptionsWithTotalCount()
     {
         $result = $this->api->get_sequence_subscriptions(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
@@ -2057,8 +2057,8 @@ class ConvertKitAPITest extends TestCase
             include_total_count: true
         );
 
-        // Assert tags and pagination exist.
-        $this->assertDataExists($result, 'tags');
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
 
         // Assert total count is included.
