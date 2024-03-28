@@ -451,16 +451,16 @@ class ConvertKit_API
     /**
      * List subscribers for a form
      *
-     * @param integer   $form_id                Form ID.
-     * @param string    $subscriber_state       Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param \DateTime $created_after          Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before         Filter subscribers who have been created before this date.
-     * @param \DateTime $added_after            Filter subscribers who have been added to the form after this date.
-     * @param \DateTime $added_before           Filter subscribers who have been added to the form before this date.
-     * @param boolean   $include_total_count    To include the total count of records in the response, use true.
-     * @param string    $after_cursor           Return results after the given pagination cursor.
-     * @param string    $before_cursor          Return results before the given pagination cursor.
-     * @param integer   $per_page               Number of results to return.
+     * @param integer   $form_id             Form ID.
+     * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after         Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before        Filter subscribers who have been added to the form before this date.
+     * @param boolean   $include_total_count To include the total count of records in the response, use true.
+     * @param string    $after_cursor        Return results after the given pagination cursor.
+     * @param string    $before_cursor       Return results before the given pagination cursor.
+     * @param integer   $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-form
      *
@@ -513,10 +513,10 @@ class ConvertKit_API
     /**
      * Gets sequences
      *
-     * @param boolean $include_total_count  To include the total count of records in the response, use true.
-     * @param string  $after_cursor  Return results after the given pagination cursor.
-     * @param string  $before_cursor Return results before the given pagination cursor.
-     * @param integer $per_page      Number of results to return.
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-sequences
      *
@@ -577,16 +577,16 @@ class ConvertKit_API
     /**
      * List subscribers for a sequence
      *
-     * @param integer   $sequence_id            Sequence ID.
-     * @param string    $subscriber_state       Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param \DateTime $created_after          Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before         Filter subscribers who have been created before this date.
-     * @param \DateTime $added_after            Filter subscribers who have been added to the form after this date.
-     * @param \DateTime $added_before           Filter subscribers who have been added to the form before this date.
-     * @param boolean   $include_total_count    To include the total count of records in the response, use true.
-     * @param string    $after_cursor           Return results after the given pagination cursor.
-     * @param string    $before_cursor          Return results before the given pagination cursor.
-     * @param integer   $per_page               Number of results to return.
+     * @param integer   $sequence_id         Sequence ID.
+     * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after         Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before        Filter subscribers who have been added to the form before this date.
+     * @param boolean   $include_total_count To include the total count of records in the response, use true.
+     * @param string    $after_cursor        Return results after the given pagination cursor.
+     * @param string    $before_cursor       Return results before the given pagination cursor.
+     * @param integer   $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-sequence
      *
@@ -638,10 +638,10 @@ class ConvertKit_API
     /**
      * List tags.
      *
-     * @param boolean $include_total_count  To include the total count of records in the response, use true.
-     * @param string  $after_cursor         Return results after the given pagination cursor.
-     * @param string  $before_cursor        Return results before the given pagination cursor.
-     * @param integer $per_page             Number of results to return.
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-tags
      *
@@ -791,16 +791,16 @@ class ConvertKit_API
     /**
      * List subscribers for a tag
      *
-     * @param integer   $tag_id                 Tag ID.
-     * @param string    $subscriber_state       Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param \DateTime $created_after          Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before         Filter subscribers who have been created before this date.
-     * @param \DateTime $tagged_after           Filter subscribers who have been tagged after this date.
-     * @param \DateTime $tagged_before          Filter subscribers who have been tagged before this date.
-     * @param boolean   $include_total_count    To include the total count of records in the response, use true.
-     * @param string    $after_cursor           Return results after the given pagination cursor.
-     * @param string    $before_cursor          Return results before the given pagination cursor.
-     * @param integer   $per_page               Number of results to return.
+     * @param integer   $tag_id              Tag ID.
+     * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+     * @param \DateTime $tagged_after        Filter subscribers who have been tagged after this date.
+     * @param \DateTime $tagged_before       Filter subscribers who have been tagged before this date.
+     * @param boolean   $include_total_count To include the total count of records in the response, use true.
+     * @param string    $after_cursor        Return results after the given pagination cursor.
+     * @param string    $before_cursor       Return results before the given pagination cursor.
+     * @param integer   $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-tag
      *
@@ -1000,18 +1000,18 @@ class ConvertKit_API
     /**
      * List subscribers.
      *
-     * @param string    $subscriber_state       Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param string    $email_address          Search susbcribers by email address. This is an exact match search.
-     * @param \DateTime $created_after          Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before         Filter subscribers who have been created before this date.
-     * @param \DateTime $updated_after          Filter subscribers who have been updated after this date.
-     * @param \DateTime $updated_before         Filter subscribers who have been updated before this date.
-     * @param string    $sort_field             Sort Field (id|updated_at|cancelled_at).
-     * @param string    $sort_order             Sort Order (asc|desc).
-     * @param boolean   $include_total_count    To include the total count of records in the response, use true.
-     * @param string    $after_cursor           Return results after the given pagination cursor.
-     * @param string    $before_cursor          Return results before the given pagination cursor.
-     * @param integer   $per_page               Number of results to return.
+     * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param string    $email_address       Search susbcribers by email address. This is an exact match search.
+     * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+     * @param \DateTime $updated_after       Filter subscribers who have been updated after this date.
+     * @param \DateTime $updated_before      Filter subscribers who have been updated before this date.
+     * @param string    $sort_field          Sort Field (id|updated_at|cancelled_at).
+     * @param string    $sort_order          Sort Order (asc|desc).
+     * @param boolean   $include_total_count To include the total count of records in the response, use true.
+     * @param string    $after_cursor        Return results after the given pagination cursor.
+     * @param string    $before_cursor       Return results before the given pagination cursor.
+     * @param integer   $per_page            Number of results to return.
      *
      * @since 2.0.0
      *
@@ -1262,11 +1262,11 @@ class ConvertKit_API
     /**
      * Get a list of the tags for a subscriber.
      *
-     * @param integer $subscriber_id        Subscriber ID.
-     * @param boolean $include_total_count  To include the total count of records in the response, use true.
-     * @param string  $after_cursor         Return results after the given pagination cursor.
-     * @param string  $before_cursor        Return results before the given pagination cursor.
-     * @param integer $per_page             Number of results to return.
+     * @param integer $subscriber_id       Subscriber ID.
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-tags-for-a-subscriber
      *
@@ -1967,11 +1967,11 @@ class ConvertKit_API
     /**
      * Adds total count and pagination parameters to the given array of existing API parameters.
      *
-     * @param array<string, string|integer|bool> $params                API parameters.
-     * @param boolean                            $include_total_count   Return total count of records.
-     * @param string                             $after_cursor          Return results after the given pagination cursor.
-     * @param string                             $before_cursor         Return results before the given pagination cursor.
-     * @param integer                            $per_page              Number of results to return.
+     * @param array<string, string|integer|bool> $params              API parameters.
+     * @param boolean                            $include_total_count Return total count of records.
+     * @param string                             $after_cursor        Return results after the given pagination cursor.
+     * @param string                             $before_cursor       Return results before the given pagination cursor.
+     * @param integer                            $per_page            Number of results to return.
      *
      * @since 2.0.0
      *
