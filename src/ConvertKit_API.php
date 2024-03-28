@@ -1321,25 +1321,25 @@ class ConvertKit_API
     /**
      * Creates a broadcast.
      *
-     * @param string                $subject           The broadcast email's subject.
-     * @param string                $content           The broadcast's email HTML content.
-     * @param string                $description       An internal description of this broadcast.
-     * @param boolean               $public            Specifies whether or not this is a public post.
-     * @param \DateTime             $published_at      Specifies the time that this post was published (applicable
-     *                                                 only to public posts).
-     * @param \DateTime             $send_at           Time that this broadcast should be sent; leave blank to create
-     *                                                 a draft broadcast. If set to a future time, this is the time that
-     *                                                 the broadcast will be scheduled to send.
-     * @param string                $email_address     Sending email address; leave blank to use your account's
-     *                                                 default sending email address.
-     * @param string                $email_template_id ID of the email template to use; leave blank to use your
-     *                                                 account's default email template.
-     * @param string                $thumbnail_alt     Specify the ALT attribute of the public thumbnail image
-     *                                                 (applicable only to public posts).
-     * @param string                $thumbnail_url     Specify the URL of the thumbnail image to accompany the broadcast
-     *                                                 post (applicable only to public posts).
-     * @param string                $preview_text      Specify the preview text of the email.
-     * @param array<string,string>  $subscriber_filter Filter subscriber(s) to send the email to.
+     * @param string               $subject           The broadcast email's subject.
+     * @param string               $content           The broadcast's email HTML content.
+     * @param string               $description       An internal description of this broadcast.
+     * @param boolean              $public            Specifies whether or not this is a public post.
+     * @param \DateTime            $published_at      Specifies the time that this post was published (applicable
+     *                                                only to public posts).
+     * @param \DateTime            $send_at           Time that this broadcast should be sent; leave blank to create
+     *                                                a draft broadcast. If set to a future time, this is the time that
+     *                                                the broadcast will be scheduled to send.
+     * @param string               $email_address     Sending email address; leave blank to use your account's
+     *                                                default sending email address.
+     * @param string               $email_template_id ID of the email template to use; leave blank to use your
+     *                                                account's default email template.
+     * @param string               $thumbnail_alt     Specify the ALT attribute of the public thumbnail image
+     *                                                (applicable only to public posts).
+     * @param string               $thumbnail_url     Specify the URL of the thumbnail image to accompany the broadcast
+     *                                                post (applicable only to public posts).
+     * @param string               $preview_text      Specify the preview text of the email.
+     * @param array<string,string> $subscriber_filter Filter subscriber(s) to send the email to.
      *
      * @see https://developers.convertkit.com/v4.html#create-a-broadcast
      *
@@ -1427,26 +1427,26 @@ class ConvertKit_API
     /**
      * Updates a broadcast.
      *
-     * @param integer               $id                Broadcast ID.
-     * @param string                $subject           The broadcast email's subject.
-     * @param string                $content           The broadcast's email HTML content.
-     * @param string                $description       An internal description of this broadcast.
-     * @param boolean               $public            Specifies whether or not this is a public post.
-     * @param \DateTime             $published_at      Specifies the time that this post was published (applicable
-     *                                                 only to public posts).
-     * @param \DateTime             $send_at           Time that this broadcast should be sent; leave blank to create
-     *                                                 a draft broadcast. If set to a future time, this is the time that
-     *                                                 the broadcast will be scheduled to send.
-     * @param string                $email_address     Sending email address; leave blank to use your account's
-     *                                                 default sending email address.
-     * @param string                $email_template_id ID of the email template to use; leave blank to use your
-     *                                                 account's default email template.
-     * @param string                $thumbnail_alt     Specify the ALT attribute of the public thumbnail image
-     *                                                 (applicable only to public posts).
-     * @param string                $thumbnail_url     Specify the URL of the thumbnail image to accompany the broadcast
-     *                                                 post (applicable only to public posts).
-     * @param string                $preview_text      Specify the preview text of the email.
-     * @param array<string,string>  $subscriber_filter Filter subscriber(s) to send the email to.
+     * @param integer              $id                Broadcast ID.
+     * @param string               $subject           The broadcast email's subject.
+     * @param string               $content           The broadcast's email HTML content.
+     * @param string               $description       An internal description of this broadcast.
+     * @param boolean              $public            Specifies whether or not this is a public post.
+     * @param \DateTime            $published_at      Specifies the time that this post was published (applicable
+     *                                                only to public posts).
+     * @param \DateTime            $send_at           Time that this broadcast should be sent; leave blank to create
+     *                                                a draft broadcast. If set to a future time, this is the time that
+     *                                                the broadcast will be scheduled to send.
+     * @param string               $email_address     Sending email address; leave blank to use your account's
+     *                                                default sending email address.
+     * @param string               $email_template_id ID of the email template to use; leave blank to use your
+     *                                                account's default email template.
+     * @param string               $thumbnail_alt     Specify the ALT attribute of the public thumbnail image
+     *                                                (applicable only to public posts).
+     * @param string               $thumbnail_url     Specify the URL of the thumbnail image to accompany the broadcast
+     *                                                post (applicable only to public posts).
+     * @param string               $preview_text      Specify the preview text of the email.
+     * @param array<string,string> $subscriber_filter Filter subscriber(s) to send the email to.
      *
      * @see https://developers.convertkit.com/#create-a-broadcast
      *
