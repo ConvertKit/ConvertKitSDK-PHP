@@ -451,15 +451,16 @@ class ConvertKit_API
     /**
      * List subscribers for a form
      *
-     * @param integer   $form_id          Form ID.
-     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
-     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
-     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
-     * @param string    $after_cursor     Return results after the given pagination cursor.
-     * @param string    $before_cursor    Return results before the given pagination cursor.
-     * @param integer   $per_page         Number of results to return.
+     * @param integer   $form_id             Form ID.
+     * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after         Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before        Filter subscribers who have been added to the form before this date.
+     * @param boolean   $include_total_count To include the total count of records in the response, use true.
+     * @param string    $after_cursor        Return results after the given pagination cursor.
+     * @param string    $before_cursor       Return results before the given pagination cursor.
+     * @param integer   $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-form
      *
@@ -472,6 +473,7 @@ class ConvertKit_API
         \DateTime $created_before = null,
         \DateTime $added_after = null,
         \DateTime $added_before = null,
+        bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
@@ -495,37 +497,41 @@ class ConvertKit_API
             $options['added_before'] = $added_before->format('Y-m-d');
         }
 
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: sprintf('forms/%s/subscribers', $form_id),
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                params: $options,
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
     /**
      * Gets sequences
      *
-     * @param string  $after_cursor  Return results after the given pagination cursor.
-     * @param string  $before_cursor Return results before the given pagination cursor.
-     * @param integer $per_page      Number of results to return.
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-sequences
      *
      * @return false|mixed
      */
-    public function get_sequences(string $after_cursor = '', string $before_cursor = '', int $per_page = 100)
-    {
+    public function get_sequences(
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
         return $this->get(
             endpoint: 'sequences',
-            args: $this->build_pagination_params(
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
                 after_cursor: $after_cursor,
                 before_cursor: $before_cursor,
                 per_page: $per_page
@@ -571,15 +577,16 @@ class ConvertKit_API
     /**
      * List subscribers for a sequence
      *
-     * @param integer   $sequence_id      Sequence ID.
-     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
-     * @param \DateTime $added_after      Filter subscribers who have been added to the form after this date.
-     * @param \DateTime $added_before     Filter subscribers who have been added to the form before this date.
-     * @param string    $after_cursor     Return results after the given pagination cursor.
-     * @param string    $before_cursor    Return results before the given pagination cursor.
-     * @param integer   $per_page         Number of results to return.
+     * @param integer   $sequence_id         Sequence ID.
+     * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+     * @param \DateTime $added_after         Filter subscribers who have been added to the form after this date.
+     * @param \DateTime $added_before        Filter subscribers who have been added to the form before this date.
+     * @param boolean   $include_total_count To include the total count of records in the response, use true.
+     * @param string    $after_cursor        Return results after the given pagination cursor.
+     * @param string    $before_cursor       Return results before the given pagination cursor.
+     * @param integer   $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-sequence
      *
@@ -592,6 +599,7 @@ class ConvertKit_API
         \DateTime $created_before = null,
         \DateTime $added_after = null,
         \DateTime $added_before = null,
+        bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
@@ -615,37 +623,41 @@ class ConvertKit_API
             $options['added_before'] = $added_before->format('Y-m-d');
         }
 
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                params: $options,
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
     /**
-     * Gets tags
+     * List tags.
      *
-     * @param string  $after_cursor  Return results after the given pagination cursor.
-     * @param string  $before_cursor Return results before the given pagination cursor.
-     * @param integer $per_page      Number of results to return.
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-tags
      *
-     * @return false|mixed
+     * @return false|array<int,\stdClass>
      */
-    public function get_tags(string $after_cursor = '', string $before_cursor = '', int $per_page = 100)
-    {
+    public function get_tags(
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
         return $this->get(
             endpoint: 'tags',
-            args: $this->build_pagination_params(
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
                 after_cursor: $after_cursor,
                 before_cursor: $before_cursor,
                 per_page: $per_page
@@ -780,15 +792,16 @@ class ConvertKit_API
     /**
      * List subscribers for a tag
      *
-     * @param integer   $tag_id           Tag ID.
-     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
-     * @param \DateTime $tagged_after     Filter subscribers who have been tagged after this date.
-     * @param \DateTime $tagged_before    Filter subscribers who have been tagged before this date.
-     * @param string    $after_cursor     Return results after the given pagination cursor.
-     * @param string    $before_cursor    Return results before the given pagination cursor.
-     * @param integer   $per_page         Number of results to return.
+     * @param integer   $tag_id              Tag ID.
+     * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+     * @param \DateTime $tagged_after        Filter subscribers who have been tagged after this date.
+     * @param \DateTime $tagged_before       Filter subscribers who have been tagged before this date.
+     * @param boolean   $include_total_count To include the total count of records in the response, use true.
+     * @param string    $after_cursor        Return results after the given pagination cursor.
+     * @param string    $before_cursor       Return results before the given pagination cursor.
+     * @param integer   $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-tag
      *
@@ -801,6 +814,7 @@ class ConvertKit_API
         \DateTime $created_before = null,
         \DateTime $tagged_after = null,
         \DateTime $tagged_before = null,
+        bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
@@ -824,18 +838,16 @@ class ConvertKit_API
             $options['tagged_before'] = $tagged_before->format('Y-m-d');
         }
 
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: sprintf('tags/%s/subscribers', $tag_id),
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                params: $options,
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
@@ -859,21 +871,15 @@ class ConvertKit_API
         string $before_cursor = '',
         int $per_page = 100
     ) {
-        // Build parameters.
-        $options = ['include_total_count' => $include_total_count];
-
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: 'email_templates',
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
@@ -993,19 +999,20 @@ class ConvertKit_API
     }
 
     /**
-     * Get subscribers.
+     * List subscribers.
      *
-     * @param string    $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
-     * @param string    $email_address    Search susbcribers by email address. This is an exact match search.
-     * @param \DateTime $created_after    Filter subscribers who have been created after this date.
-     * @param \DateTime $created_before   Filter subscribers who have been created before this date.
-     * @param \DateTime $updated_after    Filter subscribers who have been updated after this date.
-     * @param \DateTime $updated_before   Filter subscribers who have been updated before this date.
-     * @param string    $sort_field       Sort Field (id|updated_at|cancelled_at).
-     * @param string    $sort_order       Sort Order (asc|desc).
-     * @param string    $after_cursor     Return results after the given pagination cursor.
-     * @param string    $before_cursor    Return results before the given pagination cursor.
-     * @param integer   $per_page         Number of results to return.
+     * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+     * @param string    $email_address       Search susbcribers by email address. This is an exact match search.
+     * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+     * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+     * @param \DateTime $updated_after       Filter subscribers who have been updated after this date.
+     * @param \DateTime $updated_before      Filter subscribers who have been updated before this date.
+     * @param string    $sort_field          Sort Field (id|updated_at|cancelled_at).
+     * @param string    $sort_order          Sort Order (asc|desc).
+     * @param boolean   $include_total_count To include the total count of records in the response, use true.
+     * @param string    $after_cursor        Return results after the given pagination cursor.
+     * @param string    $before_cursor       Return results before the given pagination cursor.
+     * @param integer   $per_page            Number of results to return.
      *
      * @since 2.0.0
      *
@@ -1022,6 +1029,7 @@ class ConvertKit_API
         \DateTime $updated_before = null,
         string $sort_field = 'id',
         string $sort_order = 'desc',
+        bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
@@ -1054,18 +1062,16 @@ class ConvertKit_API
             $options['sort_order'] = $sort_order;
         }
 
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: 'subscribers',
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                params: $options,
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
@@ -1257,10 +1263,11 @@ class ConvertKit_API
     /**
      * Get a list of the tags for a subscriber.
      *
-     * @param integer $subscriber_id Subscriber ID.
-     * @param string  $after_cursor  Return results after the given pagination cursor.
-     * @param string  $before_cursor Return results before the given pagination cursor.
-     * @param integer $per_page      Number of results to return.
+     * @param integer $subscriber_id       Subscriber ID.
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @see https://developers.convertkit.com/v4.html#list-tags-for-a-subscriber
      *
@@ -1268,13 +1275,15 @@ class ConvertKit_API
      */
     public function get_subscriber_tags(
         int $subscriber_id,
+        bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
     ) {
         return $this->get(
             endpoint: sprintf('subscribers/%s/tags', $subscriber_id),
-            args: $this->build_pagination_params(
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
                 after_cursor: $after_cursor,
                 before_cursor: $before_cursor,
                 per_page: $per_page
@@ -1588,21 +1597,15 @@ class ConvertKit_API
         string $before_cursor = '',
         int $per_page = 100
     ) {
-        // Build parameters.
-        $options = ['include_total_count' => $include_total_count];
-
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: 'custom_fields',
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
@@ -1716,21 +1719,15 @@ class ConvertKit_API
         string $before_cursor = '',
         int $per_page = 100
     ) {
-        // Build parameters.
-        $options = ['include_total_count' => $include_total_count];
-
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: 'purchases',
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
@@ -1818,21 +1815,15 @@ class ConvertKit_API
         string $before_cursor = '',
         int $per_page = 100
     ) {
-        // Build parameters.
-        $options = ['include_total_count' => $include_total_count];
-
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: 'segments',
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
@@ -1975,23 +1966,26 @@ class ConvertKit_API
     }
 
     /**
-     * Adds pagination parameters to the given array of existing API parameters.
+     * Adds total count and pagination parameters to the given array of existing API parameters.
      *
-     * @param array<string, string|integer|bool> $params        API parameters.
-     * @param string                             $after_cursor  Return results after the given pagination cursor.
-     * @param string                             $before_cursor Return results before the given pagination cursor.
-     * @param integer                            $per_page      Number of results to return.
+     * @param array<string, string|integer|bool> $params              API parameters.
+     * @param boolean                            $include_total_count Return total count of records.
+     * @param string                             $after_cursor        Return results after the given pagination cursor.
+     * @param string                             $before_cursor       Return results before the given pagination cursor.
+     * @param integer                            $per_page            Number of results to return.
      *
      * @since 2.0.0
      *
      * @return array<string, string|integer|bool>
      */
-    private function build_pagination_params(
+    private function build_total_count_and_pagination_params(
         array $params = [],
+        bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
     ) {
+        $params['include_total_count'] = $include_total_count;
         if (!empty($after_cursor)) {
             $params['after'] = $after_cursor;
         }
