@@ -697,19 +697,32 @@ class ConvertKitAPITest extends TestCase
     public function testGetForms()
     {
         $result = $this->api->get_forms();
-        $this->assertIsArray($result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $form = get_object_vars($result[0]);
-        $this->assertArrayHasKey('id', $form);
-        $this->assertArrayHasKey('name', $form);
-        $this->assertArrayHasKey('created_at', $form);
-        $this->assertArrayHasKey('type', $form);
-        $this->assertArrayHasKey('format', $form);
-        $this->assertArrayHasKey('embed_js', $form);
-        $this->assertArrayHasKey('embed_url', $form);
-        $this->assertArrayHasKey('archived', $form);
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Iterate through each form, confirming no landing pages were included.
+        foreach ($result->forms as $form) {
+            $form = get_object_vars($form);
+
+            // Assert shape of object is valid.
+            $this->assertArrayHasKey('id', $form);
+            $this->assertArrayHasKey('name', $form);
+            $this->assertArrayHasKey('created_at', $form);
+            $this->assertArrayHasKey('type', $form);
+            $this->assertArrayHasKey('format', $form);
+            $this->assertArrayHasKey('embed_js', $form);
+            $this->assertArrayHasKey('embed_url', $form);
+            $this->assertArrayHasKey('archived', $form);
+
+            // Assert form isn't archived or a landing page.
+            $this->assertFalse($form['archived']);
+            $this->assertEquals($form['type'], 'embed');
+        }
     }
+
+    
 
     /**
      * Test that get_landing_pages() returns the expected data.
@@ -721,19 +734,29 @@ class ConvertKitAPITest extends TestCase
     public function testGetLandingPages()
     {
         $result = $this->api->get_landing_pages();
-        $this->assertIsArray($result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $landingPage = get_object_vars($result[0]);
-        $this->assertArrayHasKey('id', $landingPage);
-        $this->assertArrayHasKey('name', $landingPage);
-        $this->assertArrayHasKey('created_at', $landingPage);
-        $this->assertArrayHasKey('type', $landingPage);
-        $this->assertEquals('hosted', $landingPage['type']);
-        $this->assertArrayHasKey('format', $landingPage);
-        $this->assertArrayHasKey('embed_js', $landingPage);
-        $this->assertArrayHasKey('embed_url', $landingPage);
-        $this->assertArrayHasKey('archived', $landingPage);
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Iterate through each landing page, confirming no forms were included.
+        foreach ($result->forms as $form) {
+            $form = get_object_vars($form);
+
+            // Assert shape of object is valid.
+            $this->assertArrayHasKey('id', $form);
+            $this->assertArrayHasKey('name', $form);
+            $this->assertArrayHasKey('created_at', $form);
+            $this->assertArrayHasKey('type', $form);
+            $this->assertArrayHasKey('format', $form);
+            $this->assertArrayHasKey('embed_js', $form);
+            $this->assertArrayHasKey('embed_url', $form);
+            $this->assertArrayHasKey('archived', $form);
+
+            // Assert form isn't archived and is hosted i.e. landing page.
+            $this->assertFalse($form['archived']);
+            $this->assertEquals($form['type'], 'hosted');
+        }
     }
 
     /**
