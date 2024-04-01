@@ -1627,9 +1627,24 @@ class ConvertKitAPITest extends TestCase
     public function testCreateTag()
     {
         $tagName = 'Tag Test ' . mt_rand();
+
+        // Add mock handler for this API request, as the API doesn't provide
+        // a method to delete tags to cleanup the test.
+        $this->api = $this->mockResponse(
+            api: $this->api,
+            responseBody: [
+                'tag' => [
+                    'id' => 12345,
+                    'name' => $tagName,
+                    'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+                ],
+            ]
+        );
+
+        // Send request.
         $result = $this->api->create_tag($tagName);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        // Assert response contains correct data.
         $tag = get_object_vars($result->tag);
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
@@ -1678,6 +1693,28 @@ class ConvertKitAPITest extends TestCase
             'Tag Test ' . mt_rand(),
             'Tag Test ' . mt_rand(),
         ];
+
+        // Add mock handler for this API request, as the API doesn't provide
+        // a method to delete tags to cleanup the test.
+        $this->api = $this->mockResponse(
+            api: $this->api,
+            responseBody: [
+                'tags' => [
+                    [
+                        'id' => 12345,
+                        'name' => $tagNames[0],
+                        'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+                    ],
+                    [
+                        'id' => 23456,
+                        'name' => $tagNames[1],
+                        'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+                    ],
+                ],
+                'failures' => [],
+            ]
+        );
+
         $result = $this->api->create_tags($tagNames);
 
         // Assert no failures.
