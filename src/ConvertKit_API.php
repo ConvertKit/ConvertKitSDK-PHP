@@ -387,13 +387,14 @@ class ConvertKit_API
 
     /**
      * Get forms.
-     * 
-     * @since 1.0.0
      *
+     * @param boolean $include_archived    To include archived forms in the response, use true.
      * @param boolean $include_total_count To include the total count of records in the response, use true.
      * @param string  $after_cursor        Return results after the given pagination cursor.
      * @param string  $before_cursor       Return results before the given pagination cursor.
      * @param integer $per_page            Number of results to return.
+     *
+     * @since 1.0.0
      *
      * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
      *
@@ -421,13 +422,13 @@ class ConvertKit_API
         foreach ($result->forms as $index => $form) {
             // Exclude hosted forms i.e. landing pages.
             if ($form->type === 'hosted') {
-                unset($result->forms[ $index ] );
+                unset($result->forms[$index]);
                 continue;
             }
 
             // Exclude archived forms, if required.
             if (!$include_archived && isset($form->archived) && $form->archived) {
-                unset($result->forms[ $index ] );
+                unset($result->forms[$index]);
                 continue;
             }
         }
@@ -437,13 +438,14 @@ class ConvertKit_API
 
     /**
      * Get landing pages.
-     * 
-     * @since 1.0.0
      *
+     * @param boolean $include_archived    To include archived landing pages in the response, use true.
      * @param boolean $include_total_count To include the total count of records in the response, use true.
      * @param string  $after_cursor        Return results after the given pagination cursor.
      * @param string  $before_cursor       Return results before the given pagination cursor.
      * @param integer $per_page            Number of results to return.
+     *
+     * @since 1.0.0
      *
      * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
      *
@@ -470,13 +472,13 @@ class ConvertKit_API
         foreach ($result->forms as $index => $form) {
             // Exclude non-hosted forms i.e. forms.
             if ($form->type !== 'hosted') {
-                unset($result->forms[ $index ] );
+                unset($result->forms[$index]);
                 continue;
             }
 
             // Exclude archived forms, if required.
             if (!$include_archived && isset($form->archived) && $form->archived) {
-                unset($result->forms[ $index ] );
+                unset($result->forms[$index]);
                 continue;
             }
         }
