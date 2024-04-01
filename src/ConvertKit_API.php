@@ -1309,21 +1309,15 @@ class ConvertKit_API
         string $before_cursor = '',
         int $per_page = 100
     ) {
-        // Build parameters.
-        $options = ['include_total_count' => $include_total_count];
-
-        // Build pagination parameters.
-        $options = $this->build_pagination_params(
-            params: $options,
-            after_cursor: $after_cursor,
-            before_cursor: $before_cursor,
-            per_page: $per_page
-        );
-
         // Send request.
         return $this->get(
             endpoint: 'broadcasts',
-            args: $options
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
         );
     }
 
