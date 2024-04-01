@@ -1486,6 +1486,38 @@ class ConvertKit_API
     }
 
     /**
+     * List webhooks.
+     *
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
+     *
+     * @since 2.0.0
+     *
+     * @see https://developers.convertkit.com/v4.html#list-webhooks
+     *
+     * @return false|mixed
+     */
+    public function get_webhooks(
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        // Send request.
+        return $this->get(
+            endpoint: 'webhooks',
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
+    }
+
+    /**
      * Creates a webhook that will be called based on the chosen event types.
      *
      * @param string $url       URL to receive event.
@@ -1494,7 +1526,7 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#create-a-webhook
+     * @see https://developers.convertkit.com/v4.html#create-a-webhook
      *
      * @throws \InvalidArgumentException If the event is not supported.
      *
@@ -1506,6 +1538,8 @@ class ConvertKit_API
         switch ($event) {
             case 'subscriber.subscriber_activate':
             case 'subscriber.subscriber_unsubscribe':
+            case 'subscriber.subscriber_bounce':
+            case 'subscriber.subscriber_complain':
             case 'purchase.purchase_create':
                 $eventData = ['name' => $event];
                 break;
@@ -1553,7 +1587,7 @@ class ConvertKit_API
 
         // Send request.
         return $this->post(
-            'automations/hooks',
+            'webhooks',
             [
                 'target_url' => $url,
                 'event'      => $eventData,
@@ -1564,17 +1598,17 @@ class ConvertKit_API
     /**
      * Deletes an existing webhook.
      *
-     * @param integer $rule_id Rule ID.
+     * @param integer $id Webhook ID.
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#destroy-webhook
+     * @see https://developers.convertkit.com/v4.html#delete-a-webhook
      *
      * @return false|object
      */
-    public function destroy_webhook(int $rule_id)
+    public function delete_webhook(int $id)
     {
-        return $this->delete(sprintf('automations/hooks/%s', $rule_id));
+        return $this->delete(sprintf('webhooks/%s', $id));
     }
 
     /**
