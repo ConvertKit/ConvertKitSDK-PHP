@@ -841,6 +841,29 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_landing_pages() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetLandingPagesWithTotalCount()
+    {
+        $result = $this->api->get_landing_pages(
+            include_total_count: true
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
      * Test that get_form_subscriptions() returns the expected data
      * when a valid Form ID is specified.
      *
