@@ -771,6 +771,30 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that get_form_subscriptions() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormSubscriptionsWithTotalCount()
+    {
+        $result = $this->api->get_form_subscriptions(
+            form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
+            include_total_count: true
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_form_subscriptions() returns the expected data
      * when a valid Form ID is specified and the subscription status
      * is cancelled.
      *
@@ -1037,6 +1061,29 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that get_sequences() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequencesWithTotalCount()
+    {
+        $result = $this->api->get_sequences(
+            include_total_count: true
+        );
+
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'sequences');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
      * Test that get_sequences() returns the expected data when
      * pagination parameters and per_page limits are specified.
      *
@@ -1217,6 +1264,30 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithTotalCount()
+    {
+        $result = $this->api->get_sequence_subscriptions(
+            sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            include_total_count: true
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
     }
 
     /**
@@ -1486,6 +1557,29 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that get_tags() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagsWithTotalCount()
+    {
+        $result = $this->api->get_tags(
+            include_total_count: true
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_tags() returns the expected data
      * when pagination parameters and per_page limits are specified.
      *
      * @since   2.0.0
@@ -1547,9 +1641,24 @@ class ConvertKitAPITest extends TestCase
     public function testCreateTag()
     {
         $tagName = 'Tag Test ' . mt_rand();
+
+        // Add mock handler for this API request, as the API doesn't provide
+        // a method to delete tags to cleanup the test.
+        $this->api = $this->mockResponse(
+            api: $this->api,
+            responseBody: [
+                'tag' => [
+                    'id' => 12345,
+                    'name' => $tagName,
+                    'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+                ],
+            ]
+        );
+
+        // Send request.
         $result = $this->api->create_tag($tagName);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
+        // Assert response contains correct data.
         $tag = get_object_vars($result->tag);
         $this->assertArrayHasKey('id', $tag);
         $this->assertArrayHasKey('name', $tag);
@@ -1598,6 +1707,28 @@ class ConvertKitAPITest extends TestCase
             'Tag Test ' . mt_rand(),
             'Tag Test ' . mt_rand(),
         ];
+
+        // Add mock handler for this API request, as the API doesn't provide
+        // a method to delete tags to cleanup the test.
+        $this->api = $this->mockResponse(
+            api: $this->api,
+            responseBody: [
+                'tags' => [
+                    [
+                        'id' => 12345,
+                        'name' => $tagNames[0],
+                        'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+                    ],
+                    [
+                        'id' => 23456,
+                        'name' => $tagNames[1],
+                        'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+                    ],
+                ],
+                'failures' => [],
+            ]
+        );
+
         $result = $this->api->create_tags($tagNames);
 
         // Assert no failures.
@@ -1960,6 +2091,30 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_tag_subscriptions() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetTagSubscriptionsWithTotalCount()
+    {
+        $result = $this->api->get_tag_subscriptions(
+            tag_id: (int) $_ENV['CONVERTKIT_API_TAG_ID'],
+            include_total_count: true
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
     }
 
     /**
@@ -2358,6 +2513,29 @@ class ConvertKitAPITest extends TestCase
         // Assert subscribers and pagination exist.
         $this->assertDataExists($result, 'subscribers');
         $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithTotalCount()
+    {
+        $result = $this->api->get_subscribers(
+            include_total_count: true
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
     }
 
     /**
@@ -3219,6 +3397,30 @@ class ConvertKitAPITest extends TestCase
         // Assert tags and pagination exist.
         $this->assertDataExists($result, 'tags');
         $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_subscriber_tags() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscriberTagsWithTotalCount()
+    {
+        $result = $this->api->get_subscriber_tags(
+            subscriber_id: (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+            include_total_count: true
+        );
+
+        // Assert tags and pagination exist.
+        $this->assertDataExists($result, 'tags');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
     }
 
     /**
@@ -4116,19 +4318,14 @@ class ConvertKitAPITest extends TestCase
     public function testCreatePurchase()
     {
         $purchase = $this->api->create_purchase(
+            // Required fields.
             email_address: $this->generateEmailAddress(),
             transaction_id: str_shuffle('wfervdrtgsdewrafvwefds'),
-            status: 'paid',
-            subtotal: 20.00,
-            tax: 2.00,
-            shipping: 2.00,
-            discount: 3.00,
-            total: 21.00,
             currency: 'usd',
-            transaction_time: new DateTime('now'),
             products: [
                 [
                     'name' => 'Floppy Disk (512k)',
+                    'sku' => '7890-ijkl',
                     'pid' => 9999,
                     'lid' => 7777,
                     'quantity' => 2,
@@ -4136,12 +4333,22 @@ class ConvertKitAPITest extends TestCase
                 ],
                 [
                     'name' => 'Telephone Cord (data)',
+                    'sku' => 'mnop-1234',
                     'pid' => 5555,
                     'lid' => 7778,
                     'quantity' => 1,
                     'unit_price' => 10.00,
                 ],
             ],
+            // Optional fields.
+            first_name: 'Tim',
+            status: 'paid',
+            subtotal: 20.00,
+            tax: 2.00,
+            shipping: 2.00,
+            discount: 3.00,
+            total: 21.00,
+            transaction_time: new DateTime('now'),
         );
 
         $this->assertInstanceOf('stdClass', $purchase);
@@ -4150,19 +4357,76 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that create_purchase() throws a ClientException when an invalid
-     * purchase data is specified.
+     * email address is specified.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testCreatePurchaseWithInvalidData()
+    public function testCreatePurchaseWithInvalidEmailAddress()
     {
         $this->expectException(ClientException::class);
         $this->api->create_purchase(
             email_address: 'not-an-email-address',
             transaction_id: str_shuffle('wfervdrtgsdewrafvwefds'),
-            status: 'paid'
+            currency: 'usd',
+            products: [
+                [
+                    'name' => 'Floppy Disk (512k)',
+                    'sku' => '7890-ijkl',
+                    'pid' => 9999,
+                    'lid' => 7777,
+                    'quantity' => 2,
+                    'unit_price' => 5.00,
+                ],
+            ],
+        );
+    }
+
+    /**
+     * Test that create_purchase() throws a ClientException when a blank
+     * transaction ID is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testCreatePurchaseWithBlankTransactionID()
+    {
+        $this->expectException(ClientException::class);
+        $this->api->create_purchase(
+            email_address: $this->generateEmailAddress(),
+            transaction_id: '',
+            currency: 'usd',
+            products: [
+                [
+                    'name' => 'Floppy Disk (512k)',
+                    'sku' => '7890-ijkl',
+                    'pid' => 9999,
+                    'lid' => 7777,
+                    'quantity' => 2,
+                    'unit_price' => 5.00,
+                ],
+            ],
+        );
+    }
+
+    /**
+     * Test that create_purchase() throws a ClientException when no products
+     * are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testCreatePurchaseWithNoProducts()
+    {
+        $this->expectException(ClientException::class);
+        $this->api->create_purchase(
+            email_address: $this->generateEmailAddress(),
+            transaction_id: str_shuffle('wfervdrtgsdewrafvwefds'),
+            currency: 'usd',
+            products: [],
         );
     }
 
