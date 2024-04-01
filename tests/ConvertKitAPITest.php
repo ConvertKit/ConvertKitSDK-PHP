@@ -722,7 +722,88 @@ class ConvertKitAPITest extends TestCase
         }
     }
 
-    
+    /**
+     * Test that get_forms() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormsWithTotalCount()
+    {
+        $result = $this->api->get_forms(
+            include_total_count: true
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_forms() returns the expected data when pagination parameters
+     * and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormsPagination()
+    {
+        $result = $this->api->get_forms(
+            per_page: 2
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_forms(
+            per_page: 2,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_forms(
+            per_page: 2,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+    }
 
     /**
      * Test that get_landing_pages() returns the expected data.
