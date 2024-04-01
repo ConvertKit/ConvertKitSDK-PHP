@@ -4263,19 +4263,14 @@ class ConvertKitAPITest extends TestCase
     public function testCreatePurchase()
     {
         $purchase = $this->api->create_purchase(
+            // Required fields.
             email_address: $this->generateEmailAddress(),
             transaction_id: str_shuffle('wfervdrtgsdewrafvwefds'),
-            status: 'paid',
-            subtotal: 20.00,
-            tax: 2.00,
-            shipping: 2.00,
-            discount: 3.00,
-            total: 21.00,
             currency: 'usd',
-            transaction_time: new DateTime('now'),
             products: [
                 [
                     'name' => 'Floppy Disk (512k)',
+                    'sku' => '7890-ijkl',
                     'pid' => 9999,
                     'lid' => 7777,
                     'quantity' => 2,
@@ -4283,12 +4278,22 @@ class ConvertKitAPITest extends TestCase
                 ],
                 [
                     'name' => 'Telephone Cord (data)',
+                    'sku' => 'mnop-1234',
                     'pid' => 5555,
                     'lid' => 7778,
                     'quantity' => 1,
                     'unit_price' => 10.00,
                 ],
             ],
+            // Optional fields.
+            first_name: 'Tim',
+            status: 'paid',
+            subtotal: 20.00,
+            tax: 2.00,
+            shipping: 2.00,
+            discount: 3.00,
+            total: 21.00,
+            transaction_time: new DateTime('now'),
         );
 
         $this->assertInstanceOf('stdClass', $purchase);
@@ -4297,19 +4302,76 @@ class ConvertKitAPITest extends TestCase
 
     /**
      * Test that create_purchase() throws a ClientException when an invalid
-     * purchase data is specified.
+     * email address is specified.
      *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testCreatePurchaseWithInvalidData()
+    public function testCreatePurchaseWithInvalidEmailAddress()
     {
         $this->expectException(ClientException::class);
         $this->api->create_purchase(
             email_address: 'not-an-email-address',
             transaction_id: str_shuffle('wfervdrtgsdewrafvwefds'),
-            status: 'paid'
+            currency: 'usd',
+            products: [
+                [
+                    'name' => 'Floppy Disk (512k)',
+                    'sku' => '7890-ijkl',
+                    'pid' => 9999,
+                    'lid' => 7777,
+                    'quantity' => 2,
+                    'unit_price' => 5.00,
+                ],
+            ],
+        );
+    }
+
+    /**
+     * Test that create_purchase() throws a ClientException when a blank
+     * transaction ID is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testCreatePurchaseWithBlankTransactionID()
+    {
+        $this->expectException(ClientException::class);
+        $this->api->create_purchase(
+            email_address: $this->generateEmailAddress(),
+            transaction_id: '',
+            currency: 'usd',
+            products: [
+                [
+                    'name' => 'Floppy Disk (512k)',
+                    'sku' => '7890-ijkl',
+                    'pid' => 9999,
+                    'lid' => 7777,
+                    'quantity' => 2,
+                    'unit_price' => 5.00,
+                ],
+            ],
+        );
+    }
+
+    /**
+     * Test that create_purchase() throws a ClientException when no products
+     * are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testCreatePurchaseWithNoProducts()
+    {
+        $this->expectException(ClientException::class);
+        $this->api->create_purchase(
+            email_address: $this->generateEmailAddress(),
+            transaction_id: str_shuffle('wfervdrtgsdewrafvwefds'),
+            currency: 'usd',
+            products: [],
         );
     }
 
