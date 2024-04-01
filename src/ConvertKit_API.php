@@ -1706,15 +1706,16 @@ class ConvertKit_API
      *
      * @param string                         $email_address    Email Address.
      * @param string                         $transaction_id   Transaction ID.
+     * @param array<string,int|float|string> $products         Products.
+     * @param string                         $currency         ISO Currency Code.
+     * @param string                         $first_name       First Name.
      * @param string                         $status           Order Status.
      * @param float                          $subtotal         Subtotal.
      * @param float                          $tax              Tax.
      * @param float                          $shipping         Shipping.
      * @param float                          $discount         Discount.
      * @param float                          $total            Total.
-     * @param string                         $currency         ISO Currency Code.
      * @param \DateTime                      $transaction_time Transaction date and time.
-     * @param array<string,int|float|string> $products         Products.
      *
      * @see https://developers.convertkit.com/v4.html#create-a-purchase
      *
@@ -1723,30 +1724,47 @@ class ConvertKit_API
     public function create_purchase(
         string $email_address,
         string $transaction_id,
-        string $status,
+        array $products,
+        string $currency = 'USD',
+        string $first_name = null,
+        string $status = null,
         float $subtotal = 0,
         float $tax = 0,
         float $shipping = 0,
         float $discount = 0,
         float $total = 0,
-        string $currency = 'usd',
-        \DateTime $transaction_time = null,
-        array $products = []
+        \DateTime $transaction_time = null
     ) {
         // Build parameters.
         $options = [
+            // Required fields.
             'email_address'    => $email_address,
             'transaction_id'   => $transaction_id,
+            'products'         => $products,
+            'currency'         => $currency, // Required, but if not provided, API will default to USD.
+
+            // Optional fields.
+            'first_name'       => $first_name,
             'status'           => $status,
             'subtotal'         => $subtotal,
             'tax'              => $tax,
             'shipping'         => $shipping,
             'discount'         => $discount,
             'total'            => $total,
-            'currency'         => $currency,
             'transaction_time' => (!is_null($transaction_time) ? $transaction_time->format('Y-m-d H:i:s') : ''),
-            'products'         => $products,
         ];
+
+        // Iterate through options, removing blank and null entries.
+        foreach ($options as $key => $value) {
+            if (is_null($value)) {
+                unset($options[$key]);
+                continue;
+            }
+
+            if (is_string($value) && strlen($value) === 0) {
+                unset($options[$key]);
+            }
+        }
 
         return $this->post('purchases', $options);
     }
@@ -1971,8 +1989,8 @@ class ConvertKit_API
     /**
      * Performs a POST request to the API.
      *
-     * @param string                                                                                                $endpoint API Endpoint.
-     * @param array<string, bool|integer|float|string|array<int|string, float|integer|string|array<string|string>>> $args     Request arguments.
+     * @param string                                                                                                     $endpoint API Endpoint.
+     * @param array<string, bool|integer|float|string|null|array<int|string, float|integer|string|array<string|string>>> $args     Request arguments.
      *
      * @return false|mixed
      */
@@ -2010,9 +2028,9 @@ class ConvertKit_API
     /**
      * Performs an API request using Guzzle.
      *
-     * @param string                                                                                                $endpoint API Endpoint.
-     * @param string                                                                                                $method   Request method.
-     * @param array<string, bool|integer|float|string|array<int|string, float|integer|string|array<string|string>>> $args     Request arguments.
+     * @param string                                                                                                     $endpoint API Endpoint.
+     * @param string                                                                                                     $method   Request method.
+     * @param array<string, bool|integer|float|string|null|array<int|string, float|integer|string|array<string|string>>> $args     Request arguments.
      *
      * @throws \Exception If JSON encoding arguments failed.
      *
