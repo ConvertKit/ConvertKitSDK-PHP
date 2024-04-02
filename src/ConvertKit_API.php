@@ -411,6 +411,7 @@ class ConvertKit_API
         $result = $this->get(
             endpoint: 'forms',
             args: $this->build_total_count_and_pagination_params(
+                params: [ 'type' => 'embed' ],
                 include_total_count: $include_total_count,
                 after_cursor: $after_cursor,
                 before_cursor: $before_cursor,
@@ -418,16 +419,14 @@ class ConvertKit_API
             )
         );
 
-        // Exclude archived and landing pages.
-        foreach ($result->forms as $index => $form) {
-            // Exclude hosted forms i.e. landing pages.
-            if ($form->type === 'hosted') {
-                unset($result->forms[$index]);
-                continue;
-            }
+        // If archived results are included, return now.
+        if ($include_archived) {
+            return $result;
+        }
 
-            // Exclude archived forms, if required.
-            if (!$include_archived && isset($form->archived) && $form->archived) {
+        // Remove archived landing pages.
+        foreach ($result->forms as $index => $form) {
+            if (isset($form->archived) && $form->archived) {
                 unset($result->forms[$index]);
                 continue;
             }
@@ -461,6 +460,7 @@ class ConvertKit_API
         $result = $this->get(
             endpoint: 'forms',
             args: $this->build_total_count_and_pagination_params(
+                params: [ 'type' => 'hosted' ],
                 include_total_count: $include_total_count,
                 after_cursor: $after_cursor,
                 before_cursor: $before_cursor,
@@ -468,16 +468,14 @@ class ConvertKit_API
             )
         );
 
-        // Exclude archived and non-hosted forms.
-        foreach ($result->forms as $index => $form) {
-            // Exclude non-hosted forms i.e. forms.
-            if ($form->type !== 'hosted') {
-                unset($result->forms[$index]);
-                continue;
-            }
+        // If archived results are included, return now.
+        if ($include_archived) {
+            return $result;
+        }
 
-            // Exclude archived forms, if required.
-            if (!$include_archived && isset($form->archived) && $form->archived) {
+        // Remove archived landing pages.
+        foreach ($result->forms as $index => $form) {
+            if (isset($form->archived) && $form->archived) {
                 unset($result->forms[$index]);
                 continue;
             }
