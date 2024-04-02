@@ -388,7 +388,6 @@ class ConvertKit_API
     /**
      * Get forms.
      *
-     * @param boolean $include_archived    To include archived forms in the response, use true.
      * @param boolean $include_total_count To include the total count of records in the response, use true.
      * @param string  $after_cursor        Return results after the given pagination cursor.
      * @param string  $before_cursor       Return results before the given pagination cursor.
@@ -401,14 +400,12 @@ class ConvertKit_API
      * @return false|array<int,\stdClass>
      */
     public function get_forms(
-        bool $include_archived = false,
         bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
     ) {
-        // Get forms and landing pages.
-        $result = $this->get(
+        return $this->get(
             endpoint: 'forms',
             args: $this->build_total_count_and_pagination_params(
                 params: [ 'type' => 'embed' ],
@@ -418,27 +415,11 @@ class ConvertKit_API
                 per_page: $per_page
             )
         );
-
-        // If archived results are included, return now.
-        if ($include_archived) {
-            return $result;
-        }
-
-        // Remove archived landing pages.
-        foreach ($result->forms as $index => $form) {
-            if (isset($form->archived) && $form->archived) {
-                unset($result->forms[$index]);
-                continue;
-            }
-        }
-
-        return $result;
     }
 
     /**
      * Get landing pages.
      *
-     * @param boolean $include_archived    To include archived landing pages in the response, use true.
      * @param boolean $include_total_count To include the total count of records in the response, use true.
      * @param string  $after_cursor        Return results after the given pagination cursor.
      * @param string  $before_cursor       Return results before the given pagination cursor.
@@ -451,13 +432,12 @@ class ConvertKit_API
      * @return false|array<int,\stdClass>
      */
     public function get_landing_pages(
-        bool $include_archived = false,
         bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
         int $per_page = 100
     ) {
-        $result = $this->get(
+        return $this->get(
             endpoint: 'forms',
             args: $this->build_total_count_and_pagination_params(
                 params: [ 'type' => 'hosted' ],
@@ -467,21 +447,6 @@ class ConvertKit_API
                 per_page: $per_page
             )
         );
-
-        // If archived results are included, return now.
-        if ($include_archived) {
-            return $result;
-        }
-
-        // Remove archived landing pages.
-        foreach ($result->forms as $index => $form) {
-            if (isset($form->archived) && $form->archived) {
-                unset($result->forms[$index]);
-                continue;
-            }
-        }
-
-        return $result;
     }
 
     /**

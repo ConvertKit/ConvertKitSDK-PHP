@@ -716,8 +716,7 @@ class ConvertKitAPITest extends TestCase
             $this->assertArrayHasKey('embed_url', $form);
             $this->assertArrayHasKey('archived', $form);
 
-            // Assert form isn't archived or a landing page.
-            $this->assertFalse($form['archived']);
+            // Assert form is not a landing page i.e embed.
             $this->assertEquals($form['type'], 'embed');
         }
     }
@@ -756,7 +755,7 @@ class ConvertKitAPITest extends TestCase
     public function testGetFormsPagination()
     {
         $result = $this->api->get_forms(
-            per_page: 2
+            per_page: 1
         );
 
         // Assert forms and pagination exist.
@@ -772,7 +771,7 @@ class ConvertKitAPITest extends TestCase
 
         // Use pagination to fetch next page.
         $result = $this->api->get_forms(
-            per_page: 2,
+            per_page: 1,
             after_cursor: $result->pagination->end_cursor
         );
 
@@ -789,7 +788,7 @@ class ConvertKitAPITest extends TestCase
 
         // Use pagination to fetch previous page.
         $result = $this->api->get_forms(
-            per_page: 2,
+            per_page: 1,
             before_cursor: $result->pagination->start_cursor
         );
 
@@ -834,8 +833,7 @@ class ConvertKitAPITest extends TestCase
             $this->assertArrayHasKey('embed_url', $form);
             $this->assertArrayHasKey('archived', $form);
 
-            // Assert form isn't archived and is hosted i.e. landing page.
-            $this->assertFalse($form['archived']);
+            // Assert form is a landing page i.e. hosted.
             $this->assertEquals($form['type'], 'hosted');
         }
     }
@@ -861,6 +859,66 @@ class ConvertKitAPITest extends TestCase
         // Assert total count is included.
         $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
         $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_landing_pages() returns the expected data when pagination parameters
+     * and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetLandingPagesPagination()
+    {
+        $result = $this->api->get_landing_pages(
+            per_page: 1
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_landing_pages(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertFalse($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_landing_pages(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
