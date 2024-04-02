@@ -52,6 +52,15 @@ class ConvertKitAPITest extends TestCase
     protected $subscriber_ids = [];
 
     /**
+     * Webhook IDs to delete on teardown of a test.
+     *
+     * @since   2.0.0
+     *
+     * @var     array<int, int>
+     */
+    protected $webhook_ids = [];
+
+    /**
      * Broadcast IDs to delete on teardown of a test.
      *
      * @since   2.0.0
@@ -105,6 +114,11 @@ class ConvertKitAPITest extends TestCase
         // Unsubscribe any Subscribers.
         foreach ($this->subscriber_ids as $id) {
             $this->api->unsubscribe($id);
+        }
+
+        // Delete any Webhooks.
+        foreach ($this->webhook_ids as $id) {
+            $this->api->delete_webhook($id);
         }
 
         // Delete any Broadcasts.
@@ -3846,33 +3860,82 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
-     * Test that create_webhook() and destroy_webhook() works.
+     * Test that get_webhooks() returns the expected data
+     * when pagination parameters and per_page limits are specified.
      *
-     * We do both, so we don't end up with unnecessary webhooks remaining
-     * on the ConvertKit account when running tests.
-     *
-     * @since   1.0.0
+     * @since   2.0.0
      *
      * @return void
      */
-    public function testCreateAndDestroyWebhook()
+    public function testGetWebhooksPagination()
     {
-        $this->markTestIncomplete();
+        // Create webhooks first.
+        $results = [
+            $this->api->create_webhook(
+                url: 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+                event: 'subscriber.subscriber_activate',
+            ),
+            $this->api->create_webhook(
+                url: 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+                event: 'subscriber.subscriber_activate',
+            ),
+        ];
 
-        // Create a webhook first.
-        $result = $this->api->create_webhook(
-            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
-            event: 'subscriber.subscriber_activate',
+        // Set webhook_ids to ensure webhooks are deleted after test.
+        $this->webhook_ids = [
+            $results[0]->webhook->id,
+            $results[1]->webhook->id,
+        ];
+
+        // Get webhooks.
+        $result = $this->api->get_webhooks(
+            per_page: 1
         );
-        $ruleID = $result->rule->id;
 
-        // Destroy the webhook.
-        $result = $this->api->destroy_webhook($ruleID);
-        $this->assertEquals($result->success, true);
+        // Assert webhooks and pagination exist.
+        $this->assertDataExists($result, 'webhooks');
+        $this->assertPaginationExists($result);
+
+        // Assert a single webhook was returned.
+        $this->assertCount(1, $result->webhooks);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_webhooks(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert webhooks and pagination exist.
+        $this->assertDataExists($result, 'webhooks');
+        $this->assertPaginationExists($result);
+
+        // Assert a single webhook was returned.
+        $this->assertCount(1, $result->webhooks);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertFalse($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_webhooks(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert webhooks and pagination exist.
+        $this->assertDataExists($result, 'webhooks');
+        $this->assertPaginationExists($result);
+
+        // Assert a single webhook was returned.
+        $this->assertCount(1, $result->webhooks);
     }
 
     /**
-     * Test that create_webhook() and destroy_webhook() works with an event parameter.
+     * Test that create_webhook(), get_webhooks() and delete_webhook() works.
      *
      * We do both, so we don't end up with unnecessary webhooks remaining
      * on the ConvertKit account when running tests.
@@ -3881,21 +3944,66 @@ class ConvertKitAPITest extends TestCase
      *
      * @return void
      */
-    public function testCreateAndDestroyWebhookWithEventParameter()
+    public function testCreateGetAndDeleteWebhook()
     {
-        $this->markTestIncomplete();
-
         // Create a webhook first.
         $result = $this->api->create_webhook(
-            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
+            url: 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+            event: 'subscriber.subscriber_activate',
+        );
+        $id = $result->webhook->id;
+
+        // Get webhooks.
+        $result = $this->api->get_webhooks();
+
+        // Assert webhooks and pagination exist.
+        $this->assertDataExists($result, 'webhooks');
+        $this->assertPaginationExists($result);
+
+        // Get webhooks including total count.
+        $result = $this->api->get_webhooks(
+            include_total_count: true
+        );
+
+        // Assert webhooks and pagination exist.
+        $this->assertDataExists($result, 'webhooks');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+
+        // Delete the webhook.
+        $result = $this->api->delete_webhook($id);
+    }
+
+    /**
+     * Test that create_webhook() works with an event parameter.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testCreateWebhookWithEventParameter()
+    {
+        // Create a webhook.
+        $url = 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds');
+        $result = $this->api->create_webhook(
+            url: $url,
             event: 'subscriber.form_subscribe',
             parameter: $_ENV['CONVERTKIT_API_FORM_ID']
         );
-        $ruleID = $result->rule->id;
 
-        // Destroy the webhook.
-        $result = $this->api->destroy_webhook($ruleID);
-        $this->assertEquals($result->success, true);
+        // Confirm webhook created with correct data.
+        $this->assertArrayHasKey('webhook', get_object_vars($result));
+        $this->assertArrayHasKey('id', get_object_vars($result->webhook));
+        $this->assertArrayHasKey('target_url', get_object_vars($result->webhook));
+        $this->assertEquals($result->webhook->target_url, $url);
+        $this->assertEquals($result->webhook->event->name, 'form_subscribe');
+        $this->assertEquals($result->webhook->event->form_id, $_ENV['CONVERTKIT_API_FORM_ID']);
+
+        // Delete the webhook.
+        $result = $this->api->delete_webhook($result->webhook->id);
     }
 
     /**
@@ -3908,29 +4016,25 @@ class ConvertKitAPITest extends TestCase
      */
     public function testCreateWebhookWithInvalidEvent()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(InvalidArgumentException::class);
         $this->api->create_webhook(
-            url: 'https://webhook.site/9c731823-7e61-44c8-af39-43b11f700ecb',
+            url: 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
             event: 'invalid.event'
         );
     }
 
     /**
-     * Test that destroy_webhook() throws a ClientException when an invalid
-     * rule ID is specified.
+     * Test that delete_webhook() throws a ClientException when an invalid
+     * ID is specified.
      *
      * @since   1.0.0
      *
      * @return void
      */
-    public function testDestroyWebhookWithInvalidRuleID()
+    public function testDeleteWebhookWithInvalidID()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
-        $this->api->destroy_webhook(12345);
+        $this->api->delete_webhook(12345);
     }
 
     /**
