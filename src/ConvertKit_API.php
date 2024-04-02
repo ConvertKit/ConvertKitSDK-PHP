@@ -1292,39 +1292,59 @@ class ConvertKit_API
     }
 
     /**
-     * Gets a list of broadcasts.
+     * List broadcasts.
      *
-     * @see https://developers.convertkit.com/#list-broadcasts
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
-     * @return false|array<int,\stdClass>
+     * @see https://developers.convertkit.com/v4.html#list-broadcasts
+     *
+     * @return false|mixed
      */
-    public function get_broadcasts()
-    {
-        return $this->get('broadcasts');
+    public function get_broadcasts(
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        // Send request.
+        return $this->get(
+            endpoint: 'broadcasts',
+            args: $this->build_total_count_and_pagination_params(
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
      * Creates a broadcast.
      *
-     * @param string    $subject               The broadcast email's subject.
-     * @param string    $content               The broadcast's email HTML content.
-     * @param string    $description           An internal description of this broadcast.
-     * @param boolean   $public                Specifies whether or not this is a public post.
-     * @param \DateTime $published_at          Specifies the time that this post was published (applicable
-     *                                         only to public posts).
-     * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
-     *                                         a draft broadcast. If set to a future time, this is the time that
-     *                                         the broadcast will be scheduled to send.
-     * @param string    $email_address         Sending email address; leave blank to use your account's
-     *                                         default sending email address.
-     * @param string    $email_layout_template Name of the email template to use; leave blank to use your
-     *                                         account's default email template.
-     * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
-     *                                         (applicable only to public posts).
-     * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
-     *                                         post (applicable only to public posts).
+     * @param string               $subject           The broadcast email's subject.
+     * @param string               $content           The broadcast's email HTML content.
+     * @param string               $description       An internal description of this broadcast.
+     * @param boolean              $public            Specifies whether or not this is a public post.
+     * @param \DateTime            $published_at      Specifies the time that this post was published (applicable
+     *                                                only to public posts).
+     * @param \DateTime            $send_at           Time that this broadcast should be sent; leave blank to create
+     *                                                a draft broadcast. If set to a future time, this is the time that
+     *                                                the broadcast will be scheduled to send.
+     * @param string               $email_address     Sending email address; leave blank to use your account's
+     *                                                default sending email address.
+     * @param string               $email_template_id ID of the email template to use; leave blank to use your
+     *                                                account's default email template.
+     * @param string               $thumbnail_alt     Specify the ALT attribute of the public thumbnail image
+     *                                                (applicable only to public posts).
+     * @param string               $thumbnail_url     Specify the URL of the thumbnail image to accompany the broadcast
+     *                                                post (applicable only to public posts).
+     * @param string               $preview_text      Specify the preview text of the email.
+     * @param array<string,string> $subscriber_filter Filter subscriber(s) to send the email to.
      *
-     * @see https://developers.convertkit.com/#create-a-broadcast
+     * @see https://developers.convertkit.com/v4.html#create-a-broadcast
      *
      * @return false|object
      */
@@ -1336,22 +1356,28 @@ class ConvertKit_API
         \DateTime $published_at = null,
         \DateTime $send_at = null,
         string $email_address = '',
-        string $email_layout_template = '',
+        string $email_template_id = '',
         string $thumbnail_alt = '',
-        string $thumbnail_url = ''
+        string $thumbnail_url = '',
+        string $preview_text = '',
+        array $subscriber_filter = []
     ) {
         $options = [
-            'content'               => $content,
-            'description'           => $description,
-            'email_address'         => $email_address,
-            'email_layout_template' => $email_layout_template,
-            'public'                => $public,
-            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
-            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
-            'subject'               => $subject,
-            'thumbnail_alt'         => $thumbnail_alt,
-            'thumbnail_url'         => $thumbnail_url,
+            'email_template_id' => $email_template_id,
+            'email_address'     => $email_address,
+            'content'           => $content,
+            'description'       => $description,
+            'public'            => $public,
+            'published_at'      => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'           => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
+            'thumbnail_alt'     => $thumbnail_alt,
+            'thumbnail_url'     => $thumbnail_url,
+            'preview_text'      => $preview_text,
+            'subject'           => $subject,
         ];
+        if (count($subscriber_filter)) {
+            $options['subscriber_filter'] = $subscriber_filter;
+        }
 
         // Iterate through options, removing blank entries.
         foreach ($options as $key => $value) {
@@ -1366,7 +1392,10 @@ class ConvertKit_API
         }
 
         // Send request.
-        return $this->post('broadcasts', $options);
+        return $this->post(
+            endpoint: 'broadcasts',
+            args: $options
+        );
     }
 
     /**
@@ -1374,7 +1403,7 @@ class ConvertKit_API
      *
      * @param integer $id Broadcast ID.
      *
-     * @see https://developers.convertkit.com/#retrieve-a-specific-broadcast
+     * @see https://developers.convertkit.com/v4.html#get-a-broadcast
      *
      * @return false|object
      */
@@ -1389,7 +1418,7 @@ class ConvertKit_API
      *
      * @param integer $id Broadcast ID.
      *
-     * @see https://developers.convertkit.com/#retrieve-a-specific-broadcast
+     * @see https://developers.convertkit.com/v4.html#get-stats
      *
      * @return false|object
      */
@@ -1401,24 +1430,26 @@ class ConvertKit_API
     /**
      * Updates a broadcast.
      *
-     * @param integer   $id                    Broadcast ID.
-     * @param string    $subject               The broadcast email's subject.
-     * @param string    $content               The broadcast's email HTML content.
-     * @param string    $description           An internal description of this broadcast.
-     * @param boolean   $public                Specifies whether or not this is a public post.
-     * @param \DateTime $published_at          Specifies the time that this post was published (applicable
-     *                                         only to public posts).
-     * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
-     *                                         a draft broadcast. If set to a future time, this is the time that
-     *                                         the broadcast will be scheduled to send.
-     * @param string    $email_address         Sending email address; leave blank to use your account's
-     *                                         default sending email address.
-     * @param string    $email_layout_template Name of the email template to use; leave blank to use your
-     *                                         account's default email template.
-     * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
-     *                                         (applicable only to public posts).
-     * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
-     *                                         post (applicable only to public posts).
+     * @param integer              $id                Broadcast ID.
+     * @param string               $subject           The broadcast email's subject.
+     * @param string               $content           The broadcast's email HTML content.
+     * @param string               $description       An internal description of this broadcast.
+     * @param boolean              $public            Specifies whether or not this is a public post.
+     * @param \DateTime            $published_at      Specifies the time that this post was published (applicable
+     *                                                only to public posts).
+     * @param \DateTime            $send_at           Time that this broadcast should be sent; leave blank to create
+     *                                                a draft broadcast. If set to a future time, this is the time that
+     *                                                the broadcast will be scheduled to send.
+     * @param string               $email_address     Sending email address; leave blank to use your account's
+     *                                                default sending email address.
+     * @param string               $email_template_id ID of the email template to use; leave blank to use your
+     *                                                account's default email template.
+     * @param string               $thumbnail_alt     Specify the ALT attribute of the public thumbnail image
+     *                                                (applicable only to public posts).
+     * @param string               $thumbnail_url     Specify the URL of the thumbnail image to accompany the broadcast
+     *                                                post (applicable only to public posts).
+     * @param string               $preview_text      Specify the preview text of the email.
+     * @param array<string,string> $subscriber_filter Filter subscriber(s) to send the email to.
      *
      * @see https://developers.convertkit.com/#create-a-broadcast
      *
@@ -1433,22 +1464,28 @@ class ConvertKit_API
         \DateTime $published_at = null,
         \DateTime $send_at = null,
         string $email_address = '',
-        string $email_layout_template = '',
+        string $email_template_id = '',
         string $thumbnail_alt = '',
-        string $thumbnail_url = ''
+        string $thumbnail_url = '',
+        string $preview_text = '',
+        array $subscriber_filter = []
     ) {
         $options = [
-            'content'               => $content,
-            'description'           => $description,
-            'email_address'         => $email_address,
-            'email_layout_template' => $email_layout_template,
-            'public'                => $public,
-            'published_at'          => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
-            'send_at'               => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
-            'subject'               => $subject,
-            'thumbnail_alt'         => $thumbnail_alt,
-            'thumbnail_url'         => $thumbnail_url,
+            'email_template_id' => $email_template_id,
+            'email_address'     => $email_address,
+            'content'           => $content,
+            'description'       => $description,
+            'public'            => $public,
+            'published_at'      => (!is_null($published_at) ? $published_at->format('Y-m-d H:i:s') : ''),
+            'send_at'           => (!is_null($send_at) ? $send_at->format('Y-m-d H:i:s') : ''),
+            'thumbnail_alt'     => $thumbnail_alt,
+            'thumbnail_url'     => $thumbnail_url,
+            'preview_text'      => $preview_text,
+            'subject'           => $subject,
         ];
+        if (count($subscriber_filter)) {
+            $options['subscriber_filter'] = $subscriber_filter;
+        }
 
         // Iterate through options, removing blank entries.
         foreach ($options as $key => $value) {
@@ -1464,8 +1501,8 @@ class ConvertKit_API
 
         // Send request.
         return $this->put(
-            sprintf('broadcasts/%s', $id),
-            $options
+            endpoint: sprintf('broadcasts/%s', $id),
+            args: $options
         );
     }
 
@@ -1476,11 +1513,11 @@ class ConvertKit_API
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#destroy-webhook
+     * @see https://developers.convertkit.com/v4.html#delete-a-broadcast
      *
      * @return false|object
      */
-    public function destroy_broadcast(int $id)
+    public function delete_broadcast(int $id)
     {
         return $this->delete(sprintf('broadcasts/%s', $id));
     }
