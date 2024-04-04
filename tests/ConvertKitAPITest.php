@@ -746,6 +746,49 @@ class ConvertKitAPITest extends TestCase
 
             // Assert form is not a landing page i.e embed.
             $this->assertEquals($form['type'], 'embed');
+
+            // Assert form is not archived.
+            $this->assertFalse($form['archived']);
+        }
+    }
+
+    /**
+     * Test that get_forms() returns the expected data when
+     * the status is set to archived.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormsWithArchivedStatus()
+    {
+        $result = $this->api->get_forms(
+            status: 'archived'
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Iterate through each form, confirming no landing pages were included.
+        foreach ($result->forms as $form) {
+            $form = get_object_vars($form);
+
+            // Assert shape of object is valid.
+            $this->assertArrayHasKey('id', $form);
+            $this->assertArrayHasKey('name', $form);
+            $this->assertArrayHasKey('created_at', $form);
+            $this->assertArrayHasKey('type', $form);
+            $this->assertArrayHasKey('format', $form);
+            $this->assertArrayHasKey('embed_js', $form);
+            $this->assertArrayHasKey('embed_url', $form);
+            $this->assertArrayHasKey('archived', $form);
+
+            // Assert form is not a landing page i.e embed.
+            $this->assertEquals($form['type'], 'embed');
+
+            // Assert form is not archived.
+            $this->assertTrue($form['archived']);
         }
     }
 
@@ -863,7 +906,32 @@ class ConvertKitAPITest extends TestCase
 
             // Assert form is a landing page i.e. hosted.
             $this->assertEquals($form['type'], 'hosted');
+
+            // Assert form is not archived.
+            $this->assertFalse($form['archived']);
         }
+    }
+
+    /**
+     * Test that get_landing_pages() returns the expected data when
+     * the status is set to archived.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetLandingPagesWithArchivedStatus()
+    {
+        $result = $this->api->get_forms(
+            status: 'archived'
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert no landing pages are returned, as the account doesn't have any archived landing pages.
+        $this->assertCount(0, $result->forms);
     }
 
     /**

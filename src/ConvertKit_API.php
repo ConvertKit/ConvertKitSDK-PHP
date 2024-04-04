@@ -410,8 +410,8 @@ class ConvertKit_API
         return $this->get(
             endpoint: 'forms',
             args: $this->build_total_count_and_pagination_params(
-                params: [ 
-                    'type' => 'embed',
+                params: [
+                    'type'   => 'embed',
                     'status' => $status,
                 ],
                 include_total_count: $include_total_count,
@@ -447,8 +447,8 @@ class ConvertKit_API
         return $this->get(
             endpoint: 'forms',
             args: $this->build_total_count_and_pagination_params(
-                params: [ 
-                    'type' => 'hosted',
+                params: [
+                    'type'   => 'hosted',
                     'status' => $status,
                 ],
                 include_total_count: $include_total_count,
