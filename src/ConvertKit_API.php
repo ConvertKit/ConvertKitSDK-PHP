@@ -388,6 +388,7 @@ class ConvertKit_API
     /**
      * Get forms.
      *
+     * @param string  $status              Form status (active|archived|trashed|all).
      * @param boolean $include_total_count To include the total count of records in the response, use true.
      * @param string  $after_cursor        Return results after the given pagination cursor.
      * @param string  $before_cursor       Return results before the given pagination cursor.
@@ -400,6 +401,7 @@ class ConvertKit_API
      * @return false|array<int,\stdClass>
      */
     public function get_forms(
+        string $status = 'active',
         bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
@@ -408,7 +410,10 @@ class ConvertKit_API
         return $this->get(
             endpoint: 'forms',
             args: $this->build_total_count_and_pagination_params(
-                params: [ 'type' => 'embed' ],
+                params: [ 
+                    'type' => 'embed',
+                    'status' => $status,
+                ],
                 include_total_count: $include_total_count,
                 after_cursor: $after_cursor,
                 before_cursor: $before_cursor,
@@ -420,6 +425,7 @@ class ConvertKit_API
     /**
      * Get landing pages.
      *
+     * @param string  $status              Form status (active|archived|trashed|all).
      * @param boolean $include_total_count To include the total count of records in the response, use true.
      * @param string  $after_cursor        Return results after the given pagination cursor.
      * @param string  $before_cursor       Return results before the given pagination cursor.
@@ -432,6 +438,7 @@ class ConvertKit_API
      * @return false|array<int,\stdClass>
      */
     public function get_landing_pages(
+        string $status = 'active',
         bool $include_total_count = false,
         string $after_cursor = '',
         string $before_cursor = '',
@@ -440,7 +447,10 @@ class ConvertKit_API
         return $this->get(
             endpoint: 'forms',
             args: $this->build_total_count_and_pagination_params(
-                params: [ 'type' => 'hosted' ],
+                params: [ 
+                    'type' => 'hosted',
+                    'status' => $status,
+                ],
                 include_total_count: $include_total_count,
                 after_cursor: $after_cursor,
                 before_cursor: $before_cursor,
