@@ -124,20 +124,8 @@ class ConvertKit_API
         $this->access_token  = $accessToken;
         $this->debug         = $debug;
 
-        // Set headers.
-        $headers = [
-            'Accept'       => 'application/json',
-            'Content-Type' => 'application/json; charset=utf-8',
-            'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
-        ];
-        if (!empty($this->access_token)) {
-            $headers['Authorization'] = 'Bearer ' . $this->access_token;
-        }
-
         // Set the Guzzle client.
-        $this->client = new Client(
-            ['headers' => $headers]
-        );
+        $this->client = new Client();
 
         if ($debug) {
             // If no debug log file location specified, define a default.
@@ -243,6 +231,9 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri:    $this->oauth_token_url,
+            headers: [
+                'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+            ],
             body:   (string) json_encode(
                 [
                     'code'          => $authCode,
@@ -278,6 +269,9 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri: $this->oauth_token_url,
+            headers: [
+                'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+            ],
             body: (string) json_encode(
                 [
                     'refresh_token' => $refreshToken,
@@ -881,121 +875,6 @@ class ConvertKit_API
                 per_page: $per_page
             )
         );
-    }
-
-    /**
-     * Gets a resource index
-     * Possible resources: forms, landing_pages, subscription_forms, tags
-     *
-     * GET /{$resource}/
-     *
-     * @param string $resource Resource type.
-     *
-     * @throws \InvalidArgumentException If the resource argument is not a supported resource type.
-     *
-     * @return array<int|string, mixed|\stdClass> API response
-     */
-    public function get_resources(string $resource)
-    {
-        // Assign the resource to the request variable.
-        $request = $resource;
-
-        // Landing pages are included in the /forms endpoint.
-        if ($resource === 'landing_pages') {
-            $request = 'forms';
-        }
-
-        // Fetch resources.
-        $resources = $this->get($request);
-
-        $this->create_log(sprintf('%s response %s', $resource, json_encode($resources)));
-
-        // Return a blank array if no resources exist.
-        if (!$resources) {
-            $this->create_log('No resources');
-            return [];
-        }
-
-        // Build array of resources.
-        $_resource = [];
-        switch ($resource) {
-            // Forms.
-            case 'forms':
-                // Bail if no forms are set.
-                if (!isset($resources->forms)) {
-                    $this->create_log('No form resources');
-                    return [];
-                }
-
-                // Build array of forms.
-                foreach ($resources->forms as $form) {
-                    // Exclude archived forms.
-                    if (isset($form->archived) && $form->archived) {
-                        continue;
-                    }
-
-                    // Exclude hosted forms.
-                    if ($form->type === 'hosted') {
-                        continue;
-                    }
-
-                    $_resource[] = $form;
-                }
-                break;
-
-            // Landing Pages.
-            case 'landing_pages':
-                // Bail if no landing pages are set.
-                if (!isset($resources->forms)) {
-                    $this->create_log('No landing page resources');
-                    return [];
-                }
-
-                foreach ($resources->forms as $form) {
-                    // Exclude archived landing pages.
-                    if (isset($form->archived) && $form->archived) {
-                        continue;
-                    }
-
-                    // Exclude non-hosted (i.e. forms).
-                    if ($form->type !== 'hosted') {
-                        continue;
-                    }
-
-                    $_resource[] = $form;
-                }
-                break;
-
-            // Subscription Forms.
-            case 'subscription_forms':
-                // Exclude archived subscription forms.
-                foreach ($resources as $mapping) {
-                    if (isset($mapping->archived) && $mapping->archived) {
-                        continue;
-                    }
-
-                    $_resource[$mapping->id] = $mapping->form_id;
-                }
-                break;
-
-            // Tags.
-            case 'tags':
-                // Bail if no tags are set.
-                if (!isset($resources->tags)) {
-                    $this->create_log('No tag resources');
-                    return [];
-                }
-
-                foreach ($resources->tags as $tag) {
-                    $_resource[] = $tag;
-                }
-                break;
-
-            default:
-                throw new \InvalidArgumentException('An unsupported resource was specified.');
-        }//end switch
-
-        return $_resource;
     }
 
     /**
@@ -1920,8 +1799,9 @@ class ConvertKit_API
      * Get markup from ConvertKit for the provided $url.
      *
      * Supports legacy forms and legacy landing pages.
+     * 
      * Forms and Landing Pages should be embedded using the supplied JS embed script in
-     * the API response when using get_resources().
+     * the API response when using get_forms() or get_landing_pages().
      *
      * @param string $url URL of HTML page.
      *
@@ -1942,9 +1822,13 @@ class ConvertKit_API
 
         // Fetch the resource.
         $request  = new Request(
-            'GET',
-            $url,
-            ['Accept-Encoding' => 'gzip']
+            method: 'GET',
+            uri: $url,
+            headers: [
+                'Accept' => 'text/html',
+                'Content-Type' => 'text/html; charset=utf-8',
+                'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+            ]
         );
         $response = $this->client->send($request);
 
@@ -2169,7 +2053,13 @@ class ConvertKit_API
 
                 $request = new Request(
                     method: $method,
-                    uri: $url
+                    uri: $url,
+                    headers: [
+                        'Authorization'=> 'Bearer ' . $this->access_token,
+                        'Accept'       => 'application/json',
+                        'Content-Type' => 'application/json; charset=utf-8',
+                        'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                    ]
                 );
                 break;
 
@@ -2177,6 +2067,12 @@ class ConvertKit_API
                 $request = new Request(
                     method: $method,
                     uri:    $url,
+                    headers: [
+                        'Authorization'=> 'Bearer ' . $this->access_token,
+                        'Accept'       => 'application/json',
+                        'Content-Type' => 'application/json; charset=utf-8',
+                        'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                    ],
                     body:   (string) json_encode($args),
                 );
                 break;
