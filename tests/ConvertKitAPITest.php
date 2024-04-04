@@ -4682,8 +4682,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLegacyForm()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_FORM_URL']);
 
         // Assert that the markup is HTML.
@@ -4702,8 +4700,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLandingPage()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 
         // Assert that the markup is HTML.
@@ -4722,8 +4718,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLegacyLandingPage()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
 
         // Assert that the markup is HTML.
@@ -4743,8 +4737,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInvalidURL()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(InvalidArgumentException::class);
         $markup = $this->api->get_resource('not-a-url');
     }
@@ -4759,8 +4751,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInaccessibleURL()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $markup = $this->api->get_resource('https://convertkit.com/a/url/that/does/not/exist');
     }
