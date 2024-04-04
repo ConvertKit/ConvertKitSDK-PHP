@@ -232,7 +232,7 @@ class ConvertKit_API
             method: 'POST',
             uri:    $this->oauth_token_url,
             headers: [
-                'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
             ],
             body:   (string) json_encode(
                 [
@@ -270,7 +270,7 @@ class ConvertKit_API
             method: 'POST',
             uri: $this->oauth_token_url,
             headers: [
-                'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
             ],
             body: (string) json_encode(
                 [
@@ -1799,7 +1799,7 @@ class ConvertKit_API
      * Get markup from ConvertKit for the provided $url.
      *
      * Supports legacy forms and legacy landing pages.
-     * 
+     *
      * Forms and Landing Pages should be embedded using the supplied JS embed script in
      * the API response when using get_forms() or get_landing_pages().
      *
@@ -1825,7 +1825,7 @@ class ConvertKit_API
             method: 'GET',
             uri: $url,
             headers: [
-                'Accept' => 'text/html',
+                'Accept'       => 'text/html',
                 'Content-Type' => 'text/html; charset=utf-8',
                 'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
             ]
@@ -2055,10 +2055,10 @@ class ConvertKit_API
                     method: $method,
                     uri: $url,
                     headers: [
-                        'Authorization'=> 'Bearer ' . $this->access_token,
-                        'Accept'       => 'application/json',
-                        'Content-Type' => 'application/json; charset=utf-8',
-                        'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                        'Authorization' => 'Bearer ' . $this->access_token,
+                        'Accept'        => 'application/json',
+                        'Content-Type'  => 'application/json; charset=utf-8',
+                        'User-Agent'    => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
                     ]
                 );
                 break;
@@ -2068,15 +2068,15 @@ class ConvertKit_API
                     method: $method,
                     uri:    $url,
                     headers: [
-                        'Authorization'=> 'Bearer ' . $this->access_token,
-                        'Accept'       => 'application/json',
-                        'Content-Type' => 'application/json; charset=utf-8',
-                        'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                        'Authorization' => 'Bearer ' . $this->access_token,
+                        'Accept'        => 'application/json',
+                        'Content-Type'  => 'application/json; charset=utf-8',
+                        'User-Agent'    => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
                     ],
                     body:   (string) json_encode($args),
                 );
                 break;
-        }
+        }//end switch
 
         // Send request.
         $this->response = $this->client->send(
