@@ -1347,16 +1347,26 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequenceByEmail()
     {
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $subscriber = $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $subscriber->subscriber->id;
+
+        // Add subscriber to sequence.
         $result = $this->api->add_subscriber_to_sequence_by_email(
             sequence_id: $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            email_address: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            email_address: $emailAddress
         );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscriber', get_object_vars($result));
         $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
         $this->assertEquals(
             get_object_vars($result->subscriber)['email_address'],
-            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            $emailAddress
         );
     }
 
@@ -1403,14 +1413,23 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToSequence()
     {
+        // Create subscriber.
+        $subscriber = $this->api->create_subscriber(
+            email_address: $this->generateEmailAddress()
+        );
+
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $subscriber->subscriber->id;
+
+        // Add subscriber to sequence.
         $result = $this->api->add_subscriber_to_sequence(
             sequence_id: (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+            subscriber_id: $subscriber->subscriber->id
         );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscriber', get_object_vars($result));
         $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $subscriber->subscriber->id);
     }
 
     /**
@@ -2533,14 +2552,27 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToFormByEmail()
     {
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $subscriber = $this->api->create_subscriber(
+            email_address: $emailAddress
+        );
+
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $subscriber->subscriber->id;
+
+        // Add subscriber to form.
         $result = $this->api->add_subscriber_to_form_by_email(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            email_address: $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+            email_address: $emailAddress
         );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscriber', get_object_vars($result));
         $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertEquals(
+            get_object_vars($result->subscriber)['email_address'],
+            $emailAddress
+        );
     }
 
     /**
@@ -2586,14 +2618,22 @@ class ConvertKitAPITest extends TestCase
      */
     public function testAddSubscriberToForm()
     {
+        // Create subscriber.
+        $subscriber = $this->api->create_subscriber(
+            email_address: $this->generateEmailAddress()
+        );
+
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $subscriber->subscriber->id;
+
         $result = $this->api->add_subscriber_to_form(
             form_id: (int) $_ENV['CONVERTKIT_API_FORM_ID'],
-            subscriber_id: $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+            subscriber_id: $subscriber->subscriber->id
         );
         $this->assertInstanceOf('stdClass', $result);
         $this->assertArrayHasKey('subscriber', get_object_vars($result));
         $this->assertArrayHasKey('id', get_object_vars($result->subscriber));
-        $this->assertEquals(get_object_vars($result->subscriber)['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+        $this->assertEquals(get_object_vars($result->subscriber)['id'], $subscriber->subscriber->id);
     }
 
     /**
