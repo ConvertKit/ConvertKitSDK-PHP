@@ -725,18 +725,154 @@ class ConvertKitAPITest extends TestCase
     public function testGetForms()
     {
         $result = $this->api->get_forms();
-        $this->assertIsArray($result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $form = get_object_vars($result[0]);
-        $this->assertArrayHasKey('id', $form);
-        $this->assertArrayHasKey('name', $form);
-        $this->assertArrayHasKey('created_at', $form);
-        $this->assertArrayHasKey('type', $form);
-        $this->assertArrayHasKey('format', $form);
-        $this->assertArrayHasKey('embed_js', $form);
-        $this->assertArrayHasKey('embed_url', $form);
-        $this->assertArrayHasKey('archived', $form);
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Iterate through each form, confirming no landing pages were included.
+        foreach ($result->forms as $form) {
+            $form = get_object_vars($form);
+
+            // Assert shape of object is valid.
+            $this->assertArrayHasKey('id', $form);
+            $this->assertArrayHasKey('name', $form);
+            $this->assertArrayHasKey('created_at', $form);
+            $this->assertArrayHasKey('type', $form);
+            $this->assertArrayHasKey('format', $form);
+            $this->assertArrayHasKey('embed_js', $form);
+            $this->assertArrayHasKey('embed_url', $form);
+            $this->assertArrayHasKey('archived', $form);
+
+            // Assert form is not a landing page i.e embed.
+            $this->assertEquals($form['type'], 'embed');
+
+            // Assert form is not archived.
+            $this->assertFalse($form['archived']);
+        }
+    }
+
+    /**
+     * Test that get_forms() returns the expected data when
+     * the status is set to archived.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormsWithArchivedStatus()
+    {
+        $result = $this->api->get_forms(
+            status: 'archived'
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Iterate through each form, confirming no landing pages were included.
+        foreach ($result->forms as $form) {
+            $form = get_object_vars($form);
+
+            // Assert shape of object is valid.
+            $this->assertArrayHasKey('id', $form);
+            $this->assertArrayHasKey('name', $form);
+            $this->assertArrayHasKey('created_at', $form);
+            $this->assertArrayHasKey('type', $form);
+            $this->assertArrayHasKey('format', $form);
+            $this->assertArrayHasKey('embed_js', $form);
+            $this->assertArrayHasKey('embed_url', $form);
+            $this->assertArrayHasKey('archived', $form);
+
+            // Assert form is not a landing page i.e embed.
+            $this->assertEquals($form['type'], 'embed');
+
+            // Assert form is not archived.
+            $this->assertTrue($form['archived']);
+        }
+    }
+
+    /**
+     * Test that get_forms() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormsWithTotalCount()
+    {
+        $result = $this->api->get_forms(
+            include_total_count: true
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_forms() returns the expected data when pagination parameters
+     * and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetFormsPagination()
+    {
+        $result = $this->api->get_forms(
+            per_page: 1
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_forms(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_forms(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -749,19 +885,136 @@ class ConvertKitAPITest extends TestCase
     public function testGetLandingPages()
     {
         $result = $this->api->get_landing_pages();
-        $this->assertIsArray($result);
 
-        // Convert to array to check for keys, as assertObjectHasAttribute() will be deprecated in PHPUnit 10.
-        $landingPage = get_object_vars($result[0]);
-        $this->assertArrayHasKey('id', $landingPage);
-        $this->assertArrayHasKey('name', $landingPage);
-        $this->assertArrayHasKey('created_at', $landingPage);
-        $this->assertArrayHasKey('type', $landingPage);
-        $this->assertEquals('hosted', $landingPage['type']);
-        $this->assertArrayHasKey('format', $landingPage);
-        $this->assertArrayHasKey('embed_js', $landingPage);
-        $this->assertArrayHasKey('embed_url', $landingPage);
-        $this->assertArrayHasKey('archived', $landingPage);
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Iterate through each landing page, confirming no forms were included.
+        foreach ($result->forms as $form) {
+            $form = get_object_vars($form);
+
+            // Assert shape of object is valid.
+            $this->assertArrayHasKey('id', $form);
+            $this->assertArrayHasKey('name', $form);
+            $this->assertArrayHasKey('created_at', $form);
+            $this->assertArrayHasKey('type', $form);
+            $this->assertArrayHasKey('format', $form);
+            $this->assertArrayHasKey('embed_js', $form);
+            $this->assertArrayHasKey('embed_url', $form);
+            $this->assertArrayHasKey('archived', $form);
+
+            // Assert form is a landing page i.e. hosted.
+            $this->assertEquals($form['type'], 'hosted');
+
+            // Assert form is not archived.
+            $this->assertFalse($form['archived']);
+        }
+    }
+
+    /**
+     * Test that get_landing_pages() returns the expected data when
+     * the status is set to archived.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetLandingPagesWithArchivedStatus()
+    {
+        $result = $this->api->get_forms(
+            status: 'archived'
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert no landing pages are returned, as the account doesn't have any archived landing pages.
+        $this->assertCount(0, $result->forms);
+    }
+
+    /**
+     * Test that get_landing_pages() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetLandingPagesWithTotalCount()
+    {
+        $result = $this->api->get_landing_pages(
+            include_total_count: true
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', get_object_vars($result->pagination));
+        $this->assertGreaterThan(0, $result->pagination->total_count);
+    }
+
+    /**
+     * Test that get_landing_pages() returns the expected data when pagination parameters
+     * and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetLandingPagesPagination()
+    {
+        $result = $this->api->get_landing_pages(
+            per_page: 1
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_landing_pages(
+            per_page: 1,
+            after_cursor: $result->pagination->end_cursor
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result->pagination->has_previous_page);
+        $this->assertFalse($result->pagination->has_next_page);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_landing_pages(
+            per_page: 1,
+            before_cursor: $result->pagination->start_cursor
+        );
+
+        // Assert forms and pagination exist.
+        $this->assertDataExists($result, 'forms');
+        $this->assertPaginationExists($result);
+
+        // Assert a single form was returned.
+        $this->assertCount(1, $result->forms);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result->pagination->has_previous_page);
+        $this->assertTrue($result->pagination->has_next_page);
     }
 
     /**
@@ -2356,74 +2609,6 @@ class ConvertKitAPITest extends TestCase
     {
         $this->expectException(ClientException::class);
         $result = $this->api->get_tag_subscriptions(12345);
-    }
-
-    /**
-     * Test that get_resources() for Forms returns the expected data.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetResourcesForms()
-    {
-        $result = $this->api->get_resources('forms');
-        $this->assertIsArray($result);
-    }
-
-    /**
-     * Test that get_resources() for Landing Pages returns the expected data.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetResourcesLandingPages()
-    {
-        $result = $this->api->get_resources('landing_pages');
-        $this->assertIsArray($result);
-    }
-
-    /**
-     * Test that get_resources() for Subscription Forms returns the expected data.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetResourcesSubscriptionForms()
-    {
-        $this->markTestIncomplete();
-        $result = $this->api->get_resources('subscription_forms');
-        $this->assertIsArray($result);
-    }
-
-    /**
-     * Test that get_resources() for Tags returns the expected data.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetResourcesTags()
-    {
-        $result = $this->api->get_resources('tags');
-        $this->assertIsArray($result);
-    }
-
-    /**
-     * Test that get_resources() throws a ClientException when an invalid
-     * resource type is specified.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetResourcesInvalidResourceType()
-    {
-        $this->expectException(ClientException::class);
-        $result = $this->api->get_resources('invalid-resource-type');
-        $this->assertIsArray($result);
     }
 
     /**

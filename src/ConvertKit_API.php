@@ -386,31 +386,77 @@ class ConvertKit_API
     }
 
     /**
-     * Gets all forms.
+     * Get forms.
+     *
+     * @param string  $status              Form status (active|archived|trashed|all).
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @since 1.0.0
      *
      * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
      *
-     * @return false|mixed
+     * @return false|array<int,\stdClass>
      */
-    public function get_forms()
-    {
-        return $this->get_resources('forms');
+    public function get_forms(
+        string $status = 'active',
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        return $this->get(
+            endpoint: 'forms',
+            args: $this->build_total_count_and_pagination_params(
+                params: [
+                    'type'   => 'embed',
+                    'status' => $status,
+                ],
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
-     * Gets all landing pages.
+     * Get landing pages.
+     *
+     * @param string  $status              Form status (active|archived|trashed|all).
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @since 1.0.0
      *
      * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
      *
-     * @return false|mixed
+     * @return false|array<int,\stdClass>
      */
-    public function get_landing_pages()
-    {
-        return $this->get_resources('landing_pages');
+    public function get_landing_pages(
+        string $status = 'active',
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        return $this->get(
+            endpoint: 'forms',
+            args: $this->build_total_count_and_pagination_params(
+                params: [
+                    'type'   => 'hosted',
+                    'status' => $status,
+                ],
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
@@ -881,121 +927,6 @@ class ConvertKit_API
                 per_page: $per_page
             )
         );
-    }
-
-    /**
-     * Gets a resource index
-     * Possible resources: forms, landing_pages, subscription_forms, tags
-     *
-     * GET /{$resource}/
-     *
-     * @param string $resource Resource type.
-     *
-     * @throws \InvalidArgumentException If the resource argument is not a supported resource type.
-     *
-     * @return array<int|string, mixed|\stdClass> API response
-     */
-    public function get_resources(string $resource)
-    {
-        // Assign the resource to the request variable.
-        $request = $resource;
-
-        // Landing pages are included in the /forms endpoint.
-        if ($resource === 'landing_pages') {
-            $request = 'forms';
-        }
-
-        // Fetch resources.
-        $resources = $this->get($request);
-
-        $this->create_log(sprintf('%s response %s', $resource, json_encode($resources)));
-
-        // Return a blank array if no resources exist.
-        if (!$resources) {
-            $this->create_log('No resources');
-            return [];
-        }
-
-        // Build array of resources.
-        $_resource = [];
-        switch ($resource) {
-            // Forms.
-            case 'forms':
-                // Bail if no forms are set.
-                if (!isset($resources->forms)) {
-                    $this->create_log('No form resources');
-                    return [];
-                }
-
-                // Build array of forms.
-                foreach ($resources->forms as $form) {
-                    // Exclude archived forms.
-                    if (isset($form->archived) && $form->archived) {
-                        continue;
-                    }
-
-                    // Exclude hosted forms.
-                    if ($form->type === 'hosted') {
-                        continue;
-                    }
-
-                    $_resource[] = $form;
-                }
-                break;
-
-            // Landing Pages.
-            case 'landing_pages':
-                // Bail if no landing pages are set.
-                if (!isset($resources->forms)) {
-                    $this->create_log('No landing page resources');
-                    return [];
-                }
-
-                foreach ($resources->forms as $form) {
-                    // Exclude archived landing pages.
-                    if (isset($form->archived) && $form->archived) {
-                        continue;
-                    }
-
-                    // Exclude non-hosted (i.e. forms).
-                    if ($form->type !== 'hosted') {
-                        continue;
-                    }
-
-                    $_resource[] = $form;
-                }
-                break;
-
-            // Subscription Forms.
-            case 'subscription_forms':
-                // Exclude archived subscription forms.
-                foreach ($resources as $mapping) {
-                    if (isset($mapping->archived) && $mapping->archived) {
-                        continue;
-                    }
-
-                    $_resource[$mapping->id] = $mapping->form_id;
-                }
-                break;
-
-            // Tags.
-            case 'tags':
-                // Bail if no tags are set.
-                if (!isset($resources->tags)) {
-                    $this->create_log('No tag resources');
-                    return [];
-                }
-
-                foreach ($resources->tags as $tag) {
-                    $_resource[] = $tag;
-                }
-                break;
-
-            default:
-                throw new \InvalidArgumentException('An unsupported resource was specified.');
-        }//end switch
-
-        return $_resource;
     }
 
     /**
