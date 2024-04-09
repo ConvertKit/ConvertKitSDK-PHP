@@ -232,7 +232,7 @@ class ConvertKit_API
             method: 'POST',
             uri:    $this->oauth_token_url,
             headers: [
-                'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                'User-Agent' => $this->user_agent(),
             ],
             body:   (string) json_encode(
                 [
@@ -270,7 +270,7 @@ class ConvertKit_API
             method: 'POST',
             uri: $this->oauth_token_url,
             headers: [
-                'User-Agent' => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
+                'User-Agent' => $this->user_agent(),
             ],
             body: (string) json_encode(
                 [
@@ -1870,11 +1870,7 @@ class ConvertKit_API
         $request  = new Request(
             method: 'GET',
             uri: $url,
-            headers: [
-                'Accept'       => 'text/html',
-                'Content-Type' => 'text/html; charset=utf-8',
-                'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
-            ]
+            headers: $this->request_headers('text/html'),
         );
         $response = $this->client->send($request);
 
@@ -2100,26 +2096,16 @@ class ConvertKit_API
                 $request = new Request(
                     method: $method,
                     uri: $url,
-                    headers: [
-                        'Authorization' => 'Bearer ' . $this->access_token,
-                        'Accept'        => 'application/json',
-                        'Content-Type'  => 'application/json; charset=utf-8',
-                        'User-Agent'    => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
-                    ]
+                    headers: $this->request_headers(),
                 );
                 break;
 
             default:
                 $request = new Request(
-                    method: $method,
-                    uri:    $url,
-                    headers: [
-                        'Authorization' => 'Bearer ' . $this->access_token,
-                        'Accept'        => 'application/json',
-                        'Content-Type'  => 'application/json; charset=utf-8',
-                        'User-Agent'    => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
-                    ],
-                    body:   (string) json_encode($args),
+                    method:  $method,
+                    uri:     $url,
+                    headers: $this->request_headers(),
+                    body:    (string) json_encode($args),
                 );
                 break;
         }//end switch
@@ -2152,5 +2138,36 @@ class ConvertKit_API
     public function getResponseInterface()
     {
         return $this->response;
+    }
+
+    /**
+     * Returns the headers to use in an API request.
+     *
+     * @param string $type Accept and Content-Type Headers.
+     *
+     * @since 2.0.0
+     *
+     * @return array<string,string>
+     */
+    private function request_headers(string $type = 'application/json')
+    {
+        return [
+            'Authorization' => 'Bearer ' . $this->access_token,
+            'Accept'        => $type,
+            'Content-Type'  => $type . '; charset=utf-8',
+            'User-Agent'    => $this->user_agent(),
+        ];
+    }
+
+    /**
+     * Returns the user agent string to use in all HTTP requests.
+     *
+     * @since 2.0.0
+     *
+     * @return string
+     */
+    private function user_agent()
+    {
+        return 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion();
     }
 }
