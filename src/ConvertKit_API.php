@@ -380,31 +380,77 @@ class ConvertKit_API
     }
 
     /**
-     * Gets all forms.
+     * Get forms.
+     *
+     * @param string  $status              Form status (active|archived|trashed|all).
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @since 1.0.0
      *
      * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
      *
-     * @return false|mixed
+     * @return false|array<int,\stdClass>
      */
-    public function get_forms()
-    {
-        return $this->get_resources('forms');
+    public function get_forms(
+        string $status = 'active',
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        return $this->get(
+            endpoint: 'forms',
+            args: $this->build_total_count_and_pagination_params(
+                params: [
+                    'type'   => 'embed',
+                    'status' => $status,
+                ],
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
-     * Gets all landing pages.
+     * Get landing pages.
+     *
+     * @param string  $status              Form status (active|archived|trashed|all).
+     * @param boolean $include_total_count To include the total count of records in the response, use true.
+     * @param string  $after_cursor        Return results after the given pagination cursor.
+     * @param string  $before_cursor       Return results before the given pagination cursor.
+     * @param integer $per_page            Number of results to return.
      *
      * @since 1.0.0
      *
      * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
      *
-     * @return false|mixed
+     * @return false|array<int,\stdClass>
      */
-    public function get_landing_pages()
-    {
-        return $this->get_resources('landing_pages');
+    public function get_landing_pages(
+        string $status = 'active',
+        bool $include_total_count = false,
+        string $after_cursor = '',
+        string $before_cursor = '',
+        int $per_page = 100
+    ) {
+        return $this->get(
+            endpoint: 'forms',
+            args: $this->build_total_count_and_pagination_params(
+                params: [
+                    'type'   => 'hosted',
+                    'status' => $status,
+                ],
+                include_total_count: $include_total_count,
+                after_cursor: $after_cursor,
+                before_cursor: $before_cursor,
+                per_page: $per_page
+            )
+        );
     }
 
     /**
