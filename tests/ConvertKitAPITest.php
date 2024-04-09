@@ -319,6 +319,94 @@ class ConvertKitAPITest extends TestCase
     }
 
     /**
+     * Test that calling request_headers() returns the expected array of headers
+     *
+     * @since   2.0.0
+     *
+     * @return  void
+     */
+    public function testRequestHeadersMethod()
+    {
+        $headers = $this->callPrivateMethod($this->api, 'request_headers', []);
+        $this->assertArrayHasKey('Accept', $headers);
+        $this->assertArrayHasKey('Content-Type', $headers);
+        $this->assertArrayHasKey('User-Agent', $headers);
+        $this->assertArrayHasKey('Authorization', $headers);
+        $this->assertEquals($headers['Accept'], 'application/json');
+        $this->assertEquals($headers['Content-Type'], 'application/json; charset=utf-8');
+        $this->assertEquals($headers['User-Agent'], 'ConvertKitPHPSDK/' . $this->api::VERSION . ';PHP/' . phpversion());
+        $this->assertEquals($headers['Authorization'], 'Bearer ' . $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']);
+    }
+
+    /**
+     * Test that calling request_headers() with a different `type` parameter
+     * returns the expected array of headers
+     *
+     * @since   2.0.0
+     *
+     * @return  void
+     */
+    public function testRequestHeadersMethodWithType()
+    {
+        $headers = $this->callPrivateMethod($this->api, 'request_headers', [
+            'type' => 'text/html',
+        ]);
+        $this->assertArrayHasKey('Accept', $headers);
+        $this->assertArrayHasKey('Content-Type', $headers);
+        $this->assertArrayHasKey('User-Agent', $headers);
+        $this->assertArrayHasKey('Authorization', $headers);
+        $this->assertEquals($headers['Accept'], 'text/html');
+        $this->assertEquals($headers['Content-Type'], 'text/html; charset=utf-8');
+        $this->assertEquals($headers['User-Agent'], 'ConvertKitPHPSDK/' . $this->api::VERSION . ';PHP/' . phpversion());
+        $this->assertEquals($headers['Authorization'], 'Bearer ' . $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']);
+    }
+
+    /**
+     * Test that calling request_headers() with the `auth` parameter set to false
+     * returns the expected array of headers
+     *
+     * @since   2.0.0
+     *
+     * @return  void
+     */
+    public function testRequestHeadersMethodWithAuthDisabled()
+    {
+        $headers = $this->callPrivateMethod($this->api, 'request_headers', [
+            'auth' => false,
+        ]);
+        $this->assertArrayHasKey('Accept', $headers);
+        $this->assertArrayHasKey('Content-Type', $headers);
+        $this->assertArrayHasKey('User-Agent', $headers);
+        $this->assertArrayNotHasKey('Authorization', $headers);
+        $this->assertEquals($headers['Accept'], 'application/json');
+        $this->assertEquals($headers['Content-Type'], 'application/json; charset=utf-8');
+        $this->assertEquals($headers['User-Agent'], 'ConvertKitPHPSDK/' . $this->api::VERSION . ';PHP/' . phpversion());
+    }
+
+    /**
+     * Test that calling request_headers() with a different `type` parameter
+     * and the `auth` parameter set to false returns the expected array of headers
+     *
+     * @since   2.0.0
+     *
+     * @return  void
+     */
+    public function testRequestHeadersMethodWithTypeAndAuthDisabled()
+    {
+        $headers = $this->callPrivateMethod($this->api, 'request_headers', [
+            'type' => 'text/html',
+            'auth' => false,
+        ]);
+        $this->assertArrayHasKey('Accept', $headers);
+        $this->assertArrayHasKey('Content-Type', $headers);
+        $this->assertArrayHasKey('User-Agent', $headers);
+        $this->assertArrayNotHasKey('Authorization', $headers);
+        $this->assertEquals($headers['Accept'], 'text/html');
+        $this->assertEquals($headers['Content-Type'], 'text/html; charset=utf-8');
+        $this->assertEquals($headers['User-Agent'], 'ConvertKitPHPSDK/' . $this->api::VERSION . ';PHP/' . phpversion());
+    }
+
+    /**
      * Test that get_oauth_url() returns the correct URL to begin the OAuth process.
      *
      * @since   2.0.0
@@ -4867,8 +4955,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLegacyForm()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_FORM_URL']);
 
         // Assert that the markup is HTML.
@@ -4887,8 +4973,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLandingPage()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 
         // Assert that the markup is HTML.
@@ -4907,8 +4991,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceLegacyLandingPage()
     {
-        $this->markTestIncomplete();
-
         $markup = $this->api->get_resource($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
 
         // Assert that the markup is HTML.
@@ -4928,8 +5010,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInvalidURL()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(InvalidArgumentException::class);
         $markup = $this->api->get_resource('not-a-url');
     }
@@ -4944,8 +5024,6 @@ class ConvertKitAPITest extends TestCase
      */
     public function testGetResourceInaccessibleURL()
     {
-        $this->markTestIncomplete();
-
         $this->expectException(ClientException::class);
         $markup = $this->api->get_resource('https://convertkit.com/a/url/that/does/not/exist');
     }

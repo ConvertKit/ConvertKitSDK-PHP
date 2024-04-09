@@ -124,20 +124,8 @@ class ConvertKit_API
         $this->access_token  = $accessToken;
         $this->debug         = $debug;
 
-        // Set headers.
-        $headers = [
-            'Accept'       => 'application/json',
-            'Content-Type' => 'application/json; charset=utf-8',
-            'User-Agent'   => 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion(),
-        ];
-        if (!empty($this->access_token)) {
-            $headers['Authorization'] = 'Bearer ' . $this->access_token;
-        }
-
         // Set the Guzzle client.
-        $this->client = new Client(
-            ['headers' => $headers]
-        );
+        $this->client = new Client();
 
         if ($debug) {
             // If no debug log file location specified, define a default.
@@ -243,6 +231,9 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri:    $this->oauth_token_url,
+            headers: $this->request_headers(
+                auth: false
+            ),
             body:   (string) json_encode(
                 [
                     'code'          => $authCode,
@@ -278,6 +269,9 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri: $this->oauth_token_url,
+            headers: $this->request_headers(
+                auth: false
+            ),
             body: (string) json_encode(
                 [
                     'refresh_token' => $refreshToken,
@@ -1851,8 +1845,9 @@ class ConvertKit_API
      * Get markup from ConvertKit for the provided $url.
      *
      * Supports legacy forms and legacy landing pages.
+     *
      * Forms and Landing Pages should be embedded using the supplied JS embed script in
-     * the API response when using get_resources().
+     * the API response when using get_forms() or get_landing_pages().
      *
      * @param string $url URL of HTML page.
      *
@@ -1873,9 +1868,12 @@ class ConvertKit_API
 
         // Fetch the resource.
         $request  = new Request(
-            'GET',
-            $url,
-            ['Accept-Encoding' => 'gzip']
+            method: 'GET',
+            uri: $url,
+            headers: $this->request_headers(
+                type: 'text/html',
+                auth: false
+            ),
         );
         $response = $this->client->send($request);
 
@@ -2100,18 +2098,20 @@ class ConvertKit_API
 
                 $request = new Request(
                     method: $method,
-                    uri: $url
+                    uri: $url,
+                    headers: $this->request_headers(),
                 );
                 break;
 
             default:
                 $request = new Request(
-                    method: $method,
-                    uri:    $url,
-                    body:   (string) json_encode($args),
+                    method:  $method,
+                    uri:     $url,
+                    headers: $this->request_headers(),
+                    body:    (string) json_encode($args),
                 );
                 break;
-        }
+        }//end switch
 
         // Send request.
         $this->response = $this->client->send(
@@ -2141,5 +2141,45 @@ class ConvertKit_API
     public function getResponseInterface()
     {
         return $this->response;
+    }
+
+    /**
+     * Returns the headers to use in an API request.
+     *
+     * @param string  $type Accept and Content-Type Headers.
+     * @param boolean $auth Include authorization header.
+     *
+     * @since 2.0.0
+     *
+     * @return array<string,string>
+     */
+    private function request_headers(string $type = 'application/json', bool $auth = true)
+    {
+        $headers = [
+            'Accept'       => $type,
+            'Content-Type' => $type . '; charset=utf-8',
+            'User-Agent'   => $this->user_agent(),
+        ];
+
+        // If no authorization header required, return now.
+        if (!$auth) {
+            return $headers;
+        }
+
+        // Add authorization header and return.
+        $headers['Authorization'] = 'Bearer ' . $this->access_token;
+        return $headers;
+    }
+
+    /**
+     * Returns the user agent string to use in all HTTP requests.
+     *
+     * @since 2.0.0
+     *
+     * @return string
+     */
+    private function user_agent()
+    {
+        return 'ConvertKitPHPSDK/' . self::VERSION . ';PHP/' . phpversion();
     }
 }
