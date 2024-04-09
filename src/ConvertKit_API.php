@@ -231,9 +231,9 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri:    $this->oauth_token_url,
-            headers: [
-                'User-Agent' => $this->user_agent(),
-            ],
+            headers: $this->request_headers(
+                auth: false
+            ),
             body:   (string) json_encode(
                 [
                     'code'          => $authCode,
@@ -269,9 +269,9 @@ class ConvertKit_API
         $request = new Request(
             method: 'POST',
             uri: $this->oauth_token_url,
-            headers: [
-                'User-Agent' => $this->user_agent(),
-            ],
+            headers: $this->request_headers(
+                auth: false
+            ),
             body: (string) json_encode(
                 [
                     'refresh_token' => $refreshToken,
@@ -1870,7 +1870,10 @@ class ConvertKit_API
         $request  = new Request(
             method: 'GET',
             uri: $url,
-            headers: $this->request_headers('text/html'),
+            headers: $this->request_headers(
+                type: 'text/html',
+                auth: false
+            ),
         );
         $response = $this->client->send($request);
 
@@ -2143,20 +2146,29 @@ class ConvertKit_API
     /**
      * Returns the headers to use in an API request.
      *
-     * @param string $type Accept and Content-Type Headers.
+     * @param string  $type Accept and Content-Type Headers.
+     * @param boolean $auth Include authorization header.
      *
      * @since 2.0.0
      *
      * @return array<string,string>
      */
-    private function request_headers(string $type = 'application/json')
+    private function request_headers(string $type = 'application/json', bool $auth = true)
     {
-        return [
-            'Authorization' => 'Bearer ' . $this->access_token,
-            'Accept'        => $type,
-            'Content-Type'  => $type . '; charset=utf-8',
-            'User-Agent'    => $this->user_agent(),
+        $headers = [
+            'Accept'       => $type,
+            'Content-Type' => $type . '; charset=utf-8',
+            'User-Agent'   => $this->user_agent(),
         ];
+
+        // If no authorization header required, return now.
+        if (!$auth) {
+            return $headers;
+        }
+
+        // Add authorization header and return.
+        $headers['Authorization'] = 'Bearer ' . $this->access_token;
+        return $headers;
     }
 
     /**
