@@ -42,13 +42,13 @@ For list based endpoints which fetch data from the API (such as broadcasts, cust
 
 - Updated: `get_broadcasts()` supports pagination
 - Updated: `create_broadcast()`:
--- `email_layout_template` is now `email_template_id`. To fetch the ID of the account's email templates, refer to `get_email_templates()`
--- `preview_text` option added
--- `subscriber_filter` option added
+  - `email_layout_template` is now `email_template_id`. To fetch the ID of the account's email templates, refer to `get_email_templates()`
+  - `preview_text` option added
+  - `subscriber_filter` option added
 - Updated: `update_broadcast()`
--- `email_layout_template` is now `email_template_id`. To fetch the ID of the account's email templates, refer to `get_email_templates()`
--- `preview_text` option added
--- `subscriber_filter` option added
+  - `email_layout_template` is now `email_template_id`. To fetch the ID of the account's email templates, refer to `get_email_templates()`
+  - `preview_text` option added
+  - `subscriber_filter` option added
 - Changed: `destroy_broadcast()` is renamed to `delete_broadcast()`
 
 ## Custom Fields
@@ -69,9 +69,9 @@ For list based endpoints which fetch data from the API (such as broadcasts, cust
 - Added: `create_tags()` to create multiple tags in a single request
 - Updated: `get_tags()` supports pagination
 - Updated: `get_tag_subscriptions()`:
--- supports pagination
--- supports filtering by subscribers by dates, covering `created_after`, `created_before`, `tagged_after` and `tagged_before`
--- `sort_order` is no longer supported
+  - supports pagination
+  - supports filtering by subscribers by dates, covering `created_after`, `created_before`, `tagged_after` and `tagged_before`
+  - `sort_order` is no longer supported
 - Changed: `tag_subscriber()` is now `tag_subscriber_by_email()`. Use `tag_subscriber()` for tagging by subscriber ID
 
 ## Email Templates
@@ -81,15 +81,15 @@ For list based endpoints which fetch data from the API (such as broadcasts, cust
 ## Forms
 
 - Updated: `get_forms()`:
--- supports pagination
--- only returns active forms by default. Use the `status` parameter to filter by `active`, `archived`, `trashed` or `all`
+  - supports pagination
+  - only returns active forms by default. Use the `status` parameter to filter by `active`, `archived`, `trashed` or `all`
 - Updated: `get_landing_pages()`:
--- supports pagination
--- only returns active landing pages by default. Use the `status` parameter to filter by `active`, `archived`, `trashed` or `all`
+  - supports pagination
+  - only returns active landing pages by default. Use the `status` parameter to filter by `active`, `archived`, `trashed` or `all`
 - Updated: `get_form_subscriptions()`:
--- supports pagination
--- supports filtering by subscribers by dates, covering `created_after`, `created_before`, `added_after` and `added_before`
--- `sort_order` is no longer supported
+  - supports pagination
+  - supports filtering by subscribers by dates, covering `created_after`, `created_before`, `added_after` and `added_before`
+  - `sort_order` is no longer supported
 - Changed: `add_subscriber_to_form()` is now `add_subscriber_to_form_by_email()`. Use `add_subscriber_to_form()` for adding subscriber to form by subscriber ID
 
 ## Purchases
@@ -106,9 +106,9 @@ For list based endpoints which fetch data from the API (such as broadcasts, cust
 - Changed: `add_subscriber_to_sequence()` is now `add_subscriber_to_sequence_by_email()`. Use `add_subscriber_to_sequence()` for adding a subscriber to a sequence by subscriber ID
 - Updated: `get_sequences()` supports pagination
 - Updated: `get_sequence_subscriptions()`:
--- supports pagination
--- supports filtering by subscribers by dates, covering `created_after`, `created_before`, `added_after` and `added_before`
--- `sort_order` is no longer supported
+  - supports pagination
+  - supports filtering by subscribers by dates, covering `created_after`, `created_before`, `added_after` and `added_before`
+  - `sort_order` is no longer supported
 
 ## Webhooks
 
