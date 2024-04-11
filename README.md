@@ -1,5 +1,3 @@
-== README.MD
-
 # ConvertKit SDK PHP
 
 The ConvertKit PHP SDK provides convinient access to the ConvertKit API from applications written in the PHP language.
@@ -12,6 +10,8 @@ It includes a pre-defined set of methods for interacting with the API.
 |-------------|-------------|--------------------|--------------|
 | 1.x         | v3          | API Key and Secret | 7.4+         |
 | 2.x         | v4          | OAuth              | 8.0+         |
+
+Refer to [this guide](MIGRATION.md) for changes when upgrading to the v2 SDK.
 
 ## Composer
 

@@ -10,7 +10,7 @@ The minimum supported PHP version is `8.0`.  Users on older PHP versions should 
 
 ## Authentication
 
-Authentication is now via OAuth.  Refer to the README file for an implementation guide.
+Authentication is now via OAuth.  It's recommended to refer to the README file's [`Getting Started`](README.md#2x-v4-api-oauth-php-80) section for implementation.
 
 Initializing the `ConvertKit_API` class now accepts a `clientID`, `clientSecret` and `accessToken` in place of the existing `api_key` and `api_secret`:
 
