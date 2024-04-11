@@ -1,3 +1,5 @@
+== README.MD
+
 # ConvertKit SDK PHP
 
 The ConvertKit PHP SDK provides convinient access to the ConvertKit API from applications written in the PHP language.
@@ -39,7 +41,9 @@ If you use Composer, these dependencies should be handled automatically.
 
 ### 2.x (v4 API, OAuth, PHP 8.0+)
 
-Please reach out to ConvertKit to set up an OAuth application for you. We'll provide you with your Client ID and Secret.
+First, register your OAuth application in the `OAuth Applications` section at https://app.convertkit.com/account_settings/advanced_settings.
+
+Using the supplied Client ID and secret, redirect the user to ConvertKit to grant your application access to their ConvertKit account.
 
 ```php
 // Require the autoloader (if you're using a PHP framework, this may already be done for you).
@@ -50,11 +54,8 @@ $api = new \ConvertKit_API\ConvertKit_API(
     clientID: '<your_oauth_client_id>',
     clientSecret: '<your_oauth_client_secret>'
 );
-```
 
-To begin the OAuth process, redirect the user to ConvertKit to grant your application access to their ConvertKit account.
-
-```php
+// Redirect to begin the OAuth process.
 header('Location: '.$api->get_oauth_url('<your_redirect_uri>'));
 ```
 
