@@ -19,7 +19,7 @@ use GuzzleHttp\Psr7\Request;
 class ConvertKit_API
 {
     use ConvertKit_API_Traits;
-    
+
     /**
      * Debug
      *
@@ -427,16 +427,15 @@ class ConvertKit_API
      * Returns the maximum amount of time to wait for
      * a response to the request before exiting.
      *
-     * @since   2.0.0
+     * @since 2.0.0
      *
-     * @return  int     Timeout, in seconds.
+     * @return integer     Timeout, in seconds.
      */
-    public function get_timeout() {
-
+    public function get_timeout()
+    {
         $timeout = 10;
 
         return $timeout;
-
     }
 
     /**

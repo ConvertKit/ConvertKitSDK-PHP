@@ -1796,9 +1796,9 @@ trait ConvertKit_API_Traits
      * Returns the maximum amount of time to wait for
      * a response to the request before exiting.
      *
-     * @since   2.0.0
+     * @since 2.0.0
      *
-     * @return  int     Timeout, in seconds.
+     * @return integer     Timeout, in seconds.
      */
     abstract public function get_timeout();
 
