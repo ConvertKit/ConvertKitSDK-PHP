@@ -13,13 +13,6 @@ namespace ConvertKit_API;
 trait ConvertKit_API_Traits
 {
     /**
-     * The SDK version.
-     *
-     * @var string
-     */
-    public const VERSION = '2.0.0';
-
-    /**
      * ConvertKit OAuth Application Client ID
      *
      * @var string
