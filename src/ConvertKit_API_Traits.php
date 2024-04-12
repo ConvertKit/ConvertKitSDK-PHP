@@ -863,6 +863,10 @@ trait ConvertKit_API_Traits
             ['email_address' => $email_address]
         );
 
+        if (!count($subscribers->subscribers)) {
+            return false;
+        }
+
         // Return the subscriber's ID.
         return $subscribers->subscribers[0]->id;
     }
