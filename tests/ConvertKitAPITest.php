@@ -327,7 +327,7 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRequestHeadersMethod()
     {
-        $headers = $this->callPrivateMethod($this->api, 'request_headers', []);
+        $headers = $this->api->get_request_headers();
         $this->assertArrayHasKey('Accept', $headers);
         $this->assertArrayHasKey('Content-Type', $headers);
         $this->assertArrayHasKey('User-Agent', $headers);
@@ -348,9 +348,9 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRequestHeadersMethodWithType()
     {
-        $headers = $this->callPrivateMethod($this->api, 'request_headers', [
-            'type' => 'text/html',
-        ]);
+        $headers = $this->api->get_request_headers(
+            type: 'text/html'
+        );
         $this->assertArrayHasKey('Accept', $headers);
         $this->assertArrayHasKey('Content-Type', $headers);
         $this->assertArrayHasKey('User-Agent', $headers);
@@ -371,9 +371,9 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRequestHeadersMethodWithAuthDisabled()
     {
-        $headers = $this->callPrivateMethod($this->api, 'request_headers', [
-            'auth' => false,
-        ]);
+        $headers = $this->api->get_request_headers(
+            auth: false
+        );
         $this->assertArrayHasKey('Accept', $headers);
         $this->assertArrayHasKey('Content-Type', $headers);
         $this->assertArrayHasKey('User-Agent', $headers);
@@ -393,10 +393,10 @@ class ConvertKitAPITest extends TestCase
      */
     public function testRequestHeadersMethodWithTypeAndAuthDisabled()
     {
-        $headers = $this->callPrivateMethod($this->api, 'request_headers', [
-            'type' => 'text/html',
-            'auth' => false,
-        ]);
+        $headers = $this->api->get_request_headers(
+            type: 'text/html',
+            auth: false
+        );
         $this->assertArrayHasKey('Accept', $headers);
         $this->assertArrayHasKey('Content-Type', $headers);
         $this->assertArrayHasKey('User-Agent', $headers);
