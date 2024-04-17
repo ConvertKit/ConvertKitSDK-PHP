@@ -4,9 +4,14 @@ The ConvertKit PHP SDK provides convinient access to the ConvertKit API from app
 
 It includes a pre-defined set of methods for interacting with the API.
 
-## Requirements
+## Version Guidance
 
-PHP 7.4 and later.
+| SDK Version | API Version | API Authentication | PHP Version  |
+|-------------|-------------|--------------------|--------------|
+| 1.x         | v3          | API Key and Secret | 7.4+         |
+| 2.x         | v4          | OAuth              | 8.0+         |
+
+Refer to [this guide](MIGRATION.md) for changes when upgrading to the v2 SDK.
 
 ## Composer
 
@@ -33,6 +38,104 @@ The PHP SDK require the following extensions in order to work properly:
 If you use Composer, these dependencies should be handled automatically.
 
 ## Getting Started
+
+### 2.x (v4 API, OAuth, PHP 8.0+)
+
+First, register your OAuth application in the `OAuth Applications` section at https://app.convertkit.com/account_settings/advanced_settings.
+
+Using the supplied Client ID and secret, redirect the user to ConvertKit to grant your application access to their ConvertKit account.
+
+```php
+// Require the autoloader (if you're using a PHP framework, this may already be done for you).
+require_once 'vendor/autoload.php';
+
+// Initialize the API class.
+$api = new \ConvertKit_API\ConvertKit_API(
+    clientID: '<your_oauth_client_id>',
+    clientSecret: '<your_oauth_client_secret>'
+);
+
+// Redirect to begin the OAuth process.
+header('Location: '.$api->get_oauth_url('<your_redirect_uri>'));
+```
+
+Once the user grants your application access to their ConvertKit account, they'll be redirected to your Redirect URI with an authorization code. For example:
+
+`your-redirect-uri?code=<auth_code>`
+
+At this point, your application needs to exchange the authorization code for an access token and refresh token.
+
+```php
+$result = $api->get_access_token(
+    authCode: '<auth_code>',
+    redirectURI: '<your_redirect_uri>'
+);
+```
+
+`$result` is an array comprising of:
+- `access_token`: The access token, used to make authenticated requests to the API
+- `refresh_token`: The refresh token, used to fetch a new access token once the current access token has expired
+- `created_at`: When the access token was created
+- `expires_in`: The number of seconds from `created_at` that the access token will expire
+
+Once you have an access token, re-initialize the API class with it:
+
+```php
+// Initialize the API class.
+$api = new \ConvertKit_API\ConvertKit_API(
+    clientID: '<your_oauth_client_id>',
+    clientSecret: '<your_oauth_client_secret>',
+    accessToken: '<your_access_token>'
+);
+```
+
+To refresh an access token:
+
+```php
+$result = $api->refresh_token(
+    refreshToken: '<your_refresh_token>',
+    redirectURI: '<your_redirect_uri>'
+);
+```
+
+`$result` is an array comprising of:
+- `access_token`: The access token, used to make authenticated requests to the API
+- `refresh_token`: The refresh token, used to fetch a new access token once the current access token has expired
+- `created_at`: When the access token was created
+- `expires_in`: The number of seconds from `created_at` that the access token will expire
+
+Once you have refreshed the access token i.e. obtained a new access token, re-initialize the API class with it:
+
+```php
+// Initialize the API class.
+$api = new \ConvertKit_API\ConvertKit_API(
+    clientID: '<your_oauth_client_id>',
+    clientSecret: '<your_oauth_client_secret>',
+    accessToken: '<your_new_access_token>'
+);
+```
+
+API requests may then be performed:
+
+```php
+$result = $api->add_subscriber_to_form(12345, 'joe.bloggs@convertkit.com');
+```
+
+To determine whether a new entity / relationship was created, or an existing entity / relationship updated, inspect the HTTP code of the last request:
+
+```php
+$result = $api->add_subscriber_to_form(12345, 'joe.bloggs@convertkit.com');
+$code = $api->getResponseInterface()->getStatusCode(); // 200 OK if e.g. a subscriber already added to the specified form, 201 Created if the subscriber added to the specified form for the first time.
+```
+
+The PSR-7 response can be fetched and further inspected, if required - for example, to check if a header exists:
+
+```php
+$result = $api->add_subscriber_to_form(12345, 'joe.bloggs@convertkit.com');
+$api->getResponseInterface()->hasHeader('Content-Length'); // Check if the last API request included a `Content-Length` header
+```
+
+### 1.x (v3 API, API Key and Secret, PHP 7.4+)
 
 Get your ConvertKit API Key and API Secret [here](https://app.convertkit.com/account/edit) and set it somewhere in your application.
 

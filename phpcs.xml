@@ -72,7 +72,7 @@
     <!-- Permit slightly longer line lengths -->
     <rule ref="Generic.Files.LineLength">
         <properties>
-            <property name="lineLimit" value="130"/>
+            <property name="lineLimit" value="150"/>
             <property name="absoluteLineLimit" value="0"/>
         </properties>
     </rule>
