@@ -7,40 +7,8 @@ ConvertKit API Class
 
 | Constant | Visibility | Type | Value |
 |:---------|:-----------|:-----|:------|
-|`VERSION`|public|string|&#039;1.1.0&#039;|
+|`VERSION`|public|string|&#039;2.0.0&#039;|
 ## Properties
-
-### api_key
-
-ConvertKit API Key
-
-```php
-protected string $api_key
-```
-
-### api_secret
-
-ConvertKit API Secret
-
-```php
-protected string $api_secret
-```
-
-### api_version
-
-Version of ConvertKit API
-
-```php
-protected string $api_version
-```
-
-### api_url_base
-
-ConvertKit API URL
-
-```php
-protected string $api_url_base
-```
 
 ### debug
 
@@ -60,10 +28,18 @@ protected \Monolog\Logger $debug_logger
 
 ### client
 
-Guzzle Http Client
+Guzzle Http ClientInterface
 
 ```php
-protected \GuzzleHttp\Client $client
+protected \GuzzleHttp\ClientInterface $client
+```
+
+### response
+
+Guzzle Http Response
+
+```php
+protected \Psr\Http\Message\ResponseInterface $response
 ```
 
 ## Methods
@@ -73,7 +49,7 @@ protected \GuzzleHttp\Client $client
 Constructor for ConvertKitAPI instance
 
 ```php
-public __construct(string $api_key, string $api_secret, bool $debug = false): mixed
+public __construct(string $clientID, string $clientSecret, string $accessToken = '', bool $debug = false, string $debugLogFileLocation = ''): mixed
 ```
 
 
@@ -81,9 +57,28 @@ public __construct(string $api_key, string $api_secret, bool $debug = false): mi
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `$api_key` | **string** | ConvertKit API Key. |
-| `$api_secret` | **string** | ConvertKit API Secret. |
+| `$clientID` | **string** | OAuth Client ID. |
+| `$clientSecret` | **string** | OAuth Client Secret. |
+| `$accessToken` | **string** | OAuth Access Token. |
 | `$debug` | **bool** | Log requests to debugger. |
+| `$debugLogFileLocation` | **string** | Path and filename of debug file to write to. |
+
+
+---
+### set_http_client
+
+Set the Guzzle client implementation to use for API requests.
+
+```php
+public set_http_client(\GuzzleHttp\ClientInterface $client): void
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$client` | **\GuzzleHttp\ClientInterface** | Guzzle client implementation. |
 
 
 ---
@@ -104,6 +99,165 @@ private create_log(string $message): void
 
 
 ---
+### get_oauth_url
+
+Returns the OAuth URL to begin the OAuth process.
+
+```php
+public get_oauth_url(string $redirectURI): string
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$redirectURI` | **string** | Redirect URI. |
+
+
+---
+### get_access_token
+
+Exchanges the given authorization code for an access token and refresh token.
+
+```php
+public get_access_token(string $authCode, string $redirectURI): array<string,int|string>
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$authCode` | **string** | Authorization Code, returned from get_oauth_url() flow. |
+| `$redirectURI` | **string** | Redirect URI. |
+
+**Return Value:**
+
+API response
+
+
+---
+### refresh_token
+
+Fetches a new access token using the supplied refresh token.
+
+```php
+public refresh_token(string $refreshToken, string $redirectURI): array<string,int|string>
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$refreshToken` | **string** | Refresh Token. |
+| `$redirectURI` | **string** | Redirect URI. |
+
+**Return Value:**
+
+API response
+
+
+---
+### get_resource
+
+Get markup from ConvertKit for the provided $url.
+
+```php
+public get_resource(string $url): false|string
+```
+Supports legacy forms and legacy landing pages.
+
+Forms and Landing Pages should be embedded using the supplied JS embed script in
+the API response when using get_forms() or get_landing_pages().
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$url` | **string** | URL of HTML page. |
+
+
+---
+### request
+
+Performs an API request using Guzzle.
+
+```php
+public request(string $endpoint, string $method, array<string,bool|int|float|string|null|array<int|string,float|int|string|(string)[]>> $args = []): false|mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$endpoint` | **string** | API Endpoint. |
+| `$method` | **string** | Request method. |
+| `$args` | **array<string,bool\|int\|float\|string\|null\|array<int\|string,float\|int\|string\|(string)[]>>** | Request arguments. |
+
+
+---
+### getResponseInterface
+
+Returns the response interface used for the last API request.
+
+```php
+public getResponseInterface(): \Psr\Http\Message\ResponseInterface
+```
+
+
+
+---
+### get_request_headers
+
+Returns the headers to use in an API request.
+
+```php
+public get_request_headers(string $type = 'application/json', bool $auth = true): array<string,string>
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$type` | **string** | Accept and Content-Type Headers. |
+| `$auth` | **bool** | Include authorization header. |
+
+
+---
+### get_timeout
+
+Returns the maximum amount of time to wait for
+a response to the request before exiting.
+
+```php
+public get_timeout(): int
+```
+
+
+**Return Value:**
+
+Timeout, in seconds.
+
+
+---
+### get_user_agent
+
+Returns the user agent string to use in all HTTP requests.
+
+```php
+public get_user_agent(): string
+```
+
+
+
+---
+
+## Inherited methods
+
 ### get_account
 
 Gets the current account
@@ -115,65 +269,146 @@ public get_account(): false|mixed
 
 **See Also:**
 
-* https://developers.convertkit.com/#account 
+* https://developers.convertkit.com/v4.html#get-current-account 
+
+---
+### get_account_colors
+
+Gets the account's colors
+
+```php
+public get_account_colors(): false|mixed
+```
+
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#list-colors 
+
+---
+### update_account_colors
+
+Gets the account's colors
+
+```php
+public update_account_colors(array<string,string> $colors): false|mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$colors` | **array<string,string>** | Hex colors. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#list-colors 
+
+---
+### get_creator_profile
+
+Gets the Creator Profile
+
+```php
+public get_creator_profile(): false|mixed
+```
+
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#get-creator-profile 
+
+---
+### get_email_stats
+
+Gets email stats
+
+```php
+public get_email_stats(): false|mixed
+```
+
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#get-email-stats 
+
+---
+### get_growth_stats
+
+Gets growth stats
+
+```php
+public get_growth_stats(\DateTime $starting = null, \DateTime $ending = null): false|mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$starting` | **\DateTime** | Gets stats for time period beginning on this date. Defaults to 90 days ago. |
+| `$ending` | **\DateTime** | Gets stats for time period ending on this date. Defaults to today. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#get-growth-stats 
 
 ---
 ### get_forms
 
-Gets all forms.
+Get forms.
 
 ```php
-public get_forms(): false|mixed
+public get_forms(string $status = 'active', bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|array<int,\stdClass>
 ```
 
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$status` | **string** | Form status (active\|archived\|trashed\|all). |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
 **See Also:**
 
-* https://developers.convertkit.com/#forms 
+* https://developers.convertkit.com/v4.html#convertkit-api-forms 
 
 ---
 ### get_landing_pages
 
-Gets all landing pages.
+Get landing pages.
 
 ```php
-public get_landing_pages(): false|mixed
+public get_landing_pages(string $status = 'active', bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|array<int,\stdClass>
 ```
-
-
-**See Also:**
-
-* https://developers.convertkit.com/#forms 
-
----
-### form_subscribe
-
-Adds a subscriber to a form.
-
-```php
-public form_subscribe(int $form_id, array<string,string> $options): false|object
-```
-* **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
 
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `$form_id` | **int** | Form ID. |
-| `$options` | **array<string,string>** | Array of user data (email, name). |
+| `$status` | **string** | Form status (active\|archived\|trashed\|all). |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#add-subscriber-to-a-form 
+* https://developers.convertkit.com/v4.html#convertkit-api-forms 
 
 ---
-### add_subscriber_to_form
+### add_subscriber_to_form_by_email
 
 Adds a subscriber to a form by email address
 
 ```php
-public add_subscriber_to_form(int $form_id, string $email, string $first_name = '', array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
+public add_subscriber_to_form_by_email(int $form_id, string $email_address): false|mixed
 ```
 
 
@@ -182,22 +417,40 @@ public add_subscriber_to_form(int $form_id, string $email, string $first_name = 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$form_id` | **int** | Form ID. |
-| `$email` | **string** | Email Address. |
-| `$first_name` | **string** | First Name. |
-| `$fields` | **array<string,string>** | Custom Fields. |
-| `$tag_ids` | **array<string,int>** | Tag ID(s) to subscribe to. |
+| `$email_address` | **string** | Email Address. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#add-subscriber-to-a-form 
+* https://developers.convertkit.com/v4.html#add-subscriber-to-form-by-email-address 
+
+---
+### add_subscriber_to_form
+
+Adds a subscriber to a form by subscriber ID
+
+```php
+public add_subscriber_to_form(int $form_id, int $subscriber_id): false|mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$form_id` | **int** | Form ID. |
+| `$subscriber_id` | **int** | Subscriber ID. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#add-subscriber-to-form 
 
 ---
 ### get_form_subscriptions
 
-List subscriptions to a form
+List subscribers for a form
 
 ```php
-public get_form_subscriptions(int $form_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
+public get_form_subscriptions(int $form_id, string $subscriber_state = 'active', \DateTime $created_after = null, \DateTime $created_before = null, \DateTime $added_after = null, \DateTime $added_before = null, bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
 
 
@@ -206,35 +459,50 @@ public get_form_subscriptions(int $form_id, string $sort_order = 'asc', string $
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$form_id` | **int** | Form ID. |
-| `$sort_order` | **string** | Sort Order (asc\|desc). |
-| `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
-| `$page` | **int** | Page. |
+| `$subscriber_state` | **string** | Subscriber State (active\|bounced\|cancelled\|complained\|inactive). |
+| `$created_after` | **\DateTime** | Filter subscribers who have been created after this date. |
+| `$created_before` | **\DateTime** | Filter subscribers who have been created before this date. |
+| `$added_after` | **\DateTime** | Filter subscribers who have been added to the form after this date. |
+| `$added_before` | **\DateTime** | Filter subscribers who have been added to the form before this date. |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-subscriptions-to-a-form 
+* https://developers.convertkit.com/v4.html#list-subscribers-for-a-form 
 
 ---
 ### get_sequences
 
-Gets all sequences
+Gets sequences
 
 ```php
-public get_sequences(): false|mixed
+public get_sequences(bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
 
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
 **See Also:**
 
-* https://developers.convertkit.com/#list-sequences 
+* https://developers.convertkit.com/v4.html#list-sequences 
 
 ---
-### add_subscriber_to_sequence
+### add_subscriber_to_sequence_by_email
 
 Adds a subscriber to a sequence by email address
 
 ```php
-public add_subscriber_to_sequence(int $sequence_id, string $email, string $first_name = '', array<string,string> $fields = [], array<string,int> $tag_ids = []): false|mixed
+public add_subscriber_to_sequence_by_email(int $sequence_id, string $email_address): false|mixed
 ```
 
 
@@ -243,22 +511,40 @@ public add_subscriber_to_sequence(int $sequence_id, string $email, string $first
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$sequence_id` | **int** | Sequence ID. |
-| `$email` | **string** | Email Address. |
-| `$first_name` | **string** | First Name. |
-| `$fields` | **array<string,string>** | Custom Fields. |
-| `$tag_ids` | **array<string,int>** | Tag ID(s) to subscribe to. |
+| `$email_address` | **string** | Email Address. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#add-subscriber-to-a-sequence 
+* https://developers.convertkit.com/v4.html#add-subscriber-to-sequence-by-email-address 
+
+---
+### add_subscriber_to_sequence
+
+Adds a subscriber to a sequence by subscriber ID
+
+```php
+public add_subscriber_to_sequence(int $sequence_id, int $subscriber_id): false|mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$sequence_id` | **int** | Sequence ID. |
+| `$subscriber_id` | **int** | Subscriber ID. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#add-subscriber-to-sequence 
 
 ---
 ### get_sequence_subscriptions
 
-Gets subscribers to a sequence
+List subscribers for a sequence
 
 ```php
-public get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
+public get_sequence_subscriptions(int $sequence_id, string $subscriber_state = 'active', \DateTime $created_after = null, \DateTime $created_before = null, \DateTime $added_after = null, \DateTime $added_before = null, bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
 
 
@@ -267,27 +553,42 @@ public get_sequence_subscriptions(int $sequence_id, string $sort_order = 'asc', 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$sequence_id` | **int** | Sequence ID. |
-| `$sort_order` | **string** | Sort Order (asc\|desc). |
-| `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
-| `$page` | **int** | Page. |
+| `$subscriber_state` | **string** | Subscriber State (active\|bounced\|cancelled\|complained\|inactive). |
+| `$created_after` | **\DateTime** | Filter subscribers who have been created after this date. |
+| `$created_before` | **\DateTime** | Filter subscribers who have been created before this date. |
+| `$added_after` | **\DateTime** | Filter subscribers who have been added to the form after this date. |
+| `$added_before` | **\DateTime** | Filter subscribers who have been added to the form before this date. |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-subscriptions-to-a-sequence 
+* https://developers.convertkit.com/v4.html#list-subscribers-for-a-sequence 
 
 ---
 ### get_tags
 
-Gets all tags.
+List tags.
 
 ```php
-public get_tags(): false|mixed
+public get_tags(bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|array<int,\stdClass>
 ```
 
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
 **See Also:**
 
-* https://developers.convertkit.com/#list-tags 
+* https://developers.convertkit.com/v4.html#list-tags 
 
 ---
 ### create_tag
@@ -307,7 +608,7 @@ public create_tag(string $tag): false|mixed
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-tag 
+* https://developers.convertkit.com/v4.html#create-a-tag 
 
 ---
 ### create_tags
@@ -315,7 +616,7 @@ public create_tag(string $tag): false|mixed
 Creates multiple tags.
 
 ```php
-public create_tags(array<int,string> $tags): false|mixed
+public create_tags(array<int,string> $tags, string $callback_url = ''): false|mixed
 ```
 
 
@@ -324,18 +625,19 @@ public create_tags(array<int,string> $tags): false|mixed
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tags` | **array<int,string>** | Tag Names. |
+| `$callback_url` | **string** | URL to notify for large batch size when async processing complete. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-tag 
+* https://developers.convertkit.com/v4.html#bulk-create-tags 
 
 ---
-### tag_subscriber
+### tag_subscriber_by_email
 
 Tags a subscriber with the given existing Tag.
 
 ```php
-public tag_subscriber(int $tag_id, string $email, string $first_name = '', array<string,string> $fields = []): false|mixed
+public tag_subscriber_by_email(int $tag_id, string $email_address): false|mixed
 ```
 
 
@@ -344,35 +646,32 @@ public tag_subscriber(int $tag_id, string $email, string $first_name = '', array
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag_id` | **int** | Tag ID. |
-| `$email` | **string** | Email Address. |
-| `$first_name` | **string** | First Name. |
-| `$fields` | **array<string,string>** | Custom Fields. |
+| `$email_address` | **string** | Email Address. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#tag-a-subscriber 
+* https://developers.convertkit.com/v4.html#tag-a-subscriber-by-email-address 
 
 ---
-### add_tag
+### tag_subscriber
 
-Adds a tag to a subscriber.
+Tags a subscriber by subscriber ID with the given existing Tag.
 
 ```php
-public add_tag(int $tag, array<string,mixed> $options): false|object
+public tag_subscriber(int $tag_id, int $subscriber_id): false|mixed
 ```
-* **Warning:** this method is **deprecated**. This means that this method will likely be removed in a future version.
 
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `$tag` | **int** | Tag ID. |
-| `$options` | **array<string,mixed>** | Array of user data. |
+| `$tag_id` | **int** | Tag ID. |
+| `$subscriber_id` | **int** | Subscriber ID. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#tag-a-subscriber 
+* https://developers.convertkit.com/v4.html#tag-a-subscriber 
 
 ---
 ### remove_tag_from_subscriber
@@ -393,7 +692,7 @@ public remove_tag_from_subscriber(int $tag_id, int $subscriber_id): false|mixed
 
 **See Also:**
 
-* https://developers.convertkit.com/#remove-tag-from-a-subscriber 
+* https://developers.convertkit.com/v4.html#remove-tag-from-subscriber 
 
 ---
 ### remove_tag_from_subscriber_by_email
@@ -401,7 +700,7 @@ public remove_tag_from_subscriber(int $tag_id, int $subscriber_id): false|mixed
 Removes a tag from a subscriber by email address.
 
 ```php
-public remove_tag_from_subscriber_by_email(int $tag_id, string $email): false|mixed
+public remove_tag_from_subscriber_by_email(int $tag_id, string $email_address): false|mixed
 ```
 
 
@@ -410,19 +709,19 @@ public remove_tag_from_subscriber_by_email(int $tag_id, string $email): false|mi
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag_id` | **int** | Tag ID. |
-| `$email` | **string** | Subscriber email address. |
+| `$email_address` | **string** | Subscriber email address. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#remove-tag-from-a-subscriber-by-email 
+* https://developers.convertkit.com/v4.html#remove-tag-from-subscriber-by-email-address 
 
 ---
 ### get_tag_subscriptions
 
-List subscriptions to a tag
+List subscribers for a tag
 
 ```php
-public get_tag_subscriptions(int $tag_id, string $sort_order = 'asc', string $subscriber_state = 'active', int $page = 1): false|mixed
+public get_tag_subscriptions(int $tag_id, string $subscriber_state = 'active', \DateTime $created_after = null, \DateTime $created_before = null, \DateTime $tagged_after = null, \DateTime $tagged_before = null, bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
 
 
@@ -431,35 +730,119 @@ public get_tag_subscriptions(int $tag_id, string $sort_order = 'asc', string $su
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$tag_id` | **int** | Tag ID. |
-| `$sort_order` | **string** | Sort Order (asc\|desc). |
-| `$subscriber_state` | **string** | Subscriber State (active,cancelled). |
-| `$page` | **int** | Page. |
+| `$subscriber_state` | **string** | Subscriber State (active\|bounced\|cancelled\|complained\|inactive). |
+| `$created_after` | **\DateTime** | Filter subscribers who have been created after this date. |
+| `$created_before` | **\DateTime** | Filter subscribers who have been created before this date. |
+| `$tagged_after` | **\DateTime** | Filter subscribers who have been tagged after this date. |
+| `$tagged_before` | **\DateTime** | Filter subscribers who have been tagged before this date. |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-subscriptions-to-a-tag 
+* https://developers.convertkit.com/v4.html#list-subscribers-for-a-tag 
 
 ---
-### get_resources
+### get_email_templates
 
-Gets a resource index
-Possible resources: forms, landing_pages, subscription_forms, tags
+List email templates.
 
 ```php
-public get_resources(string $resource): array<int|string,mixed|\stdClass>
+public get_email_templates(bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
-GET /{$resource}/
+
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `$resource` | **string** | Resource type. |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
 
-**Return Value:**
+**See Also:**
 
-API response
+* https://developers.convertkit.com/v4.html#convertkit-api-email-templates 
 
+---
+### get_subscribers
+
+List subscribers.
+
+```php
+public get_subscribers(string $subscriber_state = 'active', string $email_address = '', \DateTime $created_after = null, \DateTime $created_before = null, \DateTime $updated_after = null, \DateTime $updated_before = null, string $sort_field = 'id', string $sort_order = 'desc', bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$subscriber_state` | **string** | Subscriber State (active\|bounced\|cancelled\|complained\|inactive). |
+| `$email_address` | **string** | Search susbcribers by email address. This is an exact match search. |
+| `$created_after` | **\DateTime** | Filter subscribers who have been created after this date. |
+| `$created_before` | **\DateTime** | Filter subscribers who have been created before this date. |
+| `$updated_after` | **\DateTime** | Filter subscribers who have been updated after this date. |
+| `$updated_before` | **\DateTime** | Filter subscribers who have been updated before this date. |
+| `$sort_field` | **string** | Sort Field (id\|updated_at\|cancelled_at). |
+| `$sort_order` | **string** | Sort Order (asc\|desc). |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#list-subscribers 
+
+---
+### create_subscriber
+
+Create a subscriber.
+
+```php
+public create_subscriber(string $email_address, string $first_name = '', string $subscriber_state = '', array<string,string> $fields = []): mixed
+```
+Behaves as an upsert. If a subscriber with the provided email address does not exist,
+it creates one with the specified first name and state. If a subscriber with the provided
+email address already exists, it updates the first name.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$email_address` | **string** | Email Address. |
+| `$first_name` | **string** | First Name. |
+| `$subscriber_state` | **string** | Subscriber State (active\|bounced\|cancelled\|complained\|inactive). |
+| `$fields` | **array<string,string>** | Custom Fields. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#create-a-subscriber 
+
+---
+### create_subscribers
+
+Create multiple subscribers.
+
+```php
+public create_subscribers(array<int,array<string,string>> $subscribers, string $callback_url = ''): mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$subscribers` | **array<int,array<string,string>>** | Subscribers. |
+| `$callback_url` | **string** | URL to notify for large batch size when async processing complete. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#bulk-create-subscribers 
 
 ---
 ### get_subscriber_id
@@ -479,7 +862,7 @@ Return false if subscriber not found.
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-subscribers 
+* https://developers.convertkit.com/v4.html#get-a-subscriber 
 
 ---
 ### get_subscriber
@@ -499,7 +882,7 @@ public get_subscriber(int $subscriber_id): false|int
 
 **See Also:**
 
-* https://developers.convertkit.com/#view-a-single-subscriber 
+* https://developers.convertkit.com/v4.html#get-a-subscriber 
 
 ---
 ### update_subscriber
@@ -522,55 +905,35 @@ public update_subscriber(int $subscriber_id, string $first_name = '', string $em
 
 **See Also:**
 
-* https://developers.convertkit.com/#update-subscriber 
+* https://developers.convertkit.com/v4.html#update-a-subscriber 
+
+---
+### unsubscribe_by_email
+
+Unsubscribe an email address.
+
+```php
+public unsubscribe_by_email(string $email_address): false|object
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$email_address` | **string** | Email Address. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#unsubscribe-subscriber 
 
 ---
 ### unsubscribe
 
-Unsubscribe an email address from all forms and sequences.
+Unsubscribe the given subscriber ID.
 
 ```php
-public unsubscribe(string $email): false|object
-```
-
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `$email` | **string** | Email Address. |
-
-**See Also:**
-
-* https://developers.convertkit.com/#unsubscribe-subscriber 
-
----
-### form_unsubscribe
-
-Remove subscription from a form
-
-```php
-public form_unsubscribe(array<string,string> $options): false|object
-```
-
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `$options` | **array<string,string>** | Array of user data (email). |
-
-**See Also:**
-
-* https://developers.convertkit.com/#unsubscribe-subscriber 
-
----
-### get_subscriber_tags
-
-Get a list of the tags for a subscriber.
-
-```php
-public get_subscriber_tags(int $subscriber_id): false|array<int,\stdClass>
+public unsubscribe(int $subscriber_id): false|object
 ```
 
 
@@ -582,21 +945,54 @@ public get_subscriber_tags(int $subscriber_id): false|array<int,\stdClass>
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-tags-for-a-subscriber 
+* https://developers.convertkit.com/v4.html#unsubscribe-subscriber 
+
+---
+### get_subscriber_tags
+
+Get a list of the tags for a subscriber.
+
+```php
+public get_subscriber_tags(int $subscriber_id, bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|array<int,\stdClass>
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$subscriber_id` | **int** | Subscriber ID. |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#list-tags-for-a-subscriber 
 
 ---
 ### get_broadcasts
 
-Gets a list of broadcasts.
+List broadcasts.
 
 ```php
-public get_broadcasts(): false|array<int,\stdClass>
+public get_broadcasts(bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
 
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
 **See Also:**
 
-* https://developers.convertkit.com/#list-broadcasts 
+* https://developers.convertkit.com/v4.html#list-broadcasts 
 
 ---
 ### create_broadcast
@@ -604,7 +1000,7 @@ public get_broadcasts(): false|array<int,\stdClass>
 Creates a broadcast.
 
 ```php
-public create_broadcast(string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_layout_template = '', string $thumbnail_alt = '', string $thumbnail_url = ''): false|object
+public create_broadcast(string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_template_id = '', string $thumbnail_alt = '', string $thumbnail_url = '', string $preview_text = '', array<string,string> $subscriber_filter = []): false|object
 ```
 
 
@@ -619,13 +1015,15 @@ public create_broadcast(string $subject = '', string $content = '', string $desc
 | `$published_at` | **\DateTime** | Specifies the time that this post was published (applicable<br />only to public posts). |
 | `$send_at` | **\DateTime** | Time that this broadcast should be sent; leave blank to create<br />a draft broadcast. If set to a future time, this is the time that<br />the broadcast will be scheduled to send. |
 | `$email_address` | **string** | Sending email address; leave blank to use your account&#039;s<br />default sending email address. |
-| `$email_layout_template` | **string** | Name of the email template to use; leave blank to use your<br />account&#039;s default email template. |
+| `$email_template_id` | **string** | ID of the email template to use; leave blank to use your<br />account&#039;s default email template. |
 | `$thumbnail_alt` | **string** | Specify the ALT attribute of the public thumbnail image<br />(applicable only to public posts). |
 | `$thumbnail_url` | **string** | Specify the URL of the thumbnail image to accompany the broadcast<br />post (applicable only to public posts). |
+| `$preview_text` | **string** | Specify the preview text of the email. |
+| `$subscriber_filter` | **array<string,string>** | Filter subscriber(s) to send the email to. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-broadcast 
+* https://developers.convertkit.com/v4.html#create-a-broadcast 
 
 ---
 ### get_broadcast
@@ -645,7 +1043,7 @@ public get_broadcast(int $id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#retrieve-a-specific-broadcast 
+* https://developers.convertkit.com/v4.html#get-a-broadcast 
 
 ---
 ### get_broadcast_stats
@@ -666,7 +1064,7 @@ public get_broadcast_stats(int $id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#retrieve-a-specific-broadcast 
+* https://developers.convertkit.com/v4.html#get-stats 
 
 ---
 ### update_broadcast
@@ -674,7 +1072,7 @@ public get_broadcast_stats(int $id): false|object
 Updates a broadcast.
 
 ```php
-public update_broadcast(int $id, string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_layout_template = '', string $thumbnail_alt = '', string $thumbnail_url = ''): false|object
+public update_broadcast(int $id, string $subject = '', string $content = '', string $description = '', bool $public = false, \DateTime $published_at = null, \DateTime $send_at = null, string $email_address = '', string $email_template_id = '', string $thumbnail_alt = '', string $thumbnail_url = '', string $preview_text = '', array<string,string> $subscriber_filter = []): false|object
 ```
 
 
@@ -690,21 +1088,23 @@ public update_broadcast(int $id, string $subject = '', string $content = '', str
 | `$published_at` | **\DateTime** | Specifies the time that this post was published (applicable<br />only to public posts). |
 | `$send_at` | **\DateTime** | Time that this broadcast should be sent; leave blank to create<br />a draft broadcast. If set to a future time, this is the time that<br />the broadcast will be scheduled to send. |
 | `$email_address` | **string** | Sending email address; leave blank to use your account&#039;s<br />default sending email address. |
-| `$email_layout_template` | **string** | Name of the email template to use; leave blank to use your<br />account&#039;s default email template. |
+| `$email_template_id` | **string** | ID of the email template to use; leave blank to use your<br />account&#039;s default email template. |
 | `$thumbnail_alt` | **string** | Specify the ALT attribute of the public thumbnail image<br />(applicable only to public posts). |
 | `$thumbnail_url` | **string** | Specify the URL of the thumbnail image to accompany the broadcast<br />post (applicable only to public posts). |
+| `$preview_text` | **string** | Specify the preview text of the email. |
+| `$subscriber_filter` | **array<string,string>** | Filter subscriber(s) to send the email to. |
 
 **See Also:**
 
 * https://developers.convertkit.com/#create-a-broadcast 
 
 ---
-### destroy_broadcast
+### delete_broadcast
 
 Deletes an existing broadcast.
 
 ```php
-public destroy_broadcast(int $id): false|object
+public delete_broadcast(int $id): false|object
 ```
 
 
@@ -716,7 +1116,30 @@ public destroy_broadcast(int $id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#destroy-webhook 
+* https://developers.convertkit.com/v4.html#delete-a-broadcast 
+
+---
+### get_webhooks
+
+List webhooks.
+
+```php
+public get_webhooks(bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#list-webhooks 
 
 ---
 ### create_webhook
@@ -738,15 +1161,15 @@ public create_webhook(string $url, string $event, string $parameter = ''): false
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-webhook 
+* https://developers.convertkit.com/v4.html#create-a-webhook 
 
 ---
-### destroy_webhook
+### delete_webhook
 
 Deletes an existing webhook.
 
 ```php
-public destroy_webhook(int $rule_id): false|object
+public delete_webhook(int $id): false|object
 ```
 
 
@@ -754,11 +1177,11 @@ public destroy_webhook(int $rule_id): false|object
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `$rule_id` | **int** | Rule ID. |
+| `$id` | **int** | Webhook ID. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#destroy-webhook 
+* https://developers.convertkit.com/v4.html#delete-a-webhook 
 
 ---
 ### get_custom_fields
@@ -766,13 +1189,22 @@ public destroy_webhook(int $rule_id): false|object
 List custom fields.
 
 ```php
-public get_custom_fields(): false|object
+public get_custom_fields(bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
 
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
 **See Also:**
 
-* https://developers.convertkit.com/#list-fields 
+* https://developers.convertkit.com/v4.html#list-custom-fields 
 
 ---
 ### create_custom_field
@@ -792,7 +1224,7 @@ public create_custom_field(string $label): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-field 
+* https://developers.convertkit.com/v4.html#create-a-custom-field 
 
 ---
 ### create_custom_fields
@@ -800,7 +1232,7 @@ public create_custom_field(string $label): false|object
 Creates multiple custom fields.
 
 ```php
-public create_custom_fields(string[] $labels): false|object
+public create_custom_fields(string[] $labels, string $callback_url = ''): false|object
 ```
 
 
@@ -809,10 +1241,11 @@ public create_custom_fields(string[] $labels): false|object
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$labels` | **string[]** | Custom Fields labels. |
+| `$callback_url` | **string** | URL to notify for large batch size when async processing complete. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-field 
+* https://developers.convertkit.com/v4.html#bulk-create-custom-fields 
 
 ---
 ### update_custom_field
@@ -833,7 +1266,7 @@ public update_custom_field(int $id, string $label): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#update-field 
+* https://developers.convertkit.com/v4.html#update-a-custom-field 
 
 ---
 ### delete_custom_field
@@ -856,12 +1289,12 @@ public delete_custom_field(int $id): false|object
 * https://developers.convertkit.com/#destroy-field 
 
 ---
-### list_purchases
+### get_purchases
 
 List purchases.
 
 ```php
-public list_purchases(array<string,string> $options): false|object
+public get_purchases(bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
 
 
@@ -869,11 +1302,14 @@ public list_purchases(array<string,string> $options): false|object
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `$options` | **array<string,string>** | Request options. |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#list-purchases 
+* https://developers.convertkit.com/v4.html#list-purchases 
 
 ---
 ### get_purchase
@@ -893,7 +1329,7 @@ public get_purchase(int $purchase_id): false|object
 
 **See Also:**
 
-* https://developers.convertkit.com/#retrieve-a-specific-purchase 
+* https://developers.convertkit.com/v4.html#get-a-purchase 
 
 ---
 ### create_purchase
@@ -901,7 +1337,7 @@ public get_purchase(int $purchase_id): false|object
 Creates a purchase.
 
 ```php
-public create_purchase(array<string,string> $options): false|object
+public create_purchase(string $email_address, string $transaction_id, array<string,int|float|string> $products, string $currency = 'USD', string $first_name = null, string $status = null, float $subtotal, float $tax, float $shipping, float $discount, float $total, \DateTime $transaction_time = null): false|object
 ```
 
 
@@ -909,30 +1345,45 @@ public create_purchase(array<string,string> $options): false|object
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `$options` | **array<string,string>** | Purchase data. |
+| `$email_address` | **string** | Email Address. |
+| `$transaction_id` | **string** | Transaction ID. |
+| `$products` | **array<string,int\|float\|string>** | Products. |
+| `$currency` | **string** | ISO Currency Code. |
+| `$first_name` | **string** | First Name. |
+| `$status` | **string** | Order Status. |
+| `$subtotal` | **float** | Subtotal. |
+| `$tax` | **float** | Tax. |
+| `$shipping` | **float** | Shipping. |
+| `$discount` | **float** | Discount. |
+| `$total` | **float** | Total. |
+| `$transaction_time` | **\DateTime** | Transaction date and time. |
 
 **See Also:**
 
-* https://developers.convertkit.com/#create-a-purchase 
+* https://developers.convertkit.com/v4.html#create-a-purchase 
 
 ---
-### get_resource
+### get_segments
 
-Get markup from ConvertKit for the provided $url.
+List segments.
 
 ```php
-public get_resource(string $url): false|string
+public get_segments(bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): false|mixed
 ```
-Supports legacy forms and legacy landing pages.
-Forms and Landing Pages should be embedded using the supplied JS embed script in
-the API response when using get_resources().
+
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `$url` | **string** | URL of HTML page. |
+| `$include_total_count` | **bool** | To include the total count of records in the response, use true. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
 
+**See Also:**
+
+* https://developers.convertkit.com/v4.html#convertkit-api-segments 
 
 ---
 ### convert_relative_to_absolute_urls
@@ -941,7 +1392,7 @@ Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the giv
 DOM Elements.
 
 ```php
-private convert_relative_to_absolute_urls(\DOMNodeList<\DOMElement> $elements, string $attribute, string $url): void
+public convert_relative_to_absolute_urls(\DOMNodeList<\DOMElement> $elements, string $attribute, string $url): void
 ```
 
 
@@ -961,7 +1412,7 @@ Strips <html>, <head> and <body> opening and closing tags from the given markup,
 as well as the Content-Type meta tag we might have added in get_html().
 
 ```php
-private strip_html_head_body_tags(string $markup): string
+public strip_html_head_body_tags(string $markup): string
 ```
 
 
@@ -977,12 +1428,33 @@ HTML Markup
 
 
 ---
+### build_total_count_and_pagination_params
+
+Adds total count and pagination parameters to the given array of existing API parameters.
+
+```php
+private build_total_count_and_pagination_params(array<string,string|int|bool> $params = [], bool $include_total_count = false, string $after_cursor = '', string $before_cursor = '', int $per_page = 100): array<string,string|int|bool>
+```
+
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$params` | **array<string,string\|int\|bool>** | API parameters. |
+| `$include_total_count` | **bool** | Return total count of records. |
+| `$after_cursor` | **string** | Return results after the given pagination cursor. |
+| `$before_cursor` | **string** | Return results before the given pagination cursor. |
+| `$per_page` | **int** | Number of results to return. |
+
+
+---
 ### get
 
 Performs a GET request to the API.
 
 ```php
-public get(string $endpoint, array<string,int|string|array<string,int|string>> $args = []): false|mixed
+public get(string $endpoint, array<string,int|string|bool|array<string,int|string>> $args = []): false|mixed
 ```
 
 
@@ -991,7 +1463,7 @@ public get(string $endpoint, array<string,int|string|array<string,int|string>> $
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
-| `$args` | **array<string,int\|string\|array<string,int\|string>>** | Request arguments. |
+| `$args` | **array<string,int\|string\|bool\|array<string,int\|string>>** | Request arguments. |
 
 
 ---
@@ -1000,7 +1472,7 @@ public get(string $endpoint, array<string,int|string|array<string,int|string>> $
 Performs a POST request to the API.
 
 ```php
-public post(string $endpoint, array<string,bool|int|string|array<int|string,int|string|(string)[]>> $args = []): false|mixed
+public post(string $endpoint, array<string,bool|int|float|string|null|array<int|string,float|int|string|(string)[]>> $args = []): false|mixed
 ```
 
 
@@ -1009,7 +1481,7 @@ public post(string $endpoint, array<string,bool|int|string|array<int|string,int|
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
-| `$args` | **array<string,bool\|int\|string\|array<int\|string,int\|string\|(string)[]>>** | Request arguments. |
+| `$args` | **array<string,bool\|int\|float\|string\|null\|array<int\|string,float\|int\|string\|(string)[]>>** | Request arguments. |
 
 
 ---
@@ -1049,14 +1521,14 @@ public delete(string $endpoint, array<string,int|string|array<string,int|string>
 
 
 ---
-### make_request
+### request
 
-Performs an API request using Guzzle.
+Performs an API request.
 
 ```php
-public make_request(string $endpoint, string $method, array<string,bool|int|string|array<int|string,int|string|(string)[]>> $args = []): false|mixed
+public request(string $endpoint, string $method, array<string,bool|int|float|string|null|array<int|string,float|int|string|(string)[]>> $args = []): false|mixed
 ```
-
+* This method is **abstract**.
 
 **Parameters:**
 
@@ -1064,7 +1536,52 @@ public make_request(string $endpoint, string $method, array<string,bool|int|stri
 |-----------|------|-------------|
 | `$endpoint` | **string** | API Endpoint. |
 | `$method` | **string** | Request method. |
-| `$args` | **array<string,bool\|int\|string\|array<int\|string,int\|string\|(string)[]>>** | Request arguments. |
+| `$args` | **array<string,bool\|int\|float\|string\|null\|array<int\|string,float\|int\|string\|(string)[]>>** | Request arguments. |
+
+
+---
+### get_request_headers
+
+Returns the headers to use in an API request.
+
+```php
+public get_request_headers(string $type = 'application/json', bool $auth = true): array<string,string>
+```
+* This method is **abstract**.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `$type` | **string** | Accept and Content-Type Headers. |
+| `$auth` | **bool** | Include authorization header. |
+
+
+---
+### get_timeout
+
+Returns the maximum amount of time to wait for
+a response to the request before exiting.
+
+```php
+public get_timeout(): int
+```
+* This method is **abstract**.
+
+**Return Value:**
+
+Timeout, in seconds.
+
+
+---
+### get_user_agent
+
+Returns the user agent string to use in all HTTP requests.
+
+```php
+public get_user_agent(): string
+```
+* This method is **abstract**.
 
 
 ---
